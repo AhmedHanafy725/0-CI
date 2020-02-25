@@ -25,7 +25,7 @@ class Reporter(Configs):
         :param committer: committer name on github. 
         :type committer: str
         """
-        run = db_run.objects.get(id=id)
+        run = db_run(id=id)
         msg = self.report_msg(status=run.status, project_name=project_name)
         if not project_name:
             link = f"{self.domain}/repos/{run.repo.replace('/', '%2F')}/{run.branch}/{str(run.id)}"

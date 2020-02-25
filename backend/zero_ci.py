@@ -13,13 +13,11 @@ from utils.config import Configs
 from packages.github.github import Github
 from worker import conn
 from actions.actions import Actions
-from mongo.db import *
-
+from bcdb.bcdb import RepoRun, ProjectRun
 
 configs = Configs()
 actions = Actions()
 github = Github()
-DB()
 
 app = Flask(__name__, static_folder="../dist/static", template_folder="../dist")
 
