@@ -6,7 +6,6 @@
 - Install [JSX](https://github.com/threefoldtech/jumpscaleX_core/tree/development/docs/Installation)
 - Create a Telegram group chat.
 - Create Telegram bot and add it to this group chat.
-- Install redis and mongodb `apt-get install -y redis mongodb`
 - Clone the repository and install packages required.
 
     ```bash
@@ -47,10 +46,6 @@ secret=                             # itsyouonline secret
 access_token=                       # Github access token for user
 repos=                               # list of  repositories Full name that will run on your zeroCI
 
-[db]
-name=                               # db name will be used to store the result in
-host=                               # hostname that mongodb is running on (exp: localhost)
-port=                               # port that mongodb is running on
 
 [environment]                       # under this a list of environment variables needed to be exported before running tests.
 ```
