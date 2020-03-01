@@ -47,7 +47,7 @@ def trigger(**kwargs):
             repo = request.json["repository"]["full_name"]
             branch = reference.split("/")[-1]
             commit = request.json["after"]
-            if configs.vcs__type == "github":
+            if configs.vcs_type == "github":
                 committer = request.json["pusher"]["name"]
             else:
                 committer = request.json["pusher"]["login"]

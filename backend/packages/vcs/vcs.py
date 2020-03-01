@@ -13,8 +13,8 @@ class VCSInterface(metaclass=ABCMeta):
     """The Version Control System Interface"""
 
     def get_content_in_text(function):
-        def wrapper(self, *args, **kwargs):
-            content_b64 = function(self, *args, **kwargs)
+        def wrapper(*args, **kwargs):
+            content_b64 = function(*args, **kwargs)
             content = base64.b64decode(content_b64.content)
             content = content.decode()
             return content
@@ -22,8 +22,8 @@ class VCSInterface(metaclass=ABCMeta):
         return wrapper
 
     def get_branches_names(function):
-        def wrapper(self, *args, **kwargs):
-            branches = function(self, *args, **kwargs)
+        def wrapper(*args, **kwargs):
+            branches = function(*args, **kwargs)
             if branches == None:
                 return
             branches_names = []
@@ -37,29 +37,41 @@ class VCSInterface(metaclass=ABCMeta):
         def wrapper(self, *args, **kwargs):
             for _ in range(5):
                 try:
-                    result = function(
-                        self, *args, **kwargs
-                    )  ## should self be removed check later, i think it can work without and with self
+                    result = function(self, *args, **kwargs)
                     break
-                except Exception:  # we need something to log the exception in case of failures
+                except Exception:
                     time.sleep(1)
             else:
-                return  # return None if request failed .. handle this in all files
+                return
             return result
 
         return wrapper
 
     @abstractmethod
+    def status_send(status, link, commit):
+        """An inteface method to send commit status
+
+        :param status: should be one of [error, failure, pending, success].
+        :type status: str
+        :param link: the result file link to be accessed through the server.
+        :type link: str
+        :param commit: commit hash required to change its status on github.
+        :type commit: str
+        """
+
+    @abstractmethod
+    def get_content(ref, file_path):
+        """An inteface method to get content
+
+        :param ref: name of the commit/branch/tag.
+        :type ref: str
+        :param file_path: file path in the repo
+        :type file_path: str
+        """
+
+    @abstractmethod
     def get_branches():
         """An inteface method to get branches"""
-
-    @abstractmethod
-    def get_content():
-        """An inteface method to get content"""
-
-    @abstractmethod
-    def status_send():
-        """An inteface method to send commit status"""
 
 
 class Github(VCSInterface):
@@ -78,15 +90,6 @@ class Github(VCSInterface):
     def status_send(
         self, status, link, commit, description="JSX-machine for testing", context="continuous-integration/zeroCI"
     ):
-        """Change github commit status.
-        
-        :param status: should be one of [error, failure, pending, success].
-        :type status: str
-        :param link: the result file link to be accessed through the server.
-        :type link: str
-        :param commit: commit hash required to change its status on github.
-        :type commit: str
-        """
 
         commit_obj = self.repo_obj.get_commit(commit)
         commit_obj.create_status(state=status, target_url=link, description=description, context=context)
@@ -94,13 +97,6 @@ class Github(VCSInterface):
     @VCSInterface.get_content_in_text
     @VCSInterface.call_trial
     def get_content(self, ref, file_path):
-        """Get file content from github with specific ref.
-
-        :param ref: name of the commit/branch/tag.
-        :type ref: str
-        :param file_path: file path in the repo
-        :type file_path: str
-        """
         content_b64 = self.repo_obj.get_contents(file_path, ref=ref)
         return content_b64
 
@@ -122,7 +118,7 @@ class Gitea(VCSInterface):
 
         def _get_gitea_cl():
             configuration = giteapy.Configuration()
-            configuration.host = c.vcs_type + "/api/v1"
+            configuration.host = c.vcs_host + "/api/v1"
             configuration.api_key["token"] = c.vcs_token
             return giteapy.api_client.ApiClient(configuration)
 
@@ -135,29 +131,13 @@ class Gitea(VCSInterface):
     def status_send(
         self, status, link, commit, description="JSX-machine for testing", context="continuous-integration/zeroCI",
     ):
-        """Change gitea commit status.
-        
-        :param status: should be one of [error, failure, pending, success].
-        :type status: str
-        :param link: the result file link to be accessed through the server.
-        :type link: str
-        :param commit: commit hash required to change its status on gitea.
-        :type commit: str
-        """
         body = {"context": context, "description": description, "state": status, "target_url": link}
         self.repo_obj.repo_create_status(self.owner, self.repo_name, commit, body=body)
 
     @VCSInterface.get_content_in_text
     @VCSInterface.call_trial
     def get_content(self, ref, file_path):
-        """Get file content from gitea with specific ref.
-
-        :param ref: name of the commit/branch/tag.
-        :type ref: str
-        :param file_path: file path in the repo
-        :type file_path: str
-        """
-        content_b64 = self.repo_obj.repo_get_contents(self.owner, self.repo_name, ref, file_path)
+        content_b64 = self.repo_obj.repo_get_contents(self.owner, self.repo_name, file_path, ref=ref)
         return content_b64
 
     @VCSInterface.get_branches_names
