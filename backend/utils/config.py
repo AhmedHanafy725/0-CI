@@ -31,12 +31,6 @@ class Configs:
         self.validate(self.github_token, str)
         self.repos = self._config["github"]["repos"]
         self.validate(self.repos, list)
-        self.db_name = self._config["db"]["name"]
-        self.validate(self.db_name, str)
-        self.db_host = self._config["db"]["host"]
-        self.validate(self.db_host, str)
-        self.db_port = self._config["db"]["port"]
-        self.validate(self.db_port, int)
         self.environment = self._config["environment"]
         self.validate(self.environment, dict)
 

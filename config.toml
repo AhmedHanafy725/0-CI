@@ -14,9 +14,4 @@ secret=""
 token=""
 repos=[]
 
-[db]
-name=""
-host="localhost"
-port=27017
-
 [environment]

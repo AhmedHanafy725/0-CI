@@ -13,13 +13,11 @@ from utils.config import Configs
 from packages.github.github import Github
 from worker import conn
 from actions.actions import Actions
-from mongo.db import *
-
+from bcdb.bcdb import RepoRun, ProjectRun
 
 configs = Configs()
 actions = Actions()
 github = Github()
-DB()
 
 app = Flask(__name__, static_folder="../dist/static", template_folder="../dist")
 
@@ -130,8 +128,8 @@ def home():
     """Return repos and projects which are running on the server.
     """
     result = {"repos": [], "projects": []}
-    result["repos"] = RepoRun.objects.distinct("repo")
-    result["projects"] = ProjectRun.objects.distinct("name")
+    result["repos"] = RepoRun.distinct("repo")
+    result["projects"] = ProjectRun.distinct("name")
     result_json = json.dumps(result)
     return result_json, 200
 
@@ -148,28 +146,18 @@ def branch(repo):
     id = request.args.get("id")
 
     if id:
-        repo_run = RepoRun.objects.get(id=id, repo=repo)
+        repo_run = RepoRun(id=id)
         result = json.dumps(repo_run.result)
         return result
     if branch:
         fields = ["status", "commit", "committer", "timestamp"]
-        repo_runs = RepoRun.objects(repo=repo, branch=branch).only(*fields).order_by("-timestamp")
-        details = []
-        for repo_run in repo_runs:
-            details.append(
-                {
-                    "commit": repo_run.commit,
-                    "committer": repo_run.committer,
-                    "timestamp": repo_run.timestamp,
-                    "status": repo_run.status,
-                    "id": str(repo_run.id),
-                }
-            )
-        result = json.dumps(details)
+        where = f'repo="{repo}" and branch="{branch}"'
+        repo_runs = RepoRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
+        result = json.dumps(repo_runs)
         return result
 
     exist_branches = github.get_branches(repo=repo)
-    all_branches = RepoRun.objects(repo=repo).distinct("branch")
+    all_branches = RepoRun.distinct(field="branch", where=f"repo='{repo}'")
     deleted_branches = list(set(all_branches) - set(exist_branches))
     branches = {"exist": exist_branches, "deleted": deleted_branches}
     result = json.dumps(branches)
@@ -185,16 +173,14 @@ def project(project):
     """
     id = request.args.get("id")
     if id:
-        project_run = ProjectRun.objects.get(id=id)
+        project_run = ProjectRun(id=id)
         result = json.dumps(project_run.result)
         return result
 
     fields = ["status", "timestamp"]
-    project_runs = ProjectRun.objects(name=project).only(*fields).order_by("-timestamp")
-    details = []
-    for project_run in project_runs:
-        details.append({"timestamp": project_run.timestamp, "status": project_run.status, "id": str(project_run.id)})
-    result = json.dumps(details)
+    where = f"name='{project}'"
+    project_runs = RepoRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
+    result = json.dumps(project_runs)
     return result
 
 
@@ -208,13 +194,15 @@ def status():
     result = request.args.get("result")  # to return the run result
     fields = ["status"]
     if project:
-        project_run = (
-            ProjectRun.objects(name=project, status__ne="pending").only(*fields).order_by("-timestamp").first()
-        )
+        where = f"name='{project}' and status!='pending'"
+        project_run = ProjectRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
+        if len(project_run) == 0:
+            return abort(404)
+
         if result:
-            link = f"{configs.domain}/projects/{project}?id={str(project_run.id)}"
+            link = f"{configs.domain}/projects/{project}?id={str(project_run[0]['id'])}"
             return redirect(link)
-        if project_run.status == "success":
+        if project_run[0]["status"] == "success":
             return send_file("svgs/build_passing.svg", mimetype="image/svg+xml")
         else:
             return send_file("svgs/build_failing.svg", mimetype="image/svg+xml")
@@ -222,45 +210,19 @@ def status():
     elif repo:
         if not branch:
             branch = "master"
-        repo_run = (
-            RepoRun.objects(repo=repo, branch=branch, status__ne="pending").only(*fields).order_by("-timestamp").first()
-        )
+        where = f"repo='{repo}' and branch='{branch}' and status!='pending'"
+        repo_run = RepoRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
+        if len(repo_run) == 0:
+            return abort(404)
         if result:
-            link = f"{configs.domain}/repos/{repo.replace('/', '%2F')}/{branch}/{str(repo_run.id)}"
+            link = f"{configs.domain}/repos/{repo.replace('/', '%2F')}/{branch}/{str(repo_run[0]['id'])}"
             return redirect(link)
-        if repo_run.status == "success":
+        if repo_run[0]["status"] == "success":
             return send_file("svgs/build_passing.svg", mimetype="image/svg+xml")
         else:
             return send_file("svgs/build_failing.svg", mimetype="image/svg+xml")
 
     return abort(404)
-
-
-@app.route("/get_status")
-def state():
-    """Return the result of a run using id.
-    """
-    n = request.args.get("n")
-    id = request.args.get("id")
-    if not n:
-        n = "1"
-    if n.isnumeric():
-        if id:
-            try:
-                repo_run = RepoRun.objects.get(id=id)
-            except:
-                try:
-                    repo_run = ProjectRun.objects.get(id=id)
-                except:
-                    return abort(404)
-            if int(n) <= len(repo_run.result):
-                result = repo_run.result[int(n) - 1]
-                if result["type"] == "testsuite":
-                    return render_template("template.html", **result["content"])
-                else:
-                    return render_template("result.html", content=result["content"])
-
-    return abort(400)
 
 
 @app.route("/", defaults={"path": ""})

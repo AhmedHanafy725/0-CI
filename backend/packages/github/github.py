@@ -5,7 +5,7 @@ import yaml
 from github import Github as GH
 
 from utils.config import Configs
-from mongo.db import RepoRun
+from bcdb.bcdb import RepoRun
 
 RETRIES = 5
 
@@ -68,7 +68,7 @@ class Github(Configs):
         :type id: str
         :return: prequisties, install, test script.
         """
-        repo_run = RepoRun.objects.get(id=id)
+        repo_run = RepoRun(id=id)
         org_repo_name = repo_run.repo.split("/")[0]
         clone = """mkdir -p /opt/code/github/{org_repo_name} &&
         cd /opt/code/github/{org_repo_name} &&
