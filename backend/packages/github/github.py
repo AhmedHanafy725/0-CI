@@ -110,3 +110,26 @@ class Github(Configs):
                 branches_names.append(branch.name)
 
             return branches_names
+
+    def get_last_commit(self, repo, branch):
+        """Get last commit on a branch in a repository.
+
+        :param repo: full repo name
+        :type repo: str
+        :param repo: branch name
+        :type repo: str
+        :return type: str
+        """
+        branches = self.get_branches(repo=repo)
+        if branch in branches:
+            for _ in range(RETRIES):
+                try:
+                    repo_obj = self.github_cl.get_repo(repo)
+                    branch_obj = repo_obj.get_branch(branch)
+                    last_commit = branch_obj.commit.sha
+                    committer = branch_obj.commit.author.login
+                    return last_commit, committer
+                except:
+                    time.sleep(0.1)
+            else:
+                return None

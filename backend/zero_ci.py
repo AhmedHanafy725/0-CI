@@ -35,8 +35,27 @@ def set_response_headers(response):
     return response
 
 
-@app.route("/trigger", methods=["POST"])
-def trigger(**kwargs):
+def trigger(repo, branch, commit, committer):
+    if repo in configs.repos:
+        status = "pending"
+        repo_run = RepoRun(
+            timestamp=datetime.now().timestamp(),
+            status=status,
+            repo=repo,
+            branch=branch,
+            commit=commit,
+            committer=committer,
+        )
+        repo_run.save()
+        id = str(repo_run.id)
+        github.status_send(status=status, link=configs.domain, repo=repo, commit=commit)
+
+        job = q.enqueue_call(func=actions.build_and_test, args=(id,), result_ttl=5000, timeout=20000)
+        return job
+    return None
+
+@app.route("/git_trigger", methods=["POST"])
+def git_trigger():
     """Trigger the test when a post request is sent from a repo's webhook.
     """
     if request.headers.get("Content-Type") == "application/json":
@@ -48,24 +67,32 @@ def trigger(**kwargs):
             commit = request.json["after"]
             committer = request.json["pusher"]["name"]
             deleted = request.json["deleted"]
-            if repo in configs.repos and deleted == False:
-                status = "pending"
-                repo_run = RepoRun(
-                    timestamp=datetime.now().timestamp(),
-                    status=status,
-                    repo=repo,
-                    branch=branch,
-                    commit=commit,
-                    committer=committer,
-                )
-                repo_run.save()
-                id = str(repo_run.id)
-                github.status_send(status=status, link=configs.domain, repo=repo, commit=commit)
+            if deleted == False:
+                job = trigger(repo=repo, branch=branch, commit=commit, committer=committer)
+                if job:
+                    return Response(job.get_id(), 200)
+        return Response("Done", 200)
+    return Response("Wrong content type", 400)
 
-                job = q.enqueue_call(func=actions.build_and_test, args=(id,), result_ttl=5000, timeout=20000)
-                return Response(job.get_id(), 200)
 
-    return Response("Done", 200)
+@app.route("/run_trigger", methods=["POST"])
+def run_trigger():
+    # this api should be protected by user 
+    if request.headers.get("Content-Type") == "application/json":
+        repo = request.json.get("repo")
+        branch = request.json.get("branch")
+        last_commit, committer = github.get_last_commit(repo=repo, branch=branch)
+        where = f'repo="{repo}" and branch="{branch}" and [commit]="{last_commit}" and status="pending"'
+        run = RepoRun.get_objects(fields=["status"],where=where)
+        if run:
+            return Response(f"There is a running job from this commit {last_commit}, please try again after this run finishes", 503)
+        if last_commit:
+            job = trigger(repo=repo, branch=branch, commit=last_commit, committer=committer)
+        else:
+            return Response(f"Couldn't get last commit from this branch {branch}, please try again", 503)
+        if job:
+            return Response(job.get_id(), 200)
+        return Response("Wrong data", 400)
 
 
 @app.route("/api/add_project", methods=["POST"])
