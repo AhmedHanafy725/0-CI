@@ -4,7 +4,6 @@ import time
 from utils.config import Configs
 from github import Github as GH
 import giteapy
-from mongo.db import RepoRun
 
 c = Configs()
 

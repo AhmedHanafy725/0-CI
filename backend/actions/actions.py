@@ -6,10 +6,9 @@ from utils.config import Configs
 from utils.reporter import Reporter
 from utils.utils import Utils
 from packages.vcs.vcs import VCSFactory
-from mongo.db import *
+from bcdb.bcdb import RepoRun, ProjectRun
 from vm.vms import VMS
 
-DB()
 vms = VMS()
 reporter = Reporter()
 utils = Utils()
@@ -26,7 +25,7 @@ class Actions(Configs):
         :param id: DB id of this commit details.
         :type id: str
         """
-        repo_run = db_run.objects.get(id=id)
+        repo_run = db_run(id=id)
         status = "success"
         if test_script:
             for i, line in enumerate(test_script):
@@ -71,7 +70,7 @@ class Actions(Configs):
         :param id: DB id of this commit details.
         :type id: str
         """
-        repo_run = db_run.objects.get(id=id)
+        repo_run = db_run(id=id)
         link = f"{self.domain}/repos/{repo_run.repo.replace('/', '%2F')}/{repo_run.branch}/{str(repo_run.id)}"
         # link = f"{self.domain}/get_status?id={str(repo_run.id)}&n=1"
         line = "black {}/{} -l 120 -t py37 --diff --exclude 'templates'".format(self._REPOS_DIR, repo_run.repo)
@@ -96,7 +95,7 @@ class Actions(Configs):
             if uuid:
                 response = vms.install_app(node_ip=node_ip, port=port, install_script=install_script)
                 if response.returncode:
-                    repo_run = db_run.objects.get(id=id)
+                    repo_run = db_run(id=id)
                     content = "stdout:\n" + response.stdout + "\nstderr:\n" + response.stderr
                     repo_run.result.append(
                         {"type": "log", "status": "error", "name": "Installation", "content": content}
@@ -106,14 +105,14 @@ class Actions(Configs):
                 return uuid, response, node_ip, port
 
             else:
-                repo_run = db_run.objects.get(id=id)
+                repo_run = db_run(id=id)
                 repo_run.result.append(
                     {"type": "log", "status": "error", "name": "Deploy", "content": "Couldn't deploy a vm"}
                 )
                 repo_run.save()
                 self.cal_status(id=id, db_run=db_run)
         else:
-            repo_run = db_run.objects.get(id=id)
+            repo_run = db_run(id=id)
             repo_run.result.append(
                 {"type": "log", "status": "error", "name": "ZeroCI", "content": "Didn't find something to install"}
             )
@@ -128,7 +127,7 @@ class Actions(Configs):
         :param id: DB id of this commit details.
         :type id: str
         """
-        repo_run = db_run.objects.get(id=id)
+        repo_run = db_run(id=id)
         status = "success"
         for result in repo_run.result:
             if result["status"] != "success":
@@ -143,7 +142,7 @@ class Actions(Configs):
         :type id: str
         :return: prequisties, install, test script.
         """
-        repo_run = RepoRun.objects.get(id=id)
+        repo_run = RepoRun(id=id)
         org_repo_name = repo_run.repo.split("/")[0]
         clone = """mkdir -p {repos_dir}/{org_repo_name} &&
         cd {repos_dir}/{org_repo_name} &&
@@ -204,7 +203,7 @@ class Actions(Configs):
                     node_ip=node_ip, port=port, id=id, test_script=test_script, db_run=ProjectRun, timeout=timeout
                 )
                 self.cal_status(id=id, db_run=ProjectRun)
-                project_run = ProjectRun.objects.get(id=id)
+                project_run = ProjectRun(id=id)
 
             vms.destroy_vm(uuid)
         link = f"{self.domain}/projects/{project_run.name.replace(' ', '%20')}/{str(project_run.id)}"
