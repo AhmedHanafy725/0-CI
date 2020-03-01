@@ -10,7 +10,8 @@ token=""
 id=""
 secret=""
 
-[github]
+[vcs]
+host="https://github.com"
 token=""
 repos=[]
 

@@ -27,9 +27,12 @@ class Configs:
         self.validate(self.chat_id, str)
         self.bot_token = self._config["telegram"]["token"]
         self.validate(self.bot_token, str)
-        self.github_token = self._config["github"]["token"]
-        self.validate(self.github_token, str)
-        self.repos = self._config["github"]["repos"]
+        self.vcs_host = self._config["vcs"]["host"]
+        self.validate(self.vcs_host, str)
+        self.vcs_type = self._get_vcs_type()
+        self.vcs_token = self._config["vcs"]["token"]
+        self.validate(self.vcs_token, str)
+        self.repos = self._config["vcs"]["repos"]
         self.validate(self.repos, list)
         self.db_name = self._config["db"]["name"]
         self.validate(self.db_name, str)
@@ -50,3 +53,10 @@ class Configs:
     def validate(self, value, type):
         if not isinstance(value, type):
             raise ValidationError(f"{value} should be {type}")
+
+    def _get_vcs_type(self):
+        if "github" in self.vcs_host:
+            vcs_type = "github"
+        else:
+            vcs_type = "gitea"
+        return vcs_type

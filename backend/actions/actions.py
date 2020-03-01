@@ -5,6 +5,7 @@ from utils.config import Configs
 from utils.reporter import Reporter
 from utils.utils import Utils
 from packages.github.github import Github
+from packages.vcs.vcs import VCSFactory
 from mongo.db import *
 from vm.vms import VMS
 
@@ -85,9 +86,8 @@ class Actions(Configs):
         )
         repo_run.save()
 
-        github.status_send(
-            status=status, link=link, repo=repo_run.repo, commit=repo_run.commit, context="Black-Formatting"
-        )
+        VCSObject = VCSFactory().get_cvn(self.vcs_type, repo=repo_run.repo)
+        VCSObject.status_send(status=status, link=link, commit=repo_run.commit, context="Black-Formatting")
 
     def build(self, install_script, id, db_run, prequisties=""):
         if install_script:
@@ -136,7 +136,7 @@ class Actions(Configs):
         repo_run.save()
 
     def build_and_test(self, id):
-        """Builds, runs tests, calculates status and gives report on telegram and github.
+        """Builds, runs tests, calculates status and gives report on telegram and your version control system.
         
         :param id: DB id of this commit details.
         :type id: str
