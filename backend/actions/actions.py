@@ -1,20 +1,22 @@
 import os
 from datetime import datetime
+import yaml
 
 from utils.config import Configs
 from utils.reporter import Reporter
 from utils.utils import Utils
-from packages.github.github import Github
+from packages.vcs.vcs import VCSFactory
 from bcdb.bcdb import RepoRun, ProjectRun
 from vm.vms import VMS
 
 vms = VMS()
-github = Github()
 reporter = Reporter()
 utils = Utils()
 
 
 class Actions(Configs):
+    _REPOS_DIR = "/opt/code/cvs_repos"
+
     def test_run(self, node_ip, port, id, test_script, db_run, timeout):
         """Runs tests with specific commit and store the result in DB.
         
@@ -71,7 +73,7 @@ class Actions(Configs):
         repo_run = db_run(id=id)
         link = f"{self.domain}/repos/{repo_run.repo.replace('/', '%2F')}/{repo_run.branch}/{str(repo_run.id)}"
         # link = f"{self.domain}/get_status?id={str(repo_run.id)}&n=1"
-        line = "black /opt/code/github/{} -l 120 -t py37 --diff --exclude 'templates'".format(repo_run.repo)
+        line = "black {}/{} -l 120 -t py37 --diff --exclude 'templates'".format(self._REPOS_DIR, repo_run.repo)
         response, file = vms.run_test(run_cmd=line, node_ip=node_ip, port=port, timeout=timeout)
         if response.returncode:
             status = "failure"
@@ -84,9 +86,8 @@ class Actions(Configs):
         )
         repo_run.save()
 
-        github.status_send(
-            status=status, link=link, repo=repo_run.repo, commit=repo_run.commit, context="Black-Formatting"
-        )
+        VCSObject = VCSFactory().get_cvn(repo=repo_run.repo)
+        VCSObject.status_send(status=status, link=link, commit=repo_run.commit, context="Black-Formatting")
 
     def build(self, install_script, id, db_run, prequisties=""):
         if install_script:
@@ -134,13 +135,49 @@ class Actions(Configs):
         repo_run.status = status
         repo_run.save()
 
+    def _install_test_scripts(self, id):
+        """Read 0-CI yaml script from the repo home directory and divide it to (prequisties, install, test) scripts.
+
+        :param id: mongo record id to get commit information.
+        :type id: str
+        :return: prequisties, install, test script.
+        """
+        repo_run = RepoRun(id=id)
+        org_repo_name = repo_run.repo.split("/")[0]
+        clone = """mkdir -p {repos_dir}/{org_repo_name} &&
+        cd {repos_dir}/{org_repo_name} &&
+        git clone {cvs_host}/{repo}.git --branch {branch} &&
+        cd {repos_dir}/{repo} &&
+        git reset --hard {commit} &&
+        """.format(
+            repos_dir=self._REPOS_DIR,
+            repo=repo_run.repo,
+            branch=repo_run.branch,
+            commit=repo_run.commit,
+            org_repo_name=org_repo_name,
+            cvs_host=self.vcs_host,
+        ).replace(
+            "\n", " "
+        )
+
+        VCSObject = VCSFactory().get_cvn(repo=repo_run.repo)
+        script = VCSObject.get_content(ref=repo_run.commit, file_path="zeroCI.yaml")
+        if script:
+            yaml_script = yaml.load(script)
+            prequisties = yaml_script.get("prequisties")
+            install = " && ".join(yaml_script.get("install"))
+            install_script = clone + install
+            test_script = yaml_script.get("script")
+            return prequisties, install_script, test_script
+        return None, None, None
+
     def build_and_test(self, id):
-        """Builds, runs tests, calculates status and gives report on telegram and github.
+        """Builds, runs tests, calculates status and gives report on telegram and your version control system.
         
         :param id: DB id of this commit details.
         :type id: str
         """
-        prequisties, install_script, test_script = github.install_test_scripts(id=id)
+        prequisties, install_script, test_script = self._install_test_scripts(id=id)
         uuid, response, node_ip, port = self.build(
             install_script=install_script, id=id, db_run=RepoRun, prequisties=prequisties
         )
