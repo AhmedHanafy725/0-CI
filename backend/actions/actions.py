@@ -86,7 +86,7 @@ class Actions(Configs):
         )
         repo_run.save()
 
-        VCSObject = VCSFactory().get_cvn(self.vcs_type, repo=repo_run.repo)
+        VCSObject = VCSFactory().get_cvn(repo=repo_run.repo)
         VCSObject.status_send(status=status, link=link, commit=repo_run.commit, context="Black-Formatting")
 
     def build(self, install_script, id, db_run, prequisties=""):
@@ -160,7 +160,7 @@ class Actions(Configs):
             "\n", " "
         )
 
-        VCSObject = VCSFactory().get_cvn(self.vcs_type, repo=repo_run.repo)
+        VCSObject = VCSFactory().get_cvn(repo=repo_run.repo)
         script = VCSObject.get_content(ref=repo_run.commit, file_path="zeroCI.yaml")
         if script:
             yaml_script = yaml.load(script)

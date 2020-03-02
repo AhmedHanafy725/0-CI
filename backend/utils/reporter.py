@@ -28,7 +28,7 @@ class Reporter(Configs):
         msg = self.report_msg(status=run.status, project_name=project_name)
         if not project_name:
             link = f"{self.domain}/repos/{run.repo.replace('/', '%2F')}/{run.branch}/{str(run.id)}"
-            VCSObject = VCSFactory().get_cvn(self.vcs_type, repo=run.repo)
+            VCSObject = VCSFactory().get_cvn(repo=run.repo)
             VCSObject.status_send(status=run.status, link=link, commit=run.commit)
             telegram.send_msg(
                 msg=msg, link=link, repo=run.repo, branch=run.branch, commit=run.commit, committer=run.committer

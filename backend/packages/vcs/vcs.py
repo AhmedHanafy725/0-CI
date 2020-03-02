@@ -150,8 +150,8 @@ class VCSFactory:
     """The Version Control System Factory Class"""
 
     @staticmethod
-    def get_cvn(url, repo):
-        if "github" in url:
+    def get_cvn(repo):
+        if c.vcs_type == "github":
             return Github(repo)
         else:
             return Gitea(repo)

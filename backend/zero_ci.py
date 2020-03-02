@@ -62,7 +62,7 @@ def trigger(**kwargs):
                 )
                 repo_run.save()
                 id = str(repo_run.id)
-                VCSObject = VCSFactory().get_cvn(configs.vcs_type, repo=repo)
+                VCSObject = VCSFactory().get_cvn(repo=repo)
                 VCSObject.status_send(status=status, link=configs.domain, commit=commit)
 
                 job = q.enqueue_call(func=actions.build_and_test, args=(id,), result_ttl=5000, timeout=20000)
@@ -159,7 +159,7 @@ def branch(repo):
         result = json.dumps(repo_runs)
         return result
 
-    VCSObject = VCSFactory().get_cvn(configs.vcs_type, repo=repo)
+    VCSObject = VCSFactory().get_cvn(repo=repo)
     exist_branches = VCSObject.get_branches()
     all_branches = RepoRun.distinct(field="branch", where=f"repo='{repo}'")
     deleted_branches = list(set(all_branches) - set(exist_branches))
