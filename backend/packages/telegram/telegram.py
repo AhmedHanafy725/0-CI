@@ -24,14 +24,14 @@ class Telegram(Configs):
         :type branch: str
         :param commit: commit hash.
         :type commit: str
-        :param committer: committer name on github.
+        :param committer: committer name.
         :type committer: str
         """
         if commit:
             msg = f"""{msg}
-<a href="https://github.com/{repo}">{repo}</a>
-{branch} <a href="https://github.com/{repo}/commit/{commit}">{commit[:7]}</a>
-👤 <a href="https://github.com/{committer}">{committer}</a>"""
+<a href="{self.vcs_host}/{repo}">{repo}</a>
+{branch} <a href="{self.vcs_host}/{repo}/commit/{commit}">{commit[:7]}</a>
+👤 <a href="{self.vcs_host}/{committer}">{committer}</a>"""
 
         button_list = [InlineKeyboardButton("Result", url=link)]
         reply_markup = InlineKeyboardMarkup([button_list])

@@ -10,14 +10,13 @@ from rq_scheduler import Scheduler
 from redis import Redis
 
 from utils.config import Configs
-from packages.github.github import Github
+from packages.vcs.vcs import VCSFactory
 from worker import conn
 from actions.actions import Actions
 from bcdb.bcdb import RepoRun, ProjectRun
 
 configs = Configs()
 actions = Actions()
-github = Github()
 
 app = Flask(__name__, static_folder="../dist/static", template_folder="../dist")
 
@@ -46,9 +45,12 @@ def trigger(**kwargs):
             repo = request.json["repository"]["full_name"]
             branch = reference.split("/")[-1]
             commit = request.json["after"]
-            committer = request.json["pusher"]["name"]
-            deleted = request.json["deleted"]
-            if repo in configs.repos and deleted == False:
+            if configs.vcs_type == "github":
+                committer = request.json["pusher"]["name"]
+            else:
+                committer = request.json["pusher"]["login"]
+            branch_exist = not commit.startswith("000000")
+            if repo in configs.repos and branch_exist:
                 status = "pending"
                 repo_run = RepoRun(
                     timestamp=datetime.now().timestamp(),
@@ -60,7 +62,8 @@ def trigger(**kwargs):
                 )
                 repo_run.save()
                 id = str(repo_run.id)
-                github.status_send(status=status, link=configs.domain, repo=repo, commit=commit)
+                VCSObject = VCSFactory().get_cvn(repo=repo)
+                VCSObject.status_send(status=status, link=configs.domain, commit=commit)
 
                 job = q.enqueue_call(func=actions.build_and_test, args=(id,), result_ttl=5000, timeout=20000)
                 return Response(job.get_id(), 200)
@@ -78,7 +81,7 @@ def add_project():
         run_time = request.json.get("run_time")
         authentication = request.json.get("authentication")
         timeout = request.json.get("timeout", 3600)
-        if authentication == configs.github_token:
+        if authentication == configs.vcs_token:
             if not (
                 isinstance(project_name, str)
                 and isinstance(install_script, (str, list))
@@ -116,7 +119,7 @@ def remove_project():
     if request.headers.get("Content-Type") == "application/json":
         project_name = request.json.get("project_name")
         authentication = request.json.get("authentication")
-        if authentication == configs.github_token:
+        if authentication == configs.vcs_token:
             scheduler.cancel(project_name)
         else:
             return Response("Authentication failed", 401)
@@ -156,7 +159,8 @@ def branch(repo):
         result = json.dumps(repo_runs)
         return result
 
-    exist_branches = github.get_branches(repo=repo)
+    VCSObject = VCSFactory().get_cvn(repo=repo)
+    exist_branches = VCSObject.get_branches()
     all_branches = RepoRun.distinct(field="branch", where=f"repo='{repo}'")
     deleted_branches = list(set(all_branches) - set(exist_branches))
     branches = {"exist": exist_branches, "deleted": deleted_branches}
@@ -186,7 +190,7 @@ def project(project):
 
 @app.route("/status")
 def status():
-    """Returns repo's branch or project status for github.
+    """Returns repo's branch or project status for your version control system.
     """
     project = request.args.get("project")
     repo = request.args.get("repo")
