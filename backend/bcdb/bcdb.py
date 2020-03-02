@@ -46,7 +46,7 @@ class Base:
         return distinct_list
 
     @classmethod
-    def get_objects(cls, fields, where=None, order_by=None, asc=True):        
+    def get_objects(cls, fields, where=None, order_by=None, asc=True):
         fields_string = ", ".join([f"[{x}]" for x in fields])
         query = f"select {fields_string}, [id] FROM {cls._model.index.sql_table_name}"
         if where:
@@ -61,7 +61,7 @@ class Base:
             obj = {}
             for i, field in enumerate(fields):
                 obj[field] = value[i]
-            obj["id"] = value[i+1]
+            obj["id"] = value[i + 1]
             results.append(obj)
         return results
 

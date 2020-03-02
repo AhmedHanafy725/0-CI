@@ -14,9 +14,11 @@ class VCSInterface(metaclass=ABCMeta):
     def get_content_in_text(function):
         def wrapper(*args, **kwargs):
             content_b64 = function(*args, **kwargs)
-            content = base64.b64decode(content_b64.content)
-            content = content.decode()
-            return content
+            if content_b64:
+                content = base64.b64decode(content_b64.content)
+                content = content.decode()
+                return content
+            return
 
         return wrapper
 
