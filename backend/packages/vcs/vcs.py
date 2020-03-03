@@ -74,6 +74,28 @@ class VCSInterface(metaclass=ABCMeta):
     def get_branches():
         """An inteface method to get branches"""
 
+    @abstractmethod
+    def get_last_commit(branch):
+        """Get last commit's hash on a branch in a repository.
+
+        :param repo: full repo name
+        :type repo: str
+        :param repo: branch name
+        :type repo: str
+        :return type: tuple
+        """
+
+    @abstractmethod
+    def get_committer(commit):
+        """Get the committer for commit's hash in a repository.
+
+        :param repo: full repo name
+        :type repo: str
+        :param repo: branch name
+        :type repo: str
+        :return type: tuple
+        """
+
 
 class Github(VCSInterface):
     """Github Class which implements VCSInterface"""
@@ -106,6 +128,18 @@ class Github(VCSInterface):
     def get_branches(self):
         branches = self.repo_obj.get_branches()
         return branches
+
+    @VCSInterface.call_trial
+    def get_last_commit(self, branch):
+        branch_obj = self.repo_obj.get_branch(branch)
+        last_commit = branch_obj.commit.sha
+        return last_commit
+
+    @VCSInterface.call_trial
+    def get_committer(self, commit):
+        commit_obj = self.repo_obj.get_commit(commit)
+        committer = commit_obj.author.login
+        return committer
 
 
 class Gitea(VCSInterface):
@@ -147,6 +181,17 @@ class Gitea(VCSInterface):
         branches = self.repo_obj.repo_list_branches(self.owner, self.repo_name)
         return branches
 
+    @VCSInterface.call_trial
+    def get_last_commit(self, branch):
+        branch_obj = self.repo_obj.repo_get_branch(self.owner, self.repo_name, branch)
+        last_commit = branch_obj.commit.id
+        return last_commit
+
+    @VCSInterface.call_trial
+    def get_committer(self, commit):
+        commit_obj = self.repo_obj.repo_get_single_commit(self.owner, self.repo_name, commit)
+        committer = commit_obj.author.login
+        return committer
 
 class VCSFactory:
     """The Version Control System Factory Class"""

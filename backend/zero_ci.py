@@ -53,6 +53,7 @@ def trigger(repo, branch, commit, committer):
         return job
     return None
 
+
 @app.route("/git_trigger", methods=["POST"])
 def git_trigger():
     """Trigger the test when a post request is sent from a repo's webhook.
@@ -79,16 +80,19 @@ def git_trigger():
 
 @app.route("/run_trigger", methods=["POST"])
 def run_trigger():
-    # this api should be protected by user 
+    # this api should be protected by user
     if request.headers.get("Content-Type") == "application/json":
         repo = request.json.get("repo")
         branch = request.json.get("branch")
         VCSObject = VCSFactory().get_cvn(repo=repo)
-        last_commit, committer = VCSObject.get_last_commit(repo=repo, branch=branch)
+        last_commit = VCSObject.get_last_commit(branch=branch)
+        committer = VCSObject.get_committer(commit=last_commit)
         where = f'repo="{repo}" and branch="{branch}" and [commit]="{last_commit}" and status="pending"'
-        run = RepoRun.get_objects(fields=["status"],where=where)
+        run = RepoRun.get_objects(fields=["status"], where=where)
         if run:
-            return Response(f"There is a running job from this commit {last_commit}, please try again after this run finishes", 503)
+            return Response(
+                f"There is a running job from this commit {last_commit}, please try again after this run finishes", 503
+            )
         if last_commit:
             job = trigger(repo=repo, branch=branch, commit=last_commit, committer=committer)
         else:
