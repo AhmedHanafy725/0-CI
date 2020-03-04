@@ -15,7 +15,7 @@ utils = Utils()
 
 
 class Actions(Configs):
-    _REPOS_DIR = "/opt/code/cvs_repos"
+    _REPOS_DIR = "/opt/code/vcs_repos"
 
     def test_run(self, node_ip, port, id, test_script, db_run, timeout):
         """Runs tests with specific commit and store the result in DB.
