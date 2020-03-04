@@ -13,7 +13,7 @@ from utils.config import Configs
 from packages.vcs.vcs import VCSFactory
 from worker import conn
 from actions.actions import Actions
-from bcdb.bcdb import RepoRun, ProjectRun
+from bcdb.bcdb import RepoRun, ProjectRun, RunConfig
 
 configs = Configs()
 actions = Actions()
@@ -197,6 +197,30 @@ def branch(repo):
     branches = {"exist": exist_branches, "deleted": deleted_branches}
     result = json.dumps(branches)
     return result
+
+
+@app.route("/api/run_config/<path:name>", methods=["GET", "POST", "DELETE"])
+def run_config(name):
+    run_config = RunConfig.find(name=name)
+    if run_config and len(run_config) == 1:
+        run_config = run_config[0]
+    else:
+        run_config = RunConfig(name=name)
+    if request.method == "POST":
+        key = request.json["key"]
+        value = request.json["value"]
+        run_config.env[key] = value
+        run_config.save()
+        return Response("Added", 201)
+    elif request.method == "DELETE":
+        key = request.json["key"]
+        run_config.env.pop(key)
+        run_config.save()
+        return Response("Deleted", 201)
+    else:
+        env = json.dumps(run_config.env)
+        return env
+    return abort(404)
 
 
 @app.route("/api/projects/<project>")

@@ -194,7 +194,7 @@ class VMS(Utils):
             return self.vm_uuid, self.node_ip, self.port
         return None, None, None
 
-    def install_app(self, node_ip, port, install_script):
+    def install_app(self, node_ip, port, install_script, env={}):
         """Install application to be tested.
 
         :param node_ip: mahcine's ip
@@ -206,10 +206,10 @@ class VMS(Utils):
         """
         prepare_script = self.prepare_script()
         script = prepare_script + install_script
-        response = self.execute_command(cmd=script, ip=node_ip, port=port, environment=self.environment)
+        response = self.execute_command(cmd=script, ip=node_ip, port=port, environment=env)
         return response
 
-    def run_test(self, run_cmd, node_ip, port, timeout):
+    def run_test(self, run_cmd, node_ip, port, timeout, env={}):
         """Run test command and get the result as xml file if the running command is following junit otherwise result will be log.
 
         :param run_cmd: test command to be run.
@@ -222,7 +222,7 @@ class VMS(Utils):
         :type timeout: int
         :return: path to xml file if exist and subprocess object containing (returncode, stdout, stderr)
         """
-        response = self.execute_command(run_cmd, ip=node_ip, port=port, timeout=timeout, environment=self.environment)
+        response = self.execute_command(run_cmd, ip=node_ip, port=port, timeout=timeout, environment=env)
         file_path = "{}/{}.xml".format(self.result_path, self.random_string())
         remote_path = "/test.xml"
         copied = self.get_remote_file(ip=node_ip, port=port, remote_path=remote_path, local_path=file_path)

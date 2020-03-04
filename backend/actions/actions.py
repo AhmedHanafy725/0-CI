@@ -6,7 +6,7 @@ from utils.config import Configs
 from utils.reporter import Reporter
 from utils.utils import Utils
 from packages.vcs.vcs import VCSFactory
-from bcdb.bcdb import RepoRun, ProjectRun
+from bcdb.bcdb import RepoRun, ProjectRun, RunConfig
 from vm.vms import VMS
 
 vms = VMS()
@@ -26,13 +26,14 @@ class Actions(Configs):
         :type id: str
         """
         repo_run = db_run(id=id)
+        env = self._get_run_env(id=id, db_run=db_run)
         status = "success"
         if test_script:
             for i, line in enumerate(test_script):
                 status = "success"
                 if line.startswith("#"):
                     continue
-                response, file_path = vms.run_test(run_cmd=line, node_ip=node_ip, port=port, timeout=timeout)
+                response, file_path = vms.run_test(run_cmd=line, node_ip=node_ip, port=port, timeout=timeout, env=env)
                 if file_path:
                     if response.returncode:
                         status = "failure"
@@ -71,10 +72,11 @@ class Actions(Configs):
         :type id: str
         """
         repo_run = db_run(id=id)
+        env = self._get_run_env(id=id, db_run=db_run)
         link = f"{self.domain}/repos/{repo_run.repo.replace('/', '%2F')}/{repo_run.branch}/{str(repo_run.id)}"
         # link = f"{self.domain}/get_status?id={str(repo_run.id)}&n=1"
         line = "black {}/{} -l 120 -t py37 --diff --exclude 'templates'".format(self._REPOS_DIR, repo_run.repo)
-        response, file = vms.run_test(run_cmd=line, node_ip=node_ip, port=port, timeout=timeout)
+        response, _ = vms.run_test(run_cmd=line, node_ip=node_ip, port=port, timeout=timeout, env=env)
         if response.returncode:
             status = "failure"
         elif "reformatted" in response.stderr:
@@ -91,11 +93,12 @@ class Actions(Configs):
 
     def build(self, install_script, id, db_run, prequisties=""):
         if install_script:
+            repo_run = db_run(id=id)
+            env = self._get_run_env(id=id, db_run=db_run)
             uuid, node_ip, port = vms.deploy_vm(prequisties=prequisties)
             if uuid:
-                response = vms.install_app(node_ip=node_ip, port=port, install_script=install_script)
+                response = vms.install_app(node_ip=node_ip, port=port, install_script=install_script, env=env)
                 if response.returncode:
-                    repo_run = db_run(id=id)
                     content = "stdout:\n" + response.stdout + "\nstderr:\n" + response.stderr
                     repo_run.result.append(
                         {"type": "log", "status": "error", "name": "Installation", "content": content}
@@ -124,7 +127,7 @@ class Actions(Configs):
     def cal_status(self, id, db_run):
         """Calculates the status of whole tests ran on the BD's id.
         
-        :param id: DB id of this commit details.
+        :param id: DB id of this run details.
         :type id: str
         """
         repo_run = db_run(id=id)
@@ -134,6 +137,24 @@ class Actions(Configs):
                 status = result["status"]
         repo_run.status = status
         repo_run.save()
+
+    def _get_run_env(self, db_run, id):
+        """Get run environment variables.
+        
+        :param id: DB id of this run details.
+        :type id: str
+        """
+        run = db_run(id=id)
+        if isinstance(run, RepoRun):
+            name = run.repo
+        else:
+            name = run.name
+        run_config = RunConfig.find(name=name)
+        if run_config and len(run_config) == 1:
+            run_config = run_config[0]
+        else:
+            run_config = RunConfig(name=name)
+        return run_config.env
 
     def _install_test_scripts(self, id):
         """Read 0-CI yaml script from the repo home directory and divide it to (prequisties, install, test) scripts.

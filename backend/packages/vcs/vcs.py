@@ -193,6 +193,7 @@ class Gitea(VCSInterface):
         committer = commit_obj.author.login
         return committer
 
+
 class VCSFactory:
     """The Version Control System Factory Class"""
 
