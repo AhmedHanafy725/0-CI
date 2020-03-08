@@ -9,13 +9,11 @@ from flask_cors import CORS
 from rq_scheduler import Scheduler
 from redis import Redis
 
-from utils.config import Configs
 from packages.vcs.vcs import VCSFactory
 from worker import conn
 from actions.actions import Actions
-from bcdb.bcdb import RepoRun, ProjectRun, RunConfig
+from bcdb.bcdb import RepoRun, ProjectRun, RunConfig, InitialConfig
 
-configs = Configs()
 actions = Actions()
 
 app = Flask(__name__, static_folder="../dist/static", template_folder="../dist")
@@ -36,6 +34,7 @@ def set_response_headers(response):
 
 def trigger(repo="", branch="", commit="", committer="", id=None):
     status = "pending"
+    configs = InitialConfig()
     if id:
         repo_run = RepoRun(id=id)
         repo_run.status = status
@@ -61,10 +60,54 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
     return None
 
 
+def is_configured():
+    initial_config = InitialConfig()
+    return initial_config.configured
+
+
+@app.route("/initial_config", methods=["GET", "POST"])
+def initial_config():
+    """Initial configuration for the ci before start working.
+    """
+    initial_config = InitialConfig()
+    confs = ["iyo_id", "iyo_secret", "domain", "chat_id", "bot_token", "vcs_host", "vcs_token", "repos"]
+    conf_dict = {}
+    if request.method == "GET":
+        for conf in confs:
+            conf_dict[conf] = getattr(initial_config, conf)
+            conf_json = json.dumps(conf_dict)
+        return conf_json
+    if request.headers.get("Content-Type") == "application/json":
+        for conf in confs:
+            value = request.json.get(conf)
+            if not value:
+                return Response(f"{conf} should have a value", 400)
+            if conf is "repos" and not isinstance(value, list):
+                return Response("repos should be str or list", 400)
+            if conf is not "repos" and not isinstance(value, str):
+                return Response(f"{conf} should be str", 400)
+
+        initial_config.iyo_id = request.json["iyo_id"]
+        initial_config.iyo_secret = request.json["iyo_secret"]
+        initial_config.domain = request.json["domain"]
+        initial_config.chat_id = request.json["chat_id"]
+        initial_config.bot_token = request.json["bot_token"]
+        initial_config.vcs_host = request.json["vcs_host"]
+        initial_config.vcs_token = request.json["vcs_token"]
+        if isinstance(request.json["repos"], list):
+            initial_config.repos = request.json["repos"]
+        initial_config.configured = True
+        initial_config.save()
+        return Response("Configured", 200)
+
+
 @app.route("/git_trigger", methods=["POST"])
 def git_trigger():
     """Trigger the test when a post request is sent from a repo's webhook.
     """
+    configs = InitialConfig()
+    if not is_configured():
+        return redirect("/initial_config")
     if request.headers.get("Content-Type") == "application/json":
         # push case
         reference = request.json.get("ref")
@@ -88,16 +131,21 @@ def git_trigger():
 @app.route("/run_trigger", methods=["POST"])
 def run_trigger():
     # this api should be protected by user
+    if not is_configured():
+        return redirect("/initial_config")
+
     if request.headers.get("Content-Type") == "application/json":
         id = request.json.get("id")
         if id:
             where = f'id="{id}" and status="pending"'
             run = RepoRun.get_objects(fields=["status"], where=where)
             if run:
-                return Response(f"There is a running job for this id {id}, please try again after this run finishes", 503)
+                return Response(
+                    f"There is a running job for this id {id}, please try again after this run finishes", 503
+                )
             job = trigger(id=id)
             return Response(job.get_id(), 200)
-        
+
         repo = request.json.get("repo")
         branch = request.json.get("branch")
         VCSObject = VCSFactory().get_cvn(repo=repo)
@@ -120,6 +168,9 @@ def run_trigger():
 
 @app.route("/api/add_project", methods=["POST"])
 def add_project():
+    configs = InitialConfig()
+    if not is_configured():
+        return redirect("/initial_config")
     if request.headers.get("Content-Type") == "application/json":
         project_name = request.json.get("project_name")
         prequisties = request.json.get("prequisties")
@@ -163,6 +214,9 @@ def add_project():
 
 @app.route("/api/remove_project", methods=["DELETE"])
 def remove_project():
+    configs = InitialConfig()
+    if not is_configured():
+        return redirect("/initial_config")
     if request.headers.get("Content-Type") == "application/json":
         project_name = request.json.get("project_name")
         authentication = request.json.get("authentication")
@@ -177,6 +231,8 @@ def remove_project():
 def home():
     """Return repos and projects which are running on the server.
     """
+    if not is_configured():
+        return redirect("/initial_config")
     result = {"repos": [], "projects": []}
     result["repos"] = RepoRun.distinct("repo")
     result["projects"] = ProjectRun.distinct("name")
@@ -192,6 +248,8 @@ def branch(repo):
     :param branch: the branch's name in the repo
     :param id: DB id of test details.
     """
+    if not is_configured():
+        return redirect("/initial_config")
     branch = request.args.get("branch")
     id = request.args.get("id")
 
@@ -217,6 +275,8 @@ def branch(repo):
 
 @app.route("/api/run_config/<path:name>", methods=["GET", "POST", "DELETE"])
 def run_config(name):
+    if not is_configured():
+        return redirect("/initial_config")
     run_config = RunConfig.find(name=name)
     if run_config and len(run_config) == 1:
         run_config = run_config[0]
@@ -246,6 +306,8 @@ def project(project):
     :param project: project's name
     :param id: DB id of test details.
     """
+    if not is_configured():
+        return redirect("/initial_config")
     id = request.args.get("id")
     if id:
         project_run = ProjectRun(id=id)
@@ -263,6 +325,9 @@ def project(project):
 def status():
     """Returns repo's branch or project status for your version control system.
     """
+    configs = InitialConfig()
+    if not is_configured():
+        return redirect("/initial_config")
     project = request.args.get("project")
     repo = request.args.get("repo")
     branch = request.args.get("branch")
@@ -303,6 +368,8 @@ def status():
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def catch_all(path):
+    if not is_configured():
+        return redirect("/initial_config")
     return render_template("index.html")
 
 

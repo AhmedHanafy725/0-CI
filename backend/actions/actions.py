@@ -2,19 +2,19 @@ import os
 from datetime import datetime
 import yaml
 
-from utils.config import Configs
 from utils.reporter import Reporter
 from utils.utils import Utils
 from packages.vcs.vcs import VCSFactory
-from bcdb.bcdb import RepoRun, ProjectRun, RunConfig
+from bcdb.bcdb import RepoRun, ProjectRun, RunConfig, InitialConfig
 from vm.vms import VMS
 
 vms = VMS()
 reporter = Reporter()
 utils = Utils()
+configs = InitialConfig()
 
 
-class Actions(Configs):
+class Actions:
     _REPOS_DIR = "/opt/code/vcs_repos"
 
     def test_run(self, node_ip, port, id, test_script, db_run, timeout):
@@ -73,8 +73,8 @@ class Actions(Configs):
         """
         repo_run = db_run(id=id)
         env = self._get_run_env(id=id, db_run=db_run)
-        link = f"{self.domain}/repos/{repo_run.repo.replace('/', '%2F')}/{repo_run.branch}/{str(repo_run.id)}"
-        # link = f"{self.domain}/get_status?id={str(repo_run.id)}&n=1"
+        link = f"{configs.domain}/repos/{repo_run.repo.replace('/', '%2F')}/{repo_run.branch}/{str(repo_run.id)}"
+        # link = f"{configs.domain}/get_status?id={str(repo_run.id)}&n=1"
         line = "black {}/{} -l 120 -t py37 --diff --exclude 'templates'".format(self._REPOS_DIR, repo_run.repo)
         response, _ = vms.run_test(run_cmd=line, node_ip=node_ip, port=port, timeout=timeout, env=env)
         if response.returncode:
@@ -167,7 +167,7 @@ class Actions(Configs):
         org_repo_name = repo_run.repo.split("/")[0]
         clone = """mkdir -p {repos_dir}/{org_repo_name} &&
         cd {repos_dir}/{org_repo_name} &&
-        git clone {cvs_host}/{repo}.git --branch {branch} &&
+        git clone {vcs_host}/{repo}.git --branch {branch} &&
         cd {repos_dir}/{repo} &&
         git reset --hard {commit} &&
         """.format(
@@ -176,7 +176,7 @@ class Actions(Configs):
             branch=repo_run.branch,
             commit=repo_run.commit,
             org_repo_name=org_repo_name,
-            cvs_host=self.vcs_host,
+            vcs_host=configs.vcs_host,
         ).replace(
             "\n", " "
         )
@@ -227,5 +227,5 @@ class Actions(Configs):
                 project_run = ProjectRun(id=id)
 
             vms.destroy_vm(uuid)
-        link = f"{self.domain}/projects/{project_run.name.replace(' ', '%20')}/{str(project_run.id)}"
+        link = f"{configs.domain}/projects/{project_run.name.replace(' ', '%20')}/{str(project_run.id)}"
         reporter.report(id=id, db_run=ProjectRun, project_name=project_name, link=link)
