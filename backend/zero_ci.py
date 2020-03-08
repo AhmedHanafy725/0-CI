@@ -34,21 +34,28 @@ def set_response_headers(response):
     return response
 
 
-def trigger(repo, branch, commit, committer):
-    if repo in configs.repos:
-        status = "pending"
-        repo_run = RepoRun(
-            timestamp=datetime.now().timestamp(),
-            status=status,
-            repo=repo,
-            branch=branch,
-            commit=commit,
-            committer=committer,
-        )
+def trigger(repo="", branch="", commit="", committer="", id=None):
+    status = "pending"
+    if id:
+        repo_run = RepoRun(id=id)
+        repo_run.status = status
+        repo_run.result = []
         repo_run.save()
-        id = str(repo_run.id)
-        VCSObject = VCSFactory().get_cvn(repo=repo)
-        VCSObject.status_send(status=status, link=configs.domain, commit=commit)
+    else:
+        if repo in configs.repos:
+            repo_run = RepoRun(
+                timestamp=datetime.now().timestamp(),
+                status=status,
+                repo=repo,
+                branch=branch,
+                commit=commit,
+                committer=committer,
+            )
+            repo_run.save()
+            id = str(repo_run.id)
+    if id:
+        VCSObject = VCSFactory().get_cvn(repo=repo_run.repo)
+        VCSObject.status_send(status=status, link=configs.domain, commit=repo_run.commit)
         job = q.enqueue_call(func=actions.build_and_test, args=(id,), result_ttl=5000, timeout=20000)
         return job
     return None
@@ -82,6 +89,15 @@ def git_trigger():
 def run_trigger():
     # this api should be protected by user
     if request.headers.get("Content-Type") == "application/json":
+        id = request.json.get("id")
+        if id:
+            where = f'id="{id}" and status="pending"'
+            run = RepoRun.get_objects(fields=["status"], where=where)
+            if run:
+                return Response(f"There is a running job for this id {id}, please try again after this run finishes", 503)
+            job = trigger(id=id)
+            return Response(job.get_id(), 200)
+        
         repo = request.json.get("repo")
         branch = request.json.get("branch")
         VCSObject = VCSFactory().get_cvn(repo=repo)
