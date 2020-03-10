@@ -1,13 +1,13 @@
 from packages.telegram.telegram import Telegram
 from packages.vcs.vcs import VCSFactory
-from .config import Configs
+from bcdb.bcdb import InitialConfig
 
 telegram = Telegram()
 SUCCESS = "success"
 FAILURE = "failure"
 
 
-class Reporter(Configs):
+class Reporter(InitialConfig):
     def report(self, id, db_run, link=None, project_name=None):
         """Report the result to the commit status and Telegram chat.
 

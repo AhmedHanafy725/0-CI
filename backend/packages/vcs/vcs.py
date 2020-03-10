@@ -1,11 +1,11 @@
 from abc import ABCMeta, abstractmethod
 import base64
 import time
-from utils.config import Configs
+from bcdb.bcdb import InitialConfig
 from github import Github as GH
 import giteapy
 
-c = Configs()
+c = InitialConfig()
 
 
 class VCSInterface(metaclass=ABCMeta):
@@ -74,6 +74,28 @@ class VCSInterface(metaclass=ABCMeta):
     def get_branches():
         """An inteface method to get branches"""
 
+    @abstractmethod
+    def get_last_commit(branch):
+        """Get last commit's hash on a branch in a repository.
+
+        :param repo: full repo name
+        :type repo: str
+        :param repo: branch name
+        :type repo: str
+        :return type: tuple
+        """
+
+    @abstractmethod
+    def get_committer(commit):
+        """Get the committer for commit's hash in a repository.
+
+        :param repo: full repo name
+        :type repo: str
+        :param repo: branch name
+        :type repo: str
+        :return type: tuple
+        """
+
 
 class Github(VCSInterface):
     """Github Class which implements VCSInterface"""
@@ -83,9 +105,10 @@ class Github(VCSInterface):
         :param repo: full repo name
         :type repo: str
         """
-        self.repo = repo
-        self.github_cl = GH(c.vcs_token)
-        self.repo_obj = self.github_cl.get_repo(self.repo)
+        if c.configured:
+            self.repo = repo
+            self.github_cl = GH(c.vcs_token)
+            self.repo_obj = self.github_cl.get_repo(self.repo)
 
     @VCSInterface.call_trial
     def status_send(
@@ -107,6 +130,18 @@ class Github(VCSInterface):
         branches = self.repo_obj.get_branches()
         return branches
 
+    @VCSInterface.call_trial
+    def get_last_commit(self, branch):
+        branch_obj = self.repo_obj.get_branch(branch)
+        last_commit = branch_obj.commit.sha
+        return last_commit
+
+    @VCSInterface.call_trial
+    def get_committer(self, commit):
+        commit_obj = self.repo_obj.get_commit(commit)
+        committer = commit_obj.author.login
+        return committer
+
 
 class Gitea(VCSInterface):
     """Gitea Class which implements VCSInterface"""
@@ -123,10 +158,11 @@ class Gitea(VCSInterface):
             configuration.api_key["token"] = c.vcs_token
             return giteapy.api_client.ApiClient(configuration)
 
-        self.repo = repo
-        self.owner = repo.split("/")[0]  # org name
-        self.repo_name = self.repo.split("/")[-1]
-        self.repo_obj = giteapy.RepositoryApi(_get_gitea_cl())
+        if c.configured:
+            self.repo = repo
+            self.owner = repo.split("/")[0]  # org name
+            self.repo_name = self.repo.split("/")[-1]
+            self.repo_obj = giteapy.RepositoryApi(_get_gitea_cl())
 
     @VCSInterface.call_trial
     def status_send(
@@ -146,6 +182,18 @@ class Gitea(VCSInterface):
     def get_branches(self):
         branches = self.repo_obj.repo_list_branches(self.owner, self.repo_name)
         return branches
+
+    @VCSInterface.call_trial
+    def get_last_commit(self, branch):
+        branch_obj = self.repo_obj.repo_get_branch(self.owner, self.repo_name, branch)
+        last_commit = branch_obj.commit.id
+        return last_commit
+
+    @VCSInterface.call_trial
+    def get_committer(self, commit):
+        commit_obj = self.repo_obj.repo_get_single_commit(self.owner, self.repo_name, commit)
+        committer = commit_obj.author.login
+        return committer
 
 
 class VCSFactory:

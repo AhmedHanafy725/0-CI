@@ -46,7 +46,7 @@ export default {
   },
   methods: {
     getBranchData() {
-      const path = `https://zeroci.grid.tf/api/repos/${this.repo}?branch=development`;
+      const path = `/api/repos/${this.repo}?branch=development`;
       axios
         .get(path)
         .then(response => {

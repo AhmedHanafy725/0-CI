@@ -2,16 +2,16 @@ import time
 
 from telegram import Bot, ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
 
-
-from utils.config import Configs
+from bcdb.bcdb import InitialConfig
 
 RETRIES = 5
 
 
-class Telegram(Configs):
+class Telegram(InitialConfig):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.telegram_cl = Bot(self.bot_token)
+        if self.configured:
+            self.telegram_cl = Bot(self.bot_token)
 
     def send_msg(self, msg, link, repo=None, branch=None, commit=None, committer=None):
         """Send Telegram message using Telegram bot.

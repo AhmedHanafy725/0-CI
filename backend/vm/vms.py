@@ -43,16 +43,9 @@ class VMS(Utils):
                 ips.append(ip)
         except:
             ips = [
-                "10.102.141.236",
-                "10.102.227.115",
-                "10.102.234.229",
-                "10.102.57.140",
-                "10.102.191.143",
-                "10.102.167.219",
-                "10.102.71.171",
-                "10.102.96.237",
-                "10.102.115.21",
-                "10.102.113.188",
+                "10.102.18.170",
+                "110.102.52.108",
+                "10.102.143.133",
             ]
         return ips
 
@@ -172,16 +165,15 @@ class VMS(Utils):
             self.ports = {self.port: 22}
             try:
                 self.prepare(prequisties=prequisties)
-                self.vm_uuid = self.node.client.kvm.create(
-                    name=self.vm_name,
-                    flist=self.flist,
+                self.vm_uuid = self.node.client.container.create(
+                    root_url=self.flist,
                     port=self.ports,
-                    memory=self.memory,
-                    cpu=self.cpu,
                     nics=[{"type": "default"}],
                     config={"/root/.ssh/authorized_keys": self.ssh_key},
-                    media=self.media,
-                )
+                ).get()
+                cl = self.node.client.container.client(self.vm_uuid)
+                cl.bash("service ssh start").get()
+                cl.filesystem.chmod("/etc/ssh", 0o700, True)
                 break
             except:
                 if self.media:
@@ -194,7 +186,7 @@ class VMS(Utils):
             return self.vm_uuid, self.node_ip, self.port
         return None, None, None
 
-    def install_app(self, node_ip, port, install_script):
+    def install_app(self, node_ip, port, install_script, env={}):
         """Install application to be tested.
 
         :param node_ip: mahcine's ip
@@ -206,10 +198,10 @@ class VMS(Utils):
         """
         prepare_script = self.prepare_script()
         script = prepare_script + install_script
-        response = self.execute_command(cmd=script, ip=node_ip, port=port, environment=self.environment)
+        response = self.execute_command(cmd=script, ip=node_ip, port=port, environment=env)
         return response
 
-    def run_test(self, run_cmd, node_ip, port, timeout):
+    def run_test(self, run_cmd, node_ip, port, timeout, env={}):
         """Run test command and get the result as xml file if the running command is following junit otherwise result will be log.
 
         :param run_cmd: test command to be run.
@@ -222,7 +214,7 @@ class VMS(Utils):
         :type timeout: int
         :return: path to xml file if exist and subprocess object containing (returncode, stdout, stderr)
         """
-        response = self.execute_command(run_cmd, ip=node_ip, port=port, timeout=timeout, environment=self.environment)
+        response = self.execute_command(run_cmd, ip=node_ip, port=port, timeout=timeout, environment=env)
         file_path = "{}/{}.xml".format(self.result_path, self.random_string())
         remote_path = "/test.xml"
         copied = self.get_remote_file(ip=node_ip, port=port, remote_path=remote_path, local_path=file_path)
@@ -241,7 +233,7 @@ class VMS(Utils):
         :type uuid: str
         """
         if self.node:
-            self.node.client.kvm.destroy(uuid)
+            self.node.client.container.terminate(int(uuid))
         if self.media:
             self.node.client.bash("rm -rf {}".format(self.disk_path)).get()
 
@@ -251,6 +243,4 @@ class VMS(Utils):
         apt-get install -y git python3.6 python3-pip software-properties-common &&
         apt-get install -y --reinstall python3-apt &&
         pip3 install black==19.10b0 &&
-        wget http://archive.ubuntu.com/ubuntu/pool/main/libs/libseccomp/libseccomp2_2.4.1-0ubuntu0.18.04.2_amd64.deb -O libseccomp.deb &&
-        dpkg -i libseccomp.deb &&
         """

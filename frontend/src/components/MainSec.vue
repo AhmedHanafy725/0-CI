@@ -71,7 +71,7 @@ export default {
     },
     getPro() {
       this.loading = true;
-      const path = `https://zeroci.grid.tf/api/projects/${this.name}`;
+      const path = `/api/projects/${this.name}`;
       axios
         .get(path)
         .then(response => {
