@@ -43,16 +43,9 @@ class VMS(Utils):
                 ips.append(ip)
         except:
             ips = [
-                "10.102.141.236",
-                "10.102.227.115",
-                "10.102.234.229",
-                "10.102.57.140",
-                "10.102.191.143",
-                "10.102.167.219",
-                "10.102.71.171",
-                "10.102.96.237",
-                "10.102.115.21",
-                "10.102.113.188",
+                "10.102.18.170",
+                "110.102.52.108",
+                "10.102.143.133",
             ]
         return ips
 
@@ -172,16 +165,15 @@ class VMS(Utils):
             self.ports = {self.port: 22}
             try:
                 self.prepare(prequisties=prequisties)
-                self.vm_uuid = self.node.client.kvm.create(
-                    name=self.vm_name,
-                    flist=self.flist,
+                self.vm_uuid = self.node.client.container.create(
+                    root_url=self.flist,
                     port=self.ports,
-                    memory=self.memory,
-                    cpu=self.cpu,
                     nics=[{"type": "default"}],
                     config={"/root/.ssh/authorized_keys": self.ssh_key},
-                    media=self.media,
-                )
+                ).get()
+                cl = self.node.client.container.client(self.vm_uuid)
+                cl.bash("service ssh start").get()
+                cl.filesystem.chmod("/etc/ssh", 0o700, True)
                 break
             except:
                 if self.media:
@@ -241,7 +233,7 @@ class VMS(Utils):
         :type uuid: str
         """
         if self.node:
-            self.node.client.kvm.destroy(uuid)
+            self.node.client.container.terminate(int(uuid))
         if self.media:
             self.node.client.bash("rm -rf {}".format(self.disk_path)).get()
 
@@ -251,6 +243,4 @@ class VMS(Utils):
         apt-get install -y git python3.6 python3-pip software-properties-common &&
         apt-get install -y --reinstall python3-apt &&
         pip3 install black==19.10b0 &&
-        wget http://archive.ubuntu.com/ubuntu/pool/main/libs/libseccomp/libseccomp2_2.4.1-0ubuntu0.18.04.2_amd64.deb -O libseccomp.deb &&
-        dpkg -i libseccomp.deb &&
         """
