@@ -224,6 +224,8 @@ class InitialConfig(Base):
     _bcdb = j.data.bcdb.get("zeroci")
     _schema_text = """@url = zeroci.initial_config
     configured = False (B)
+    admins = {"admins": []} (dict)
+    users = {"users": []} (dict)
     iyo_id = (S)
     iyo_secret = (S)
     domain = (S)
@@ -250,6 +252,22 @@ class InitialConfig(Base):
     @configured.setter
     def configured(self, configured):
         self._model_obj.configured = configured
+
+    @property
+    def admins(self):
+        return self._model_obj.admins["admins"]
+
+    @admins.setter
+    def admins(self, admins):
+        self._model_obj.admins["admins"] = admins
+
+    @property
+    def users(self):
+        return self._model_obj.users["users"]
+
+    @users.setter
+    def users(self, users):
+        self._model_obj.users["users"] = users
 
     @property
     def iyo_id(self):
@@ -318,10 +336,6 @@ class InitialConfig(Base):
     @property
     def vcs_type(self):
         return self._get_vcs_type(self.vcs_host)
-
-    @classmethod
-    def find(cls, **kwargs):
-        return cls._model.find(**kwargs)
 
     @staticmethod
     def _get_vcs_type(vcs_host):

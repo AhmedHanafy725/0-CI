@@ -2,10 +2,11 @@ from datetime import datetime
 import os
 import json
 
-from flask import Flask, request, send_file, render_template, abort, Response, redirect
+from truckpad.bottle.cors import enable_cors
+import bottle
+from bottle import Bottle, request, abort, Response, redirect, template, run, static_file, get, route
 from rq import Queue
 from rq.job import Job
-from flask_cors import CORS
 from rq_scheduler import Scheduler
 from redis import Redis
 
@@ -13,23 +14,30 @@ from packages.vcs.vcs import VCSFactory
 from worker import conn
 from actions.actions import Actions
 from bcdb.bcdb import RepoRun, ProjectRun, RunConfig, InitialConfig
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+from beaker.middleware import SessionMiddleware
+from Jumpscale import j
+
 
 actions = Actions()
-
-app = Flask(__name__, static_folder="../dist/static", template_folder="../dist")
-
-CORS(app, resources={r"/*": {"origins": "*"}})
-
+app = Bottle()
+env = Environment(loader=FileSystemLoader("../dist"), autoescape=select_autoescape(["html", "xml"]))
 q = Queue(connection=conn)
 scheduler = Scheduler(connection=Redis())
 
 
-@app.after_request
-def set_response_headers(response):
-    response.headers["Cache-Control"] = "no-cache"
-    response.headers["Pragma"] = "no-cache"
-    response.headers["Expires"] = "0"
-    return response
+# @app.after_request
+# def set_response_headers(response):
+#     response.headers["Cache-Control"] = "no-cache"
+#     response.headers["Pragma"] = "no-cache"
+#     response.headers["Expires"] = "0"
+#     return response
+
+
+client = j.clients.oauth_proxy.get("main")
+oauth_app = j.tools.oauth_proxy.get(app, client, "/auth/login")
+bot_app = j.tools.threebotlogin_proxy.get(app)
+PROVIDERS = list(client.providers_list())
 
 
 def trigger(repo="", branch="", commit="", committer="", id=None):
@@ -65,14 +73,69 @@ def is_configured():
     return initial_config.configured
 
 
-@app.route("/initial_config", methods=["GET", "POST"])
+@app.route("/auth/login")
+def login():
+    provider = request.query.get("provider")
+
+    if provider:
+        if provider == "3bot":
+            next_url = request.query.get("next_url")
+            if next_url:
+                bot_app.session["next_url"] = next_url
+            return bot_app.login(request.headers["HOST"], "/auth/3bot_callback")
+
+        redirect_url = f"https://{request.headers['HOST']}/auth/oauth_callback"
+        return oauth_app.login(provider, redirect_url=redirect_url)
+
+    return env.get_template("login.html").render(providers=PROVIDERS)
+
+
+@app.route("/auth/3bot_callback")
+def threebot_callback():
+    bot_app.callback()
+
+
+@app.route("/auth/oauth_callback")
+def oauth_callback():
+    user_info = oauth_app.callback()
+    oauth_app.session["email"] = user_info["email"]
+    return redirect(oauth_app.next_url)
+
+
+@app.route("/auth/logout")
+def logout():
+    session = request.environ.get("beaker.session", {})
+    try:
+        session.invalidate()
+    except AttributeError:
+        pass
+
+    redirect(request.query.get("next_url", "/"))
+
+
+@app.route("/auth/authenticated")
+def is_authenticated():
+    session = request.environ.get("beaker.session", {})
+    if session.get("authorized"):
+        return
+    return abort(401)
+
+
+@enable_cors
+@app.route("/initial_config", method=["GET", "POST"])
+@oauth_app.login_required
 def initial_config():
     """Initial configuration for the ci before start working.
     """
+    # need to handle users and admins
     initial_config = InitialConfig()
+    if initial_config.admins and (not request.environ.get("beaker.session").get("username") in initial_config.admins):
+        return abort(401)
+
     confs = ["iyo_id", "iyo_secret", "domain", "chat_id", "bot_token", "vcs_host", "vcs_token", "repos"]
     conf_dict = {}
     if request.method == "GET":
+        confs.extend(["configured", "admins", "users"])
         for conf in confs:
             conf_dict[conf] = getattr(initial_config, conf)
             conf_json = json.dumps(conf_dict)
@@ -96,12 +159,15 @@ def initial_config():
         initial_config.vcs_token = request.json["vcs_token"]
         if isinstance(request.json["repos"], list):
             initial_config.repos = request.json["repos"]
+        if not initial_config.admins:
+            initial_config.admins.append(request.environ.get("beaker.session").get("username"))
         initial_config.configured = True
         initial_config.save()
         return Response("Configured", 200)
 
 
-@app.route("/git_trigger", methods=["POST"])
+@enable_cors
+@app.route("/git_trigger", method=["POST"])
 def git_trigger():
     """Trigger the test when a post request is sent from a repo's webhook.
     """
@@ -128,11 +194,16 @@ def git_trigger():
     return Response("Wrong content type", 400)
 
 
-@app.route("/run_trigger", methods=["POST"])
+@enable_cors
+@app.route("/run_trigger", method=["POST", "GET"])
+@oauth_app.login_required
 def run_trigger():
     # this api should be protected by user
     if not is_configured():
         return redirect("/initial_config")
+
+    if request.method == "GET":
+        redirect("/")
 
     if request.headers.get("Content-Type") == "application/json":
         id = request.json.get("id")
@@ -166,7 +237,9 @@ def run_trigger():
         return Response("Wrong data", 400)
 
 
-@app.route("/api/add_project", methods=["POST"])
+@enable_cors
+@app.route("/api/add_project", method=["POST"])
+@oauth_app.login_required
 def add_project():
     configs = InitialConfig()
     if not is_configured():
@@ -212,7 +285,9 @@ def add_project():
     return Response("", 404)
 
 
-@app.route("/api/remove_project", methods=["DELETE"])
+@enable_cors
+@app.route("/api/remove_project", method=["DELETE"])
+@oauth_app.login_required
 def remove_project():
     configs = InitialConfig()
     if not is_configured():
@@ -224,9 +299,10 @@ def remove_project():
             scheduler.cancel(project_name)
         else:
             return Response("Authentication failed", 401)
-        return "Removed", 200
+        return Response("Removed", 200)
 
 
+@enable_cors
 @app.route("/api/")
 def home():
     """Return repos and projects which are running on the server.
@@ -237,10 +313,11 @@ def home():
     result["repos"] = RepoRun.distinct("repo")
     result["projects"] = ProjectRun.distinct("name")
     result_json = json.dumps(result)
-    return result_json, 200
+    return result_json
 
 
-@app.route("/api/repos/<path:repo>")
+@enable_cors
+@app.route("/api/repos/<repo:path>")
 def branch(repo):
     """Returns tests ran on this repo with specific branch or test details if id is sent.
 
@@ -250,8 +327,8 @@ def branch(repo):
     """
     if not is_configured():
         return redirect("/initial_config")
-    branch = request.args.get("branch")
-    id = request.args.get("id")
+    branch = request.query.get("branch")
+    id = request.query.get("id")
 
     if id:
         repo_run = RepoRun(id=id)
@@ -273,7 +350,9 @@ def branch(repo):
     return result
 
 
+@enable_cors
 @app.route("/api/run_config/<path:name>", methods=["GET", "POST", "DELETE"])
+@oauth_app.login_required
 def run_config(name):
     if not is_configured():
         return redirect("/initial_config")
@@ -299,6 +378,7 @@ def run_config(name):
     return abort(404)
 
 
+@enable_cors
 @app.route("/api/projects/<project>")
 def project(project):
     """Returns tests ran on this project or test details if id is sent.
@@ -308,7 +388,7 @@ def project(project):
     """
     if not is_configured():
         return redirect("/initial_config")
-    id = request.args.get("id")
+    id = request.query.get("id")
     if id:
         project_run = ProjectRun(id=id)
         result = json.dumps(project_run.result)
@@ -321,6 +401,7 @@ def project(project):
     return result
 
 
+@enable_cors
 @app.route("/status")
 def status():
     """Returns repo's branch or project status for your version control system.
@@ -328,10 +409,10 @@ def status():
     configs = InitialConfig()
     if not is_configured():
         return redirect("/initial_config")
-    project = request.args.get("project")
-    repo = request.args.get("repo")
-    branch = request.args.get("branch")
-    result = request.args.get("result")  # to return the run result
+    project = request.query.get("project")
+    repo = request.query.get("repo")
+    branch = request.query.get("branch")
+    result = request.query.get("result")  # to return the run result
     fields = ["status"]
     if project:
         where = f"name='{project}' and status!='pending'"
@@ -343,9 +424,9 @@ def status():
             link = f"{configs.domain}/projects/{project}?id={str(project_run[0]['id'])}"
             return redirect(link)
         if project_run[0]["status"] == "success":
-            return send_file("svgs/build_passing.svg", mimetype="image/svg+xml")
+            return static_file("svgs/build_passing.svg", mimetype="image/svg+xml", root=".")
         else:
-            return send_file("svgs/build_failing.svg", mimetype="image/svg+xml")
+            return static_file("svgs/build_failing.svg", mimetype="image/svg+xml", root=".")
 
     elif repo:
         if not branch:
@@ -358,20 +439,29 @@ def status():
             link = f"{configs.domain}/repos/{repo.replace('/', '%2F')}/{branch}/{str(repo_run[0]['id'])}"
             return redirect(link)
         if repo_run[0]["status"] == "success":
-            return send_file("svgs/build_passing.svg", mimetype="image/svg+xml")
+            return static_file("svgs/build_passing.svg", mimetype="image/svg+xml", root=".")
         else:
-            return send_file("svgs/build_failing.svg", mimetype="image/svg+xml")
+            return static_file("svgs/build_failing.svg", mimetype="image/svg+xml", root=".")
 
     return abort(404)
 
 
-@app.route("/", defaults={"path": ""})
+@enable_cors
+@app.route("/static/<filepath:path>")
+def static(filepath):
+    return static_file(filepath, root="../dist/static")
+
+
+@enable_cors
+@app.route("/")
 @app.route("/<path:path>")
-def catch_all(path):
+def catch_all(path=""):
     if not is_configured():
         return redirect("/initial_config")
-    return render_template("index.html")
+    return static_file("index.html", root="../dist")
 
 
+session_opts = {"session.type": "file", "session.data_dir": "./data", "session.auto": True}
+app_with_session = SessionMiddleware(app, session_opts)
 if __name__ == "__main__":
-    app.run("0.0.0.0", 6010)
+    run(app=app_with_session, host="0.0.0.0", port=6010)
