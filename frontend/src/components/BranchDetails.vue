@@ -314,7 +314,7 @@ export default {
     },
     getData() {
       this.loading = true; //the loading begin
-      const path = `https://zeroci.grid.tf/api/repos/${this.repoName}?branch=${this.branch}&&id=${this.id}`;
+      const path = `/api/repos/${this.repoName}?branch=${this.branch}&&id=${this.id}`;
       axios
         .get(path)
         .then(response => {

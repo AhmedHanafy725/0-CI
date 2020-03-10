@@ -87,7 +87,7 @@ export default {
     },
     getData() {
       this.loading = true;
-      const path = `https://zeroci.grid.tf/api/repos/${this.repoName}?branch=${this.branch}`;
+      const path = `/api/repos/${this.repoName}?branch=${this.branch}`;
       axios
         .get(path)
         .then(response => {

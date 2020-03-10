@@ -41,7 +41,7 @@ export default {
   },
   methods: {
     getProjectData() {
-      const path = `https://zeroci.grid.tf/api/projects/${this.project}`;
+      const path = `/api/projects/${this.project}`;
       axios
         .get(path)
         .then(response => {

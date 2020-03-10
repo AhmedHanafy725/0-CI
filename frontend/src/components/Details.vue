@@ -312,7 +312,7 @@ export default {
     },
     getData() {
       this.loading = true;
-      const path = `https://zeroci.grid.tf/api/projects/${this.name}?id=${this.id}`;
+      const path = `/api/projects/${this.name}?id=${this.id}`;
       axios
         .get(path)
         .then(response => {

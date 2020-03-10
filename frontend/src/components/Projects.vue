@@ -25,7 +25,7 @@ export default {
       this.getData();
     },
     getData() {
-      const path = `https://zeroci.grid.tf/api/`;
+      const path = `/api/`;
       axios
         .get(path)
         .then(response => {

@@ -61,7 +61,7 @@ export default {
     },
     getBranches(name) {
       this.loading = true; //the loading begin
-      const path = `https://zeroci.grid.tf/api/repos/${this.repoName}`;
+      const path = `/api/repos/${this.repoName}`;
       axios
         .get(path)
         .then(response => {
