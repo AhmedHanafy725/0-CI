@@ -2,9 +2,8 @@ from datetime import datetime
 import os
 import json
 
-from truckpad.bottle.cors import enable_cors
 import bottle
-from bottle import Bottle, request, abort, Response, redirect, template, run, static_file, get, route
+from bottle import Bottle, request, abort, Response, redirect, run, static_file, response
 from rq import Queue
 from rq.job import Job
 from rq_scheduler import Scheduler
@@ -24,14 +23,6 @@ app = Bottle()
 env = Environment(loader=FileSystemLoader("../dist"), autoescape=select_autoescape(["html", "xml"]))
 q = Queue(connection=conn)
 scheduler = Scheduler(connection=Redis())
-
-
-# @app.after_request
-# def set_response_headers(response):
-#     response.headers["Cache-Control"] = "no-cache"
-#     response.headers["Pragma"] = "no-cache"
-#     response.headers["Expires"] = "0"
-#     return response
 
 
 client = j.clients.oauth_proxy.get("main")
@@ -71,6 +62,16 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
 def is_configured():
     initial_config = InitialConfig()
     return initial_config.configured
+
+
+@app.hook('after_request')
+def enable_cors_disable_cache():
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
 
 
 @app.route("/auth/login")
@@ -121,7 +122,6 @@ def is_authenticated():
     return abort(401)
 
 
-@enable_cors
 @app.route("/initial_config", method=["GET", "POST"])
 @oauth_app.login_required
 def initial_config():
@@ -166,7 +166,6 @@ def initial_config():
         return Response("Configured", 200)
 
 
-@enable_cors
 @app.route("/git_trigger", method=["POST"])
 def git_trigger():
     """Trigger the test when a post request is sent from a repo's webhook.
@@ -194,7 +193,6 @@ def git_trigger():
     return Response("Wrong content type", 400)
 
 
-@enable_cors
 @app.route("/run_trigger", method=["POST", "GET"])
 @oauth_app.login_required
 def run_trigger():
@@ -237,7 +235,6 @@ def run_trigger():
         return Response("Wrong data", 400)
 
 
-@enable_cors
 @app.route("/api/add_project", method=["POST"])
 @oauth_app.login_required
 def add_project():
@@ -285,7 +282,6 @@ def add_project():
     return Response("", 404)
 
 
-@enable_cors
 @app.route("/api/remove_project", method=["DELETE"])
 @oauth_app.login_required
 def remove_project():
@@ -302,7 +298,6 @@ def remove_project():
         return Response("Removed", 200)
 
 
-@enable_cors
 @app.route("/api/")
 def home():
     """Return repos and projects which are running on the server.
@@ -316,7 +311,6 @@ def home():
     return result_json
 
 
-@enable_cors
 @app.route("/api/repos/<repo:path>")
 def branch(repo):
     """Returns tests ran on this repo with specific branch or test details if id is sent.
@@ -350,8 +344,7 @@ def branch(repo):
     return result
 
 
-@enable_cors
-@app.route("/api/run_config/<path:name>", methods=["GET", "POST", "DELETE"])
+@app.route("/api/run_config/<name:path>", method=["GET", "POST", "DELETE"])
 @oauth_app.login_required
 def run_config(name):
     if not is_configured():
@@ -378,7 +371,6 @@ def run_config(name):
     return abort(404)
 
 
-@enable_cors
 @app.route("/api/projects/<project>")
 def project(project):
     """Returns tests ran on this project or test details if id is sent.
@@ -401,7 +393,6 @@ def project(project):
     return result
 
 
-@enable_cors
 @app.route("/status")
 def status():
     """Returns repo's branch or project status for your version control system.
@@ -446,13 +437,11 @@ def status():
     return abort(404)
 
 
-@enable_cors
 @app.route("/static/<filepath:path>")
 def static(filepath):
     return static_file(filepath, root="../dist/static")
 
 
-@enable_cors
 @app.route("/")
 @app.route("/<path:path>")
 def catch_all(path=""):
