@@ -166,6 +166,40 @@ def initial_config():
         return Response("Configured", 200)
 
 
+@app.route("/api/users", method=["GET", "POST", "DELETE"])
+@oauth_app.login_required
+def users():
+    user_login = request.environ.get("beaker.session").get("username")
+    initial_config = InitialConfig()
+    if not user_login in initial_config.admins:
+        return abort(401)
+    
+    if request.method == "GET":
+        all_users = {"admins": initial_config.admins, "users": initial_config.users}
+        all_json = json.dumps(all_users)
+        return all_json
+    if not request.headers.get("Content-Type") == "application/json":
+        return abort(400)
+
+    user = request.json.get("user")
+    admin = request.json.get("admin")
+    if request.method == "POST":        
+        if user:
+            initial_config.users.append(user)
+            return Response("Added", 200)
+        if admin:
+            initial_config.admins.append(admin)
+            return Response("Added", 200)
+    if request.method == "DELETE":
+        if user and user in initial_config.users:
+            initial_config.users.remove(user)
+            return Response("Deleted", 200)
+        if admin and admin in initial_config.admins:
+            initial_config.admins.remove(admin)
+            return Response("Deleted", 200)
+    return abort(400)
+
+
 @app.route("/git_trigger", method=["POST"])
 def git_trigger():
     """Trigger the test when a post request is sent from a repo's webhook.
