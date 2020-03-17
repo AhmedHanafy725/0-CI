@@ -1,11 +1,8 @@
 rq
 rq_scheduler
-mongoengine
 xmltodict
 paramiko
 redis
 uwsgi
-flask_cors
 python-telegram-bot
 git+https://github.com/dblueai/giteapy.git
-bottle-cors

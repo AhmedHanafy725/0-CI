@@ -23,7 +23,7 @@ app = Bottle()
 env = Environment(loader=FileSystemLoader("../dist"), autoescape=select_autoescape(["html", "xml"]))
 q = Queue(connection=conn)
 scheduler = Scheduler(connection=Redis())
-
+r = Redis()
 
 client = j.clients.oauth_proxy.get("main")
 oauth_app = j.tools.oauth_proxy.get(app, client, "/auth/login")
@@ -64,14 +64,35 @@ def is_configured():
     return initial_config.configured
 
 
-@app.hook('after_request')
+@app.hook("after_request")
 def enable_cors_disable_cache():
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "PUT, GET, POST, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token"
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
+
+
+@app.route("/logs/<id>")
+def handle_websocket(id):
+    wsock = request.environ.get("wsgi.websocket")
+    if not wsock:
+        abort(400, "Expected WebSocket request.")
+
+    start = 0
+    while start != -1:
+        length = r.llen(id)
+        if start > length:
+            continue
+        result_list = r.lrange(id, start, length)
+        if b"hamada ok" in result_list:
+            result_list.remove(b"hamada ok")
+            start = -1
+        else:
+            start += len(result_list)
+        for result in result_list:
+            wsock.send(result.decode())
 
 
 @app.route("/auth/login")
@@ -118,8 +139,10 @@ def logout():
 def is_authenticated():
     session = request.environ.get("beaker.session", {})
     if session.get("authorized"):
-        return
-    return abort(401)
+        username = session["username"]
+        email = session["email"]
+        return json.dumps({"username": username, "email": email})
+    return abort(403)
 
 
 @app.route("/initial_config", method=["GET", "POST"])
@@ -173,7 +196,7 @@ def users():
     initial_config = InitialConfig()
     if not user_login in initial_config.admins:
         return abort(401)
-    
+
     if request.method == "GET":
         all_users = {"admins": initial_config.admins, "users": initial_config.users}
         all_json = json.dumps(all_users)
@@ -183,7 +206,7 @@ def users():
 
     user = request.json.get("user")
     admin = request.json.get("admin")
-    if request.method == "POST":        
+    if request.method == "POST":
         if user:
             initial_config.users.append(user)
             return Response("Added", 200)
@@ -487,4 +510,9 @@ def catch_all(path=""):
 session_opts = {"session.type": "file", "session.data_dir": "./data", "session.auto": True}
 app_with_session = SessionMiddleware(app, session_opts)
 if __name__ == "__main__":
-    run(app=app_with_session, host="0.0.0.0", port=6010)
+    from gevent.pywsgi import WSGIServer
+    from geventwebsocket import WebSocketError
+    from geventwebsocket.handler import WebSocketHandler
+
+    server = WSGIServer(("0.0.0.0", 6010), app_with_session, handler_class=WebSocketHandler)
+    server.serve_forever()

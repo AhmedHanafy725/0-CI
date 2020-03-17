@@ -1,11 +1,12 @@
 import os
-import time
 import random
+import time
 from urllib.parse import urlparse
 
 import paramiko
-from Jumpscale import j
+import redis
 
+from Jumpscale import j
 from utils.utils import Utils
 
 RETRIES = 10
@@ -14,12 +15,10 @@ RETRIES = 10
 class Complete_Executuion:
     returncode = None
     stdout = None
-    stderr = None
 
-    def __init__(self, rc, out, err):
+    def __init__(self, rc, out):
         self.returncode = rc
         self.stdout = out
-        self.stderr = err
 
 
 class VMS(Utils):
@@ -78,7 +77,7 @@ class VMS(Utils):
             ssh = self.load_ssh_key()
         return ssh
 
-    def execute_command(self, cmd, ip="", port=22, timeout=7200, environment={}):
+    def execute_command(self, cmd, id, ip, port=22, environment={}):
         """Execute a command on a remote machine using ssh.
 
         :param cmd: command to be executed on a remote machine.
@@ -91,20 +90,31 @@ class VMS(Utils):
         :type timeout: int
         :return: subprocess object containing (returncode, stdout, stderr)
         """
+        r = redis.Redis()
+        out = ""
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.MissingHostKeyPolicy())
-        client.connect(hostname=ip, port=port, timeout=30)
-        _, stdout, stderr = client.exec_command(cmd, timeout=timeout, environment=environment)
         try:
-            out = stdout.read().decode()
-            err = stderr.read().decode()
-            rc = stdout.channel.recv_exit_status()
+            client.connect(hostname=ip, port=port, timeout=30)
         except:
-            stdout.channel.close()
-            err = "Error Timeout Exceeded {}".format(timeout)
-            out = ""
-            rc = 124
-        return Complete_Executuion(rc, out, err)
+            out = "Couldn't ssh on the testing VM, maybe the test broke the ssh or the VM become unreachable"
+            r.rpush("5", out)
+            rc = 1
+            return Complete_Executuion(rc, out)
+        _, stdout, _ = client.exec_command(cmd, timeout=600, environment=environment, get_pty=True)
+        while not stdout.channel.exit_status_ready():
+            try:
+                output = stdout.readline()
+                r.rpush(id, output)
+                out += output
+            except:
+                msg = "Timeout Exceeded 10 mins"
+                r.rpush("5", msg)
+                out += msg
+                stdout.channel.close()
+        rc = stdout.channel.recv_exit_status()
+
+        return Complete_Executuion(rc, out)
 
     def get_remote_file(self, ip, port, remote_path, local_path):
         client = paramiko.SSHClient()
@@ -186,7 +196,7 @@ class VMS(Utils):
             return self.vm_uuid, self.node_ip, self.port
         return None, None, None
 
-    def install_app(self, node_ip, port, install_script, env={}):
+    def install_app(self, id, node_ip, port, install_script, env={}):
         """Install application to be tested.
 
         :param node_ip: mahcine's ip
@@ -198,10 +208,10 @@ class VMS(Utils):
         """
         prepare_script = self.prepare_script()
         script = prepare_script + install_script
-        response = self.execute_command(cmd=script, ip=node_ip, port=port, environment=env)
+        response = self.execute_command(cmd=script, id=id, ip=node_ip, port=port, environment=env)
         return response
 
-    def run_test(self, run_cmd, node_ip, port, timeout, env={}):
+    def run_test(self, run_cmd, id, node_ip, port, env={}):
         """Run test command and get the result as xml file if the running command is following junit otherwise result will be log.
 
         :param run_cmd: test command to be run.
@@ -214,14 +224,14 @@ class VMS(Utils):
         :type timeout: int
         :return: path to xml file if exist and subprocess object containing (returncode, stdout, stderr)
         """
-        response = self.execute_command(run_cmd, ip=node_ip, port=port, timeout=timeout, environment=env)
+        response = self.execute_command(run_cmd, id=id, ip=node_ip, port=port, environment=env)
         file_path = "{}/{}.xml".format(self.result_path, self.random_string())
         remote_path = "/test.xml"
         copied = self.get_remote_file(ip=node_ip, port=port, remote_path=remote_path, local_path=file_path)
         if copied:
             file_path = file_path
             delete_cmd = f"rm -f {remote_path}"
-            self.execute_command(delete_cmd, ip=node_ip, port=port, timeout=30)
+            self.execute_command(delete_cmd, id=id, ip=node_ip, port=port)
         else:
             file_path = None
         return response, file_path

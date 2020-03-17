@@ -1,17 +1,20 @@
 import os
 from datetime import datetime
+
+import redis
 import yaml
 
+from bcdb.bcdb import InitialConfig, ProjectRun, RepoRun, RunConfig
+from packages.vcs.vcs import VCSFactory
 from utils.reporter import Reporter
 from utils.utils import Utils
-from packages.vcs.vcs import VCSFactory
-from bcdb.bcdb import RepoRun, ProjectRun, RunConfig, InitialConfig
 from vm.vms import VMS
 
 vms = VMS()
 reporter = Reporter()
 utils = Utils()
 configs = InitialConfig()
+r = redis.Redis()
 
 
 class Actions:
@@ -33,7 +36,9 @@ class Actions:
                 status = "success"
                 if line.startswith("#"):
                     continue
-                response, file_path = vms.run_test(run_cmd=line, node_ip=node_ip, port=port, timeout=timeout, env=env)
+                response, file_path = vms.run_test(
+                    id=id, run_cmd=line, node_ip=node_ip, port=port, timeout=timeout, env=env
+                )
                 if file_path:
                     if response.returncode:
                         status = "failure"
@@ -48,18 +53,19 @@ class Actions:
                             }
                         )
                     except:
-                        name = "cmd {}".format(i + 1)
-                        content = "stdout:\n" + response.stdout + "\nstderr:\n" + response.stderr
-                        repo_run.result.append({"type": "log", "status": status, "name": name, "content": content})
+                        repo_run.result.append(
+                            {"type": "log", "status": status, "name": line, "content": response.stdout}
+                        )
                     os.remove(file_path)
                 else:
                     if response.returncode:
                         status = "failure"
-                    name = "cmd {}".format(i + 1)
-                    content = "stdout:\n" + response.stdout + "\nstderr:\n" + response.stderr
-                    repo_run.result.append({"type": "log", "status": status, "name": name, "content": content})
+                    repo_run.result.append({"type": "log", "status": status, "name": line, "content": response.stdout})
                 repo_run.save()
+                if i + 1 == len(test_script):
+                    r.rpush(id, "hamada ok")
         else:
+            r.rpush(id, "hamada ok")
             repo_run.result.append({"type": "log", "status": status, "name": "No tests", "content": "No tests found"})
             repo_run.save()
 
@@ -75,16 +81,18 @@ class Actions:
         env = self._get_run_env(id=id, db_run=db_run)
         link = f"{configs.domain}/repos/{repo_run.repo.replace('/', '%2F')}/{repo_run.branch}/{str(repo_run.id)}"
         # link = f"{configs.domain}/get_status?id={str(repo_run.id)}&n=1"
-        line = "black {}/{} -l 120 -t py37 --diff --exclude 'templates'".format(self._REPOS_DIR, repo_run.repo)
-        response, _ = vms.run_test(run_cmd=line, node_ip=node_ip, port=port, timeout=timeout, env=env)
+        line = "black {}/{} -l 120 -t py37 --diff --exclude 'templates' 1>/dev/null".format(
+            self._REPOS_DIR, repo_run.repo
+        )
+        response, _ = vms.run_test(id=id, run_cmd=line, node_ip=node_ip, port=port, timeout=timeout, env=env)
         if response.returncode:
             status = "failure"
-        elif "reformatted" in response.stderr:
+        elif "reformatted" in response.stdout:
             status = "failure"
         else:
             status = "success"
         repo_run.result.append(
-            {"type": "log", "status": status, "name": "Black Formatting", "content": response.stderr}
+            {"type": "log", "status": status, "name": "Black Formatting", "content": response.stdout}
         )
         repo_run.save()
 
@@ -97,13 +105,13 @@ class Actions:
             env = self._get_run_env(id=id, db_run=db_run)
             uuid, node_ip, port = vms.deploy_vm(prequisties=prequisties)
             if uuid:
-                response = vms.install_app(node_ip=node_ip, port=port, install_script=install_script, env=env)
+                response = vms.install_app(id=id, node_ip=node_ip, port=port, install_script=install_script, env=env)
                 if response.returncode:
-                    content = "stdout:\n" + response.stdout + "\nstderr:\n" + response.stderr
                     repo_run.result.append(
-                        {"type": "log", "status": "error", "name": "Installation", "content": content}
+                        {"type": "log", "status": "error", "name": "Installation", "content": response.stdout}
                     )
                     repo_run.save()
+                    r.rpush(id, "hamada ok")
                     self.cal_status(id=id, db_run=db_run)
                 return uuid, response, node_ip, port
 
