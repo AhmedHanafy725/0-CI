@@ -7,6 +7,7 @@ import os
 from datetime import datetime
 
 from gevent.pywsgi import WSGIServer
+from gevent import sleep
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from redis import Redis
 from rq import Queue
@@ -46,6 +47,7 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
         repo_run.status = status
         repo_run.result = []
         repo_run.save()
+        r.ltrim(id, -1, 0)
     else:
         if repo in configs.repos:
             repo_run = RepoRun(
@@ -90,8 +92,10 @@ def handle_websocket(id):
     start = 0
     while start != -1:
         length = r.llen(id)
-        if start > length:
-            continue
+        if start == length == 0 or start > length:
+            break
+        if start == length:
+            sleep(1)
         result_list = r.lrange(id, start, length)
         if b"hamada ok" in result_list:
             result_list.remove(b"hamada ok")
