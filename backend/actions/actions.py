@@ -36,9 +36,7 @@ class Actions:
                 status = "success"
                 if line.startswith("#"):
                     continue
-                response, file_path = vms.run_test(
-                    id=id, run_cmd=line, node_ip=node_ip, port=port, timeout=timeout, env=env
-                )
+                response, file_path = vms.run_test(id=id, run_cmd=line, node_ip=node_ip, port=port, env=env)
                 if file_path:
                     if response.returncode:
                         status = "failure"
@@ -84,7 +82,7 @@ class Actions:
         line = "black {}/{} -l 120 -t py37 --diff --exclude 'templates' 1>/dev/null".format(
             self._REPOS_DIR, repo_run.repo
         )
-        response, _ = vms.run_test(id=id, run_cmd=line, node_ip=node_ip, port=port, timeout=timeout, env=env)
+        response, _ = vms.run_test(id=id, run_cmd=line, node_ip=node_ip, port=port, env=env)
         if response.returncode:
             status = "failure"
         elif "reformatted" in response.stdout:
@@ -215,7 +213,7 @@ class Actions:
                 self.test_black(node_ip=node_ip, port=port, id=id, db_run=RepoRun, timeout=500)
                 self.test_run(node_ip=node_ip, port=port, id=id, test_script=test_script, db_run=RepoRun, timeout=3600)
                 self.cal_status(id=id, db_run=RepoRun)
-            vms.destroy_vm(uuid)
+        vms.destroy_vm(uuid)
         reporter.report(id=id, db_run=RepoRun)
 
     def run_project(self, project_name, install_script, test_script, prequisties, timeout):

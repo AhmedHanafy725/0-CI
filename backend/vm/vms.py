@@ -225,7 +225,7 @@ class VMS(Utils):
         :return: path to xml file if exist and subprocess object containing (returncode, stdout, stderr)
         """
         response = self.execute_command(run_cmd, id=id, ip=node_ip, port=port, environment=env)
-        file_path = "{}/{}.xml".format(self.result_path, self.random_string())
+        file_path = "/var/zeroci/{}.xml".format(self.random_string())
         remote_path = "/test.xml"
         copied = self.get_remote_file(ip=node_ip, port=port, remote_path=remote_path, local_path=file_path)
         if copied:
@@ -233,6 +233,8 @@ class VMS(Utils):
             delete_cmd = f"rm -f {remote_path}"
             self.execute_command(delete_cmd, id=id, ip=node_ip, port=port)
         else:
+            if os.path.exists(file_path):
+                os.remove(file_path)
             file_path = None
         return response, file_path
 

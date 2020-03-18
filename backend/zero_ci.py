@@ -1,21 +1,28 @@
-from datetime import datetime
-import os
-import json
+from gevent import monkey
 
-import bottle
-from bottle import Bottle, request, abort, Response, redirect, run, static_file, response
+monkey.patch_all(subprocess=False)
+
+import json
+import os
+from datetime import datetime
+
+from gevent.pywsgi import WSGIServer
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+from redis import Redis
 from rq import Queue
 from rq.job import Job
 from rq_scheduler import Scheduler
-from redis import Redis
-
-from packages.vcs.vcs import VCSFactory
 from worker import conn
+
+import bottle
 from actions.actions import Actions
-from bcdb.bcdb import RepoRun, ProjectRun, RunConfig, InitialConfig
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+from bcdb.bcdb import InitialConfig, ProjectRun, RepoRun, RunConfig
 from beaker.middleware import SessionMiddleware
+from bottle import Bottle, Response, abort, redirect, request, response, static_file
+from geventwebsocket import WebSocketError
+from geventwebsocket.handler import WebSocketHandler
 from Jumpscale import j
+from packages.vcs.vcs import VCSFactory
 
 
 actions = Actions()
@@ -92,7 +99,10 @@ def handle_websocket(id):
         else:
             start += len(result_list)
         for result in result_list:
-            wsock.send(result.decode())
+            try:
+                wsock.send(result.decode())
+            except WebSocketError:
+                break
 
 
 @app.route("/auth/login")
@@ -510,9 +520,5 @@ def catch_all(path=""):
 session_opts = {"session.type": "file", "session.data_dir": "./data", "session.auto": True}
 app_with_session = SessionMiddleware(app, session_opts)
 if __name__ == "__main__":
-    from gevent.pywsgi import WSGIServer
-    from geventwebsocket import WebSocketError
-    from geventwebsocket.handler import WebSocketHandler
-
     server = WSGIServer(("0.0.0.0", 6010), app_with_session, handler_class=WebSocketHandler)
     server.serve_forever()
