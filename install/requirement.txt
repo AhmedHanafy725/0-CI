@@ -3,6 +3,5 @@ rq_scheduler
 xmltodict
 paramiko
 redis
-uwsgi
 python-telegram-bot
 git+https://github.com/dblueai/giteapy.git

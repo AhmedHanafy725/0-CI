@@ -112,7 +112,7 @@ class Github(VCSInterface):
 
     @VCSInterface.call_trial
     def status_send(
-        self, status, link, commit, description="JSX-machine for testing", context="continuous-integration/zeroCI"
+        self, status, link, commit, description="ZeroCI for testing", context="continuous-integration/ZeroCI"
     ):
 
         commit_obj = self.repo_obj.get_commit(commit)
@@ -166,7 +166,7 @@ class Gitea(VCSInterface):
 
     @VCSInterface.call_trial
     def status_send(
-        self, status, link, commit, description="JSX-machine for testing", context="continuous-integration/zeroCI",
+        self, status, link, commit, description="ZeroCI for testing", context="continuous-integration/ZeroCI",
     ):
         body = {"context": context, "description": description, "state": status, "target_url": link}
         self.repo_obj.repo_create_status(self.owner, self.repo_name, commit, body=body)
