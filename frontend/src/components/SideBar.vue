@@ -1,26 +1,34 @@
 <template>
-  <!-- LEFT SIDEBAR -->
-  <div id="sidebar-nav" class="sidebar">
-    <div class="sidebar-scroll">
-      <nav>
-        <repos-items></repos-items>
-        <projects-items></projects-items>
-      </nav>
+  <div>
+    <!-- begin:: Aside -->
+    <button class="kt-aside-close" id="kt_aside_close_btn">
+      <i class="la la-close"></i>
+    </button>
+    <div
+      class="kt-aside kt-aside--fixed kt-grid__item kt-grid kt-grid--desktop kt-grid--hor-desktop"
+      id="kt_aside"
+    >
+      <!-- begin:: Aside -->
+      <Aside />
+      <!-- end:: Aside -->
+
+      <!-- begin:: Aside Menu -->
+      <AsideMenu />
+      <!-- end:: Aside Menu -->
     </div>
+
+    <!-- end:: Aside -->
   </div>
-  <!-- END LEFT SIDEBAR -->
 </template>
 
-
 <script>
-import ItemsWithDropdown from "@/components/ItemsWithDropdown";
-import Projects from "@/components/Projects";
-
+import Aside from "./Aside";
+import AsideMenu from "./AsideMenu";
 export default {
   name: "SideBar",
   components: {
-    "repos-items": ItemsWithDropdown,
-    "projects-items": Projects
+    Aside,
+    AsideMenu
   }
 };
 </script>

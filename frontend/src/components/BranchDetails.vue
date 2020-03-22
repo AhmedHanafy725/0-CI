@@ -1,351 +1,300 @@
 <template>
-  <div class="main">
-    <div class="spinner" v-if="loading">
-      <button type="button" class="btn btn-primary">
-        <i class="fa fa-spinner fa-spin"></i> Loading...
-      </button>
+  <!-- begin:: Content -->
+  <div class="kt-content kt-grid__item kt-grid__item--fluid" id="kt_content">
+    <div class="kt-portlet kt-portlet--mobile">
+      <div class="kt-portlet__head kt-portlet__head--lg">
+        <div class="kt-portlet__head-label">
+          <span class="kt-portlet__head-icon">
+            <i class="kt-font-brand flaticon2-line-chart"></i>
+          </span>
+          <h3 class="kt-portlet__head-title">{{ repoName }}/{{ $route.query.branch }}</h3>
+        </div>
+        <div class="kt-header__topbar pr-0">
+          <button type="button" class="btn btn-primary btn-sm" @click="restart()">
+            <i class="flaticon2-reload"></i> Restart build
+          </button>
+          <button
+            type="button"
+            class="kt-demo-icon mb-0"
+            data-toggle="modal"
+            data-target="#kt_modal_4"
+            @click="runConfig()"
+          >
+            <i class="flaticon2-settings"></i>
+          </button>
+        </div>
+      </div>
+      <div class="kt-portlet__body">
+        <v-card>
+          <v-card-title>
+            <!-- title -->
+            <v-spacer></v-spacer>
+            <v-spacer></v-spacer>
+            <v-spacer></v-spacer>
+            <v-spacer></v-spacer>
+            <v-spacer></v-spacer>
+            <v-spacer></v-spacer>
+            <v-spacer></v-spacer>
+            <v-spacer></v-spacer>
+            <v-spacer></v-spacer>
+
+            <v-text-field
+              v-model="search"
+              append-icon="mdi-magnify"
+              label="Search"
+              single-line
+              hide-details
+            ></v-text-field>
+          </v-card-title>
+          <v-data-table :headers="headers" :items="details" :search="search">
+            <template v-slot:item.id="{ item }">
+              <router-link
+                :to="'/repos/' + orgName + '/' + repoName + '/' + $route.query.branch + '/' + item.id"
+              >{{details.length - details.map(function(x) {return x.id; }).indexOf(item.id)}}</router-link>
+            </template>
+
+            <template v-slot:item.committer="{ item }">
+              <div class="kt-user-card-v2">
+                <div class="kt-user-card-v2__pic">
+                  <img
+                    :src="committerSrc(item.committer)"
+                    class="m-img-rounded kt-marginless"
+                    alt="photo"
+                  />
+                </div>
+                <div class="kt-user-card-v2__details">
+                  <a
+                    :href="committerUrl(item.committer)"
+                    class="kt-user-card-v2__email kt-link"
+                    target="_blank"
+                  >{{ item.committer }}</a>
+                </div>
+              </div>
+            </template>
+
+            <template v-slot:item.commit="{ item }">
+              <a
+                :href="repoCommit(item.commit)"
+                class="kt-user-card-v2__email kt-link"
+                target="_blank"
+              >{{ commit(item.commit) }}</a>
+            </template>
+
+            <template v-slot:item.status="{ item }">
+              <v-chip :color="getStatus(item.status)" dark>{{ item.status }}</v-chip>
+            </template>
+
+            <template v-slot:item.timestamp="{ item }">
+              <span>{{ time2TimeAgo(item.timestamp) }}</span>
+            </template>
+          </v-data-table>
+        </v-card>
+      </div>
     </div>
-    <!-- MAIN CONTENT -->
-    <div v-if="!loading" class="main-content">
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-md-12">
-            <!-- Logs -->
-            <div class="panel" v-for="(log, index) in logs" :key="index">
-              <div class="panel-heading">
-                <h3 class="panel-title">
-                  <span class="d-block">
-                    <b>Name:</b>
-                    {{ log.name }}
-                  </span>
-                  <span>
-                    <b>Status:</b>
-                  </span>
-                  <span
-                    class="label"
-                    :class="{
-                      'label-success': log.status== 'success',
-                      'label-warning': log.status== 'error',
-                      'label-danger': (log.status== 'failure')
-                      }"
-                  >{{ log.status }}</span>
-                </h3>
-              </div>
-              <div class="panel-body">
-                <pre><code>{{ log.content }}</code></pre>
-              </div>
-            </div>
-            <!-- testsuites -->
-            <div class="panel" v-for="(testsuite, i) in testsuites" :key="`A-${i}`">
-              <!-- head: name, status -->
-              <div class="panel-heading">
-                <h3 class="panel-title">
-                  <span class="d-block">
-                    <b>Name:</b>
-                    {{testsuite.name}}
-                  </span>
-                  <span>
-                    <b>Status:</b>
-                  </span>
-                  <span
-                    class="label"
-                    :class="{
-                      'label-success': testsuite.status== 'success',
-                      'label-warning': testsuite.status== 'pending',
-                      'label-danger': (testsuite.status== 'failure') || (testsuite.status== 'error')
-                      }"
-                  >{{ testsuite.status }}</span>
-                </h3>
-              </div>
-              <!-- body: Tabs and result -->
-              <div class="panel-body">
-                <!-- tabs -->
-                <ul class="nav nav-tabs" role="tablist">
-                  <li role="presentation" class="active">
-                    <a :href="'#all-' + i" aria-controls="all" role="tab" data-toggle="tab">
-                      All&nbsp;
-                      <span class="badge">{{ summary[i].tests }}</span>
-                    </a>
-                  </li>
-                  <li role="presentation">
-                    <a :href="'#failed-' + i" aria-controls="failed" role="tab" data-toggle="tab">
-                      Failed&nbsp;
-                      <span class="badge">{{ summary[i].failures }}</span>
-                    </a>
-                  </li>
-                  <li role="presentation">
-                    <a :href="'#errored-' + i" aria-controls="errored" role="tab" data-toggle="tab">
-                      Errored&nbsp;
-                      <span class="badge">{{ summary[i].errors }}</span>
-                    </a>
-                  </li>
-                  <li role="presentation">
-                    <a :href="'#skipped-' + i" aria-controls="skipped" role="tab" data-toggle="tab">
-                      Skipped&nbsp;
-                      <span class="badge">{{ summary[i].skip }}</span>
-                    </a>
-                  </li>
-                </ul>
-                <!-- tabs content -->
-                <div class="tab-content">
-                  <div role="tabpanel" class="tab-pane fade in active" :id="'all-' + i">
-                    <div
-                      class="panel-group"
-                      id="accordion"
-                      role="tablist"
-                      aria-multiselectable="true"
-                    >
-                      <div
-                        class="panel"
-                        v-for="(testcase, key) in testsuite.content.testcases"
-                        :key="key"
-                      >
-                        <div class="panel-heading" role="tab">
-                          <h4 class="panel-title">
-                            <a
-                              role="button"
-                              data-toggle="collapse"
-                              data-parent="#accordion"
-                              :href="'#all-'+key+1"
-                              @click="selectItem(key)"
-                              aria-expanded="true"
-                              :aria-controls="'collapse-'+key+1"
-                            >
-                              <i
-                                class="fa"
-                                :class="{
-                                  'fa-check-circle success': testcase.status== 'passed',
-                                  'fa-times-circle danger': testcase.status== 'failed',
-                                  'fa-minus-circle danger': testcase.status== 'errored',
-                                  'fa-ban': testcase.status== 'skipped'}"
-                              ></i>
-                              {{ testcase.classname }} {{ testcase.name }}
-                            </a>
-                          </h4>
-                        </div>
-                        <div
-                          :id="'all-'+key+1"
-                          class="panel-collapse collapse"
-                          :class="{ in: key === activeItem} "
-                          role="tabpanel"
-                          :aria-labelledby="'all-'+key+1"
-                        >
-                          <div class="panel-body">
-                            <pre><code>{{ testcase.status }} &nbsp; (Executed in {{ testcase.time }} seconds)</code>
-                            <code v-if="testcase.details">{{ testcase.details.content }} <br />{{ testcase.details.message }}</code></pre>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+    <!--begin::Modal-->
+    <div
+      class="modal fade"
+      id="kt_modal_4"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+      v-if="newKeyModel"
+    >
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">keys</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <!--begin::Form-->
+            <form class="kt-form kt-form--label-right">
+              <div class="kt-portlet__body">
+                <div class="form-group row">
+                  <div class="col">
+                    <label for="key" class="col-2 col-form-label">Key</label>
+                    <input class="col-9 form-control" type="text" required />
                   </div>
-                  <div role="tabpanel" class="tab-pane fade" :id="'failed-' + i">
-                    <div
-                      class="panel-group"
-                      id="accordion"
-                      role="tablist"
-                      aria-multiselectable="true"
-                    >
-                      <div
-                        class="panel"
-                        v-for="(testcase, key) in testsuite.content.testcases"
-                        :key="key"
-                        v-show="testcase.status == 'failed'"
-                      >
-                        <div class="panel-heading" role="tab">
-                          <h4 class="panel-title">
-                            <a
-                              role="button"
-                              data-toggle="collapse"
-                              data-parent="#accordion"
-                              :href="'#failed-'+key+1"
-                              @click="selectItem(key)"
-                              aria-expanded="true"
-                              :aria-controls="'collapse-'+key+1"
-                            >
-                              <i
-                                class="fa"
-                                :class="{
-                                  'fa-check-circle success': testcase.status== 'passed',
-                                  'fa-minus-circle danger': testcase.status== 'errored',
-                                  'fa-times-circle danger': testcase.status== 'failed',
-                                  'fa-ban': testcase.status== 'skipped'}"
-                              ></i>
-                              {{ testcase.classname }} {{ testcase.name }}
-                            </a>
-                          </h4>
-                        </div>
-                        <div
-                          :id="'failed-'+key+1"
-                          class="panel-collapse collapse"
-                          :class="{ in: key === activeItem}"
-                          role="tabpanel"
-                          :aria-labelledby="'failed-'+key+1"
-                        >
-                          <div class="panel-body">
-                            <pre><code>{{ testcase.status }} &nbsp; (Executed in {{ testcase.time }} seconds)</code> <hr />
-                            <code v-if="testcase.details">{{ testcase.details.content }}<br />{{ testcase.details.message }}</code></pre>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                  <div class="col">
+                    <label for="value" class="col-2 col-form-label">Value</label>
+                    <input class="col-9 form-control" type="text" required />
                   </div>
-                  <div role="tabpanel" class="tab-pane fade" :id="'errored-' + i">
-                    <div
-                      class="panel-group"
-                      id="accordion"
-                      role="tablist"
-                      aria-multiselectable="true"
-                    >
-                      <div
-                        v-for="(testcase, key) in testsuite.content.testcases"
-                        :key="key"
-                        class="panel"
-                        v-show="testcase.status == 'errored'"
-                      >
-                        <div class="panel-heading" role="tab">
-                          <h4 class="panel-title">
-                            <a
-                              role="button"
-                              data-toggle="collapse"
-                              data-parent="#accordion"
-                              :href="'#errored-'+key+1"
-                              @click="selectItem(key)"
-                              aria-expanded="true"
-                              :aria-controls="'collapse-'+key+1"
-                            >
-                              <i class="fa fa-minus-circle danger"></i>
-                              {{ testcase.classname }} {{ testcase.name }}
-                            </a>
-                          </h4>
-                        </div>
-                        <div
-                          :id="'errored-'+key+1"
-                          class="panel-collapse collapse"
-                          :class="{ in: key === activeItem}"
-                          role="tabpanel"
-                          :aria-labelledby="'errored-'+key+1"
-                        >
-                          <div class="panel-body">
-                            <pre>
-                            <code>{{ testcase.status }} &nbsp; (Executed in {{ testcase.time }} seconds)</code> <hr />
-                            <code v-if="testcase.details">{{ testcase.details.content }}<br />{{ testcase.details.message }}</code>
-                            </pre>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div role="tabpanel" class="tab-pane fade" :id="'skipped-' + i">
-                    <div
-                      class="panel-group"
-                      id="accordion"
-                      role="tablist"
-                      aria-multiselectable="true"
-                    >
-                      <div
-                        v-for="(testcase, key) in testsuite.content.testcases"
-                        :key="key"
-                        class="panel"
-                        v-show="testcase.status == 'skipped'"
-                      >
-                        <div class="panel-heading" role="tab">
-                          <h4 class="panel-title">
-                            <a
-                              role="button"
-                              data-toggle="collapse"
-                              data-parent="#accordion"
-                              :href="'#skipped-'+key+1"
-                              @click="selectItem(key)"
-                              aria-expanded="true"
-                              :aria-controls="'collapse-'+key+1"
-                            >
-                              <i class="fa fa-ban"></i>
-                              {{ testcase.classname }} {{ testcase.name }}
-                            </a>
-                          </h4>
-                        </div>
-                        <div
-                          :id="'skipped-'+key+1"
-                          class="panel-collapse collapse"
-                          :class="{ in: key === activeItem} "
-                          role="tabpanel"
-                          :aria-labelledby="'skipped-'+key+1"
-                        >
-                          <div class="panel-body">
-                            <pre>
-                            <code>{{ testcase.status }} &nbsp; (Executed in {{ testcase.time }} seconds)</code> <hr / >
-                            <code v-if="testcase.details">{{ testcase.details.content }} <br />{{ testcase.details.message }}</code>
-                            </pre>
-                          </div>
-                        </div>
-                      </div>
+                </div>
+              </div>
+              <div class="kt-portlet__foot text-right">
+                <div class="kt-form__actions">
+                  <div class="row">
+                    <div class="col">
+                      <button type="submit" class="btn btn-success" @click="addKey()">Add</button>
+                      <button type="reset" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       </div>
     </div>
   </div>
-</template>
 
+  <!-- end:: Content -->
+</template>
 <script>
 import axios from "axios";
-
 export default {
   name: "BranchDetails",
-  props: ["name", "branch", "id"],
+  props: ["orgName", "repoName"],
   data() {
     return {
-      data: null,
-      loading: false,
-      logs: [],
-      testsuites: [],
-      testcases: [],
-      summary: [],
-      activeItem: null
+      repos: null,
+      search: "",
+      headers: [
+        { text: "#ID", value: "id" },
+        { text: "Author", value: "committer" },
+        { text: "Commit", value: "commit" },
+        { text: "Status", value: "status" },
+        { text: "Time", value: "timestamp" }
+      ],
+      details: [],
+      newKeyModel: true
     };
   },
   methods: {
-    getDetails() {
-      this.data = this.getData();
-    },
-    getData() {
-      this.loading = true; //the loading begin
-      const path = `/api/repos/${this.repoName}?branch=${this.branch}&&id=${this.id}`;
+    getRepos() {
+      const path =
+        process.env.VUE_APP_BASE_URL +
+        `repos/${this.orgName}/${this.repoName}?branch=${this.$route.query.branch}`;
       axios
         .get(path)
         .then(response => {
-          this.loading = false;
-          this.data = response.data;
-          this.data.map((job, index) => {
-            if (job.type == "log") {
-              this.logs.push(job);
-            } else if (job.type == "testsuite") {
-              this.testsuites.push(job);
-              this.summary.push(job.content.summary);
-              this.testcases.push(job.content.testcases);
-            }
-          });
+          this.details = response.data;
         })
         .catch(error => {
-          this.loading = false;
           console.log("Error! Could not reach the API. " + error);
         });
     },
-    selectItem(i) {
-      this.activeItem = i;
-    }
-  },
-  computed: {
-    repoName: function() {
-      return this.name.replace("/", "%2F");
+    clear() {
+      this.details = [];
+    },
+    committerSrc(committer) {
+      return "https://github.com/" + committer + ".png";
+    },
+    committerUrl(committer) {
+      return "https://github.com/" + committer;
+    },
+    repoCommit(commit) {
+      return (
+        "https://github.com/" +
+        this.orgName +
+        "/" +
+        this.repoName +
+        "/commit/" +
+        commit
+      );
+    },
+    commit(commit) {
+      return commit.substring(0, 7);
+    },
+    getStatus(status) {
+      if (status == "error") return "kt-bg-error";
+      else if (status == "failure") return "kt-bg-failure";
+      else if (status == "success") return "kt-bg-success";
+      else return "orange";
+    },
+    time2TimeAgo(ts) {
+      var d = new Date();
+      var nowTs = Math.floor(d.getTime() / 1000);
+      var seconds = nowTs - ts;
+
+      // more that two days
+      if (seconds > 2 * 24 * 3600) {
+        return "a few days ago";
+      }
+      // a day
+      if (seconds > 24 * 3600) {
+        return "yesterday";
+      }
+
+      if (seconds > 3600) {
+        return "a few hours ago";
+      }
+      if (seconds > 1800) {
+        return "Half an hour ago";
+      }
+      if (seconds > 60) {
+        return Math.floor(seconds / 60) + " minutes ago";
+      }
+    },
+    restart() {
+      const path = "https://staging.zeroci.grid.tf/run_trigger/";
+      axios
+        .post(
+          path,
+          { id: "4" },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*"
+            }
+          }
+        )
+        .then(response => {
+          console.log(response);
+        })
+        .catch(error => {
+          console.log("Error! Could not reach the API. " + error);
+        });
+    },
+    runConfig() {
+      const path = `https://staging.zeroci.grid.tf/api/run_config/${this.name}`;
+      axios
+        .get(path)
+        .then(response => {
+          if (Object.keys(response.data).length === 0) {
+            this.newKeyModel = true;
+          } else {
+            console.log(response.data);
+          }
+        })
+        .catch(error => {
+          console.log("Error! Could not reach the API. " + error);
+        });
+    },
+    addKey() {
+      const path = `https://staging.zeroci.grid.tf/api/run_config/`;
+      axios
+        .post(
+          path,
+          { key: this.key, value: this.value },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*"
+            }
+          }
+        )
+        .then(response => {
+          console.log(response);
+        })
+        .catch(error => {
+          console.log("Error! Could not reach the API. " + error);
+        });
     }
   },
   created() {
-    this.getDetails();
+    this.getRepos();
+  },
+  watch: {
+    "$route.params": {
+      handler(newValue) {
+        this.clear();
+        const { name } = newValue;
+        this.getRepos();
+      },
+      immediate: true
+    }
   }
 };
 </script>

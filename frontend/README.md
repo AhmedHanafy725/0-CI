@@ -1,4 +1,4 @@
-# zeroci
+# zeroci-metronic
 
 > A Vue.js project
 
