@@ -61,7 +61,7 @@ export default {
     getDetails() {
       const path =
         process.env.VUE_APP_BASE_URL +
-        `/repos/${this.orgName}/${this.repoName}?branch=${this.branch}&&id=${this.id}`;
+        `repos/${this.orgName}/${this.repoName}?branch=${this.branch}&&id=${this.id}`;
       axios
         .get(path)
         .then(response => {
@@ -81,11 +81,11 @@ export default {
         });
     },
     rebuild() {
-      const path = "https://staging.zeroci.grid.tf/run_trigger/";
+      const path = process.env.VUE_APP_BASE_URL + "run_trigger";
       axios
         .post(
           path,
-          { id: "4" }, //repo, branch
+          { id: this.id }, //repo, branch
           {
             headers: {
               "Content-Type": "application/json",
@@ -97,6 +97,8 @@ export default {
           console.log(response);
         })
         .catch(error => {
+                    console.log(this.id)
+
           console.log("Error! Could not reach the API. " + error);
         });
     }
