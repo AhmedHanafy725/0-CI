@@ -1,3 +1,4 @@
+import json
 import os
 from datetime import datetime
 
@@ -78,7 +79,6 @@ class Actions:
         repo_run = db_run(id=id)
         env = self._get_run_env(id=id, db_run=db_run)
         link = f"{configs.domain}/repos/{repo_run.repo.replace('/', '%2F')}/{repo_run.branch}/{str(repo_run.id)}"
-        # link = f"{configs.domain}/get_status?id={str(repo_run.id)}&n=1"
         line = "black {}/{} -l 120 -t py37 --diff --exclude 'templates' 1>/dev/null".format(
             self._REPOS_DIR, repo_run.repo
         )
@@ -217,10 +217,12 @@ class Actions:
         reporter.report(id=id, db_run=RepoRun)
 
     def run_project(self, project_name, install_script, test_script, prequisties, timeout):
-        status = "pending"
-        project_run = ProjectRun(timestamp=datetime.now().timestamp(), status=status, name=project_name)
+        data = {"status": "pending", "timestamp": datetime.now().timestamp(), "name": project_name}
+        project_run = ProjectRun(**data)
         project_run.save()
         id = str(project_run.id)
+        data["id"] = id
+        r.publish(project_name, json.dumps(data))
         uuid, response, node_ip, port = self.build(
             install_script=install_script, id=id, db_run=ProjectRun, prequisties=prequisties
         )
@@ -233,5 +235,4 @@ class Actions:
                 project_run = ProjectRun(id=id)
 
             vms.destroy_vm(uuid)
-        link = f"{configs.domain}/projects/{project_run.name.replace(' ', '%20')}/{str(project_run.id)}"
-        reporter.report(id=id, db_run=ProjectRun, project_name=project_name, link=link)
+        reporter.report(id=id, db_run=ProjectRun, project_name=project_name)

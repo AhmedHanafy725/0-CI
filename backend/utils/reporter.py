@@ -1,14 +1,19 @@
+import json
+
+from redis import Redis
+
+from bcdb.bcdb import InitialConfig
 from packages.telegram.telegram import Telegram
 from packages.vcs.vcs import VCSFactory
-from bcdb.bcdb import InitialConfig
 
 telegram = Telegram()
+r = Redis()
 SUCCESS = "success"
 FAILURE = "failure"
 
 
 class Reporter(InitialConfig):
-    def report(self, id, db_run, link=None, project_name=None):
+    def report(self, id, db_run, project_name=None):
         """Report the result to the commit status and Telegram chat.
 
         :param status: test status. 
@@ -28,12 +33,15 @@ class Reporter(InitialConfig):
         msg = self.report_msg(status=run.status, project_name=project_name)
         if not project_name:
             link = f"{self.domain}/repos/{run.repo.replace('/', '%2F')}/{run.branch}/{str(run.id)}"
+            r.publish(f"{run.repo}_{run.branch}", json.dumps({"id": id, "status": run.status}))
             VCSObject = VCSFactory().get_cvn(repo=run.repo)
             VCSObject.status_send(status=run.status, link=link, commit=run.commit)
             telegram.send_msg(
                 msg=msg, link=link, repo=run.repo, branch=run.branch, commit=run.commit, committer=run.committer
             )
         else:
+            link = f"{self.domain}/projects/{run.name.replace(' ', '%20')}/{str(run.id)}"
+            r.publish(project_name, json.dumps({"id": id, "status": run.status}))
             telegram.send_msg(msg=msg, link=link)
 
     def report_msg(self, status, project_name=None):

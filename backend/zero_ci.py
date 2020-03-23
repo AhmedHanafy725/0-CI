@@ -4,6 +4,7 @@ monkey.patch_all(subprocess=False)
 
 import json
 import os
+import sys
 from datetime import datetime
 
 from gevent.pywsgi import WSGIServer
@@ -15,7 +16,6 @@ from rq.job import Job
 from rq_scheduler import Scheduler
 from worker import conn
 
-import bottle
 from actions.actions import Actions
 from bcdb.bcdb import InitialConfig, ProjectRun, RepoRun, RunConfig
 from beaker.middleware import SessionMiddleware
@@ -41,6 +41,7 @@ PROVIDERS = list(client.providers_list())
 
 def trigger(repo="", branch="", commit="", committer="", id=None):
     status = "pending"
+    timestamp = datetime.now().timestamp()
     configs = InitialConfig()
     if id:
         repo_run = RepoRun(id=id)
@@ -48,21 +49,26 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
         repo_run.result = []
         repo_run.save()
         r.ltrim(id, -1, 0)
+        r.publish(f"{repo_run.repo}_{repo_run.branch}", json.dumps({"id": id, "status": status}))
     else:
         if repo in configs.repos:
-            repo_run = RepoRun(
-                timestamp=datetime.now().timestamp(),
-                status=status,
-                repo=repo,
-                branch=branch,
-                commit=commit,
-                committer=committer,
-            )
+            data = {
+                "timestamp": timestamp,
+                "commit": commit,
+                "committer": committer,
+                "status": status,
+                "repo": repo,
+                "branch": branch,
+            }
+            repo_run = RepoRun(**data)
             repo_run.save()
             id = str(repo_run.id)
+            data["id"] = id
+            r.publish(f"{repo}_{branch}", json.dumps(data))
     if id:
+        link = f"{configs.domain}/repos/{repo_run.repo.replace('/', '%2F')}/{repo_run.branch}/{str(repo_run.id)}"
         VCSObject = VCSFactory().get_cvn(repo=repo_run.repo)
-        VCSObject.status_send(status=status, link=configs.domain, commit=repo_run.commit)
+        VCSObject.status_send(status=status, link=link, commit=repo_run.commit)
         job = q.enqueue_call(func=actions.build_and_test, args=(id,), result_ttl=5000, timeout=20000)
         return job
     return None
@@ -83,8 +89,8 @@ def enable_cors_disable_cache():
     response.headers["Expires"] = "0"
 
 
-@app.route("/logs/<id>")
-def handle_websocket(id):
+@app.route("/websocket/logs/<id>")
+def logs(id):
     wsock = request.environ.get("wsgi.websocket")
     if not wsock:
         abort(400, "Expected WebSocket request.")
@@ -92,7 +98,7 @@ def handle_websocket(id):
     start = 0
     while start != -1:
         length = r.llen(id)
-        if start == length == 0 or start > length:
+        if start > length:
             break
         if start == length:
             sleep(1)
@@ -105,6 +111,40 @@ def handle_websocket(id):
         for result in result_list:
             try:
                 wsock.send(result.decode())
+            except WebSocketError:
+                break
+
+
+@app.route("/websocket/repos/<repo:path>/<branch>")
+def update_repos_table(repo, branch):
+    wsock = request.environ.get("wsgi.websocket")
+    if not wsock:
+        abort(400, "Expected WebSocket request.")
+
+    sub = r.pubsub()
+    sub.subscribe(f"{repo}_{branch}")
+    for msg in sub.listen():
+        data = msg["data"]
+        if isinstance(data, bytes):
+            try:
+                wsock.send(msg["data"].decode())
+            except WebSocketError:
+                break
+
+
+@app.route("/websocket/projects/<project>")
+def update_projects_table(project):
+    wsock = request.environ.get("wsgi.websocket")
+    if not wsock:
+        abort(400, "Expected WebSocket request.")
+
+    sub = r.pubsub()
+    sub.subscribe(project)
+    for msg in sub.listen():
+        data = msg["data"]
+        if isinstance(data, bytes):
+            try:
+                wsock.send(msg["data"].decode())
             except WebSocketError:
                 break
 
@@ -159,12 +199,11 @@ def is_authenticated():
     return abort(403)
 
 
-@app.route("/initial_config", method=["GET", "POST"])
+@app.route("/api/initial_config", method=["GET", "POST"])
 @oauth_app.login_required
 def initial_config():
     """Initial configuration for the ci before start working.
     """
-    # need to handle users and admins
     initial_config = InitialConfig()
     if initial_config.admins and (not request.environ.get("beaker.session").get("username") in initial_config.admins):
         return abort(401)
@@ -200,7 +239,7 @@ def initial_config():
             initial_config.admins.append(request.environ.get("beaker.session").get("username"))
         initial_config.configured = True
         initial_config.save()
-        return Response("Configured", 200)
+        sys.exit(1)
 
 
 @app.route("/api/users", method=["GET", "POST", "DELETE"])
@@ -243,7 +282,7 @@ def git_trigger():
     """
     configs = InitialConfig()
     if not is_configured():
-        return redirect("/initial_config")
+        return redirect("/api/initial_config")
     if request.headers.get("Content-Type") == "application/json":
         # push case
         reference = request.json.get("ref")
@@ -264,12 +303,12 @@ def git_trigger():
     return Response("Wrong content type", 400)
 
 
-@app.route("/run_trigger", method=["POST", "GET"])
+@app.route("/api/run_trigger", method=["POST", "GET"])
 @oauth_app.login_required
 def run_trigger():
     # this api should be protected by user
     if not is_configured():
-        return redirect("/initial_config")
+        return redirect("/api/initial_config")
 
     if request.method == "GET":
         redirect("/")
@@ -311,7 +350,7 @@ def run_trigger():
 def add_project():
     configs = InitialConfig()
     if not is_configured():
-        return redirect("/initial_config")
+        return redirect("/api/initial_config")
     if request.headers.get("Content-Type") == "application/json":
         project_name = request.json.get("project_name")
         prequisties = request.json.get("prequisties")
@@ -358,7 +397,7 @@ def add_project():
 def remove_project():
     configs = InitialConfig()
     if not is_configured():
-        return redirect("/initial_config")
+        return redirect("/api/initial_config")
     if request.headers.get("Content-Type") == "application/json":
         project_name = request.json.get("project_name")
         authentication = request.json.get("authentication")
@@ -374,7 +413,7 @@ def home():
     """Return repos and projects which are running on the server.
     """
     if not is_configured():
-        return redirect("/initial_config")
+        return redirect("/api/initial_config")
     result = {"repos": [], "projects": []}
     result["repos"] = RepoRun.distinct("repo")
     result["projects"] = ProjectRun.distinct("name")
@@ -391,7 +430,7 @@ def branch(repo):
     :param id: DB id of test details.
     """
     if not is_configured():
-        return redirect("/initial_config")
+        return redirect("/api/initial_config")
     branch = request.query.get("branch")
     id = request.query.get("id")
 
@@ -419,7 +458,7 @@ def branch(repo):
 @oauth_app.login_required
 def run_config(name):
     if not is_configured():
-        return redirect("/initial_config")
+        return redirect("/api/initial_config")
     run_config = RunConfig.find(name=name)
     if run_config and len(run_config) == 1:
         run_config = run_config[0]
@@ -450,7 +489,7 @@ def project(project):
     :param id: DB id of test details.
     """
     if not is_configured():
-        return redirect("/initial_config")
+        return redirect("/api/initial_config")
     id = request.query.get("id")
     if id:
         project_run = ProjectRun(id=id)
@@ -470,7 +509,7 @@ def status():
     """
     configs = InitialConfig()
     if not is_configured():
-        return redirect("/initial_config")
+        return redirect("/api/initial_config")
     project = request.query.get("project")
     repo = request.query.get("repo")
     branch = request.query.get("branch")
@@ -517,7 +556,7 @@ def static(filepath):
 @app.route("/<path:path>")
 def catch_all(path=""):
     if not is_configured():
-        return redirect("/initial_config")
+        return redirect("/api/initial_config")
     return static_file("index.html", root="../dist")
 
 

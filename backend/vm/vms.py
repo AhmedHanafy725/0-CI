@@ -244,7 +244,7 @@ class VMS(Utils):
         :param uuid: machine's uuid.
         :type uuid: str
         """
-        if self.node:
+        if uuid:
             self.node.client.container.terminate(int(uuid))
         if self.media:
             self.node.client.bash("rm -rf {}".format(self.disk_path)).get()
