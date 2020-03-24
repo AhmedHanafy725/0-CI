@@ -9,16 +9,16 @@
     <v-expansion-panel-content>
       <v-tabs v-model="tab">
         <v-tab :href="'#all-' + index">
-          <v-badge color="grey" :content="summary[index].tests">All</v-badge>
+          <v-badge color="grey" :content="summary.tests">All</v-badge>
         </v-tab>
         <v-tab :href="'#errored-' + index">
-          <v-badge color="red" :content="summary[index].errors">Errored</v-badge>
+          <v-badge color="red" :content="summary.errors">Errored</v-badge>
         </v-tab>
         <v-tab :href="'#failed-' + index">
-          <v-badge color="red" :content="summary[index].failures">Failed</v-badge>
+          <v-badge color="red" :content="summary.failures">Failed</v-badge>
         </v-tab>
         <v-tab :href="'#skipped-' + index">
-          <v-badge color="orange" :content="summary[index].skip">Skipped</v-badge>
+          <v-badge color="orange" :content="summary.skip">Skipped</v-badge>
         </v-tab>
       </v-tabs>
 
@@ -124,10 +124,12 @@ import AnsiUp from "ansi_up";
 
 export default {
   name: "TestSuites",
-  props: ["testsuite", "index", "testcases", "summary"],
+  props: ["testsuite", "index"],
   data() {
     return {
       tab: null,
+      summary: this.testsuite.content.summary,
+      testcases: this.testsuite.content.testcases,
       all: [],
       errors: [],
       failures: [],
@@ -160,7 +162,6 @@ export default {
     html(content) {
       // Ensures we have some semblance of lines
       return this.ansi.ansi_to_html(content);
-      // .replace(/\n/gm, "<br>")
     }
   },
   created() {

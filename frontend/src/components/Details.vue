@@ -25,8 +25,6 @@
             :key="index"
             :testsuite="testsuite"
             :index="index"
-            :testcases="testcases"
-            :summary="summary"
           ></test-suites>
         </v-expansion-panels>
       </div>
@@ -52,8 +50,6 @@ export default {
     return {
       data: null,
       testsuites: [],
-      summary: [],
-      testcases: null,
       logs: []
     };
   },
@@ -71,8 +67,6 @@ export default {
               this.logs.push(job);
             } else if (job.type == "testsuite") {
               this.testsuites.push(job);
-              this.summary.push(job.content.summary);
-              this.testcases = job.content.testcases;
             }
           });
         })
@@ -97,8 +91,6 @@ export default {
           console.log(response);
         })
         .catch(error => {
-                    console.log(this.id)
-
           console.log("Error! Could not reach the API. " + error);
         });
     }
