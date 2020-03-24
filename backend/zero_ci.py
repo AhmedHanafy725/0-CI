@@ -32,6 +32,7 @@ env = Environment(loader=FileSystemLoader("../dist"), autoescape=select_autoesca
 q = Queue(connection=conn)
 scheduler = Scheduler(connection=Redis())
 r = Redis()
+configs = InitialConfig()
 
 client = j.clients.oauth_proxy.get("main")
 oauth_app = j.tools.oauth_proxy.get(app, client, "/auth/login")
@@ -42,7 +43,6 @@ PROVIDERS = list(client.providers_list())
 def trigger(repo="", branch="", commit="", committer="", id=None):
     status = "pending"
     timestamp = datetime.now().timestamp()
-    configs = InitialConfig()
     if id:
         repo_run = RepoRun(id=id)
         repo_run.status = status
@@ -74,9 +74,13 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
     return None
 
 
-def is_configured():
-    initial_config = InitialConfig()
-    return initial_config.configured
+def check_configs(func):
+    def wrapper(*args, **kwargs):
+        initial_config = InitialConfig()
+        if not initial_config.configured:
+            return redirect("/api/initial_config")
+        return func(*args, **kwargs)
+    return wrapper
 
 
 @app.hook("after_request")
@@ -277,12 +281,10 @@ def users():
 
 
 @app.route("/git_trigger", method=["POST"])
+@check_configs
 def git_trigger():
     """Trigger the test when a post request is sent from a repo's webhook.
     """
-    configs = InitialConfig()
-    if not is_configured():
-        return redirect("/api/initial_config")
     if request.headers.get("Content-Type") == "application/json":
         # push case
         reference = request.json.get("ref")
@@ -305,11 +307,9 @@ def git_trigger():
 
 @app.route("/api/run_trigger", method=["POST", "GET"])
 @oauth_app.login_required
+@check_configs
 def run_trigger():
     # this api should be protected by user
-    if not is_configured():
-        return redirect("/api/initial_config")
-
     if request.method == "GET":
         redirect("/")
 
@@ -347,10 +347,8 @@ def run_trigger():
 
 @app.route("/api/add_project", method=["POST"])
 @oauth_app.login_required
+@check_configs
 def add_project():
-    configs = InitialConfig()
-    if not is_configured():
-        return redirect("/api/initial_config")
     if request.headers.get("Content-Type") == "application/json":
         project_name = request.json.get("project_name")
         prequisties = request.json.get("prequisties")
@@ -394,10 +392,8 @@ def add_project():
 
 @app.route("/api/remove_project", method=["DELETE"])
 @oauth_app.login_required
+@check_configs
 def remove_project():
-    configs = InitialConfig()
-    if not is_configured():
-        return redirect("/api/initial_config")
     if request.headers.get("Content-Type") == "application/json":
         project_name = request.json.get("project_name")
         authentication = request.json.get("authentication")
@@ -409,11 +405,10 @@ def remove_project():
 
 
 @app.route("/api/")
+@check_configs
 def home():
     """Return repos and projects which are running on the server.
     """
-    if not is_configured():
-        return redirect("/api/initial_config")
     result = {"repos": [], "projects": []}
     result["repos"] = RepoRun.distinct("repo")
     result["projects"] = ProjectRun.distinct("name")
@@ -422,6 +417,7 @@ def home():
 
 
 @app.route("/api/repos/<repo:path>")
+@check_configs
 def branch(repo):
     """Returns tests ran on this repo with specific branch or test details if id is sent.
 
@@ -429,8 +425,6 @@ def branch(repo):
     :param branch: the branch's name in the repo
     :param id: DB id of test details.
     """
-    if not is_configured():
-        return redirect("/api/initial_config")
     branch = request.query.get("branch")
     id = request.query.get("id")
 
@@ -456,9 +450,8 @@ def branch(repo):
 
 @app.route("/api/run_config/<name:path>", method=["GET", "POST", "DELETE"])
 @oauth_app.login_required
+@check_configs
 def run_config(name):
-    if not is_configured():
-        return redirect("/api/initial_config")
     run_config = RunConfig.find(name=name)
     if run_config and len(run_config) == 1:
         run_config = run_config[0]
@@ -482,14 +475,13 @@ def run_config(name):
 
 
 @app.route("/api/projects/<project>")
+@check_configs
 def project(project):
     """Returns tests ran on this project or test details if id is sent.
 
     :param project: project's name
     :param id: DB id of test details.
     """
-    if not is_configured():
-        return redirect("/api/initial_config")
     id = request.query.get("id")
     if id:
         project_run = ProjectRun(id=id)
@@ -504,12 +496,10 @@ def project(project):
 
 
 @app.route("/status")
+@check_configs
 def status():
     """Returns repo's branch or project status for your version control system.
     """
-    configs = InitialConfig()
-    if not is_configured():
-        return redirect("/api/initial_config")
     project = request.query.get("project")
     repo = request.query.get("repo")
     branch = request.query.get("branch")
@@ -554,9 +544,8 @@ def static(filepath):
 
 @app.route("/")
 @app.route("/<path:path>")
+@check_configs
 def catch_all(path=""):
-    if not is_configured():
-        return redirect("/api/initial_config")
     return static_file("index.html", root="../dist")
 
 
