@@ -79,6 +79,7 @@ def check_configs(func):
         if not configs.configured:
             return redirect("/api/initial_config")
         return func(*args, **kwargs)
+
     return wrapper
 
 
@@ -89,8 +90,9 @@ def user(func):
         if not (username in configs.users or (configs.admins and (not username in configs.admins))):
             return abort(401)
         return func(*args, **kwargs)
+
     return wrapper
-        
+
 
 def admin(func):
     @oauth_app.login_required
@@ -99,7 +101,9 @@ def admin(func):
         if configs.admins and (not username in configs.admins):
             return abort(401)
         return func(*args, **kwargs)
+
     return wrapper
+
 
 @app.hook("after_request")
 def enable_cors_disable_cache():
@@ -239,20 +243,13 @@ def initial_config():
             value = request.json.get(conf)
             if not value:
                 return Response(f"{conf} should have a value", 400)
-            if conf is "repos" and not isinstance(value, list):
+            elif conf is "repos" and not isinstance(value, list):
                 return Response("repos should be str or list", 400)
-            if conf is not "repos" and not isinstance(value, str):
+            elif conf is not "repos" and not isinstance(value, str):
                 return Response(f"{conf} should be str", 400)
+            else:
+                setattr(configs, conf, value)
 
-        configs.iyo_id = request.json["iyo_id"]
-        configs.iyo_secret = request.json["iyo_secret"]
-        configs.domain = request.json["domain"]
-        configs.chat_id = request.json["chat_id"]
-        configs.bot_token = request.json["bot_token"]
-        configs.vcs_host = request.json["vcs_host"]
-        configs.vcs_token = request.json["vcs_token"]
-        if isinstance(request.json["repos"], list):
-            configs.repos = request.json["repos"]
         if not configs.admins:
             admin = request.environ.get("beaker.session").get("username")
             configs.admins.append(admin)
@@ -358,63 +355,56 @@ def run_trigger():
         return Response("Wrong data", 400)
 
 
-@app.route("/api/add_project", method=["POST"])
+@app.route("/api/project", method=["POST", "DELETE"])
 @user
 @check_configs
 def add_project():
     if request.headers.get("Content-Type") == "application/json":
-        project_name = request.json.get("project_name")
-        prequisties = request.json.get("prequisties")
-        install_script = request.json.get("install_script")
-        test_script = request.json.get("test_script")
-        run_time = request.json.get("run_time")
-        authentication = request.json.get("authentication")
-        timeout = request.json.get("timeout", 3600)
-        if authentication == configs.vcs_token:
-            if not (
-                isinstance(project_name, str)
-                and isinstance(install_script, (str, list))
-                and isinstance(test_script, (str, list))
-                and isinstance(prequisties, (str, list))
-                and isinstance(run_time, str)
-                and isinstance(timeout, int)
-            ):
-                return Response("Wrong data", 400)
+        if request.method == "POST":
+            data = ["project_name", "run_time", "timeout"]
+            list_str_data = ["install_script", "test_script", "prequisties"]
+            data.extend(list_str_data)
+            job = {}
+            for item in data:
+                value = request.json.get(item)
+                if not value:
+                    return Response(f"{item} should have a value", 400)
+                elif item is "timeout" and not isinstance(value, int):
+                    return Response("timeout should be int", 400)
+                elif item in list_str_data and not isinstance(value, (str, list)):
+                    return Response(f"{item} should be str or list", 400)
+                elif item is not "timeout" and item not in list_str_data and not isinstance(value, str):
+                    return Response(f"{item} should be str", 400)
+                else:
+                    job[item] = value
 
-            if isinstance(install_script, list):
-                install_script = " && ".join(install_script)
+            if isinstance(job["install_script"], list):
+                job["install_script"] = " && ".join(job["install_script"])
 
-            if isinstance(test_script, str):
-                test_script = [test_script]
-
+            if isinstance(job["test_script"], str):
+                job["test_script"] = [job["test_script"]]
             try:
                 scheduler.cron(
-                    cron_string=run_time,
+                    cron_string=job["run_time"],
                     func=actions.run_project,
-                    args=[project_name, install_script, test_script, prequisties, timeout],
-                    id=project_name,
-                    timeout=timeout + 3600,
+                    args=[
+                        job["project_name"],
+                        job["install_script"],
+                        job["test_script"],
+                        job["prequisties"],
+                        job["timeout"],
+                    ],
+                    id=job["project_name"],
+                    timeout=job["timeout"] + 3600,
                 )
             except:
                 return Response("Wrong time format should be like (0 * * * *)", 400)
             return Response("Added", 201)
         else:
-            return Response("Authentication failed", 401)
-    return Response("", 404)
-
-
-@app.route("/api/remove_project", method=["DELETE"])
-@user
-@check_configs
-def remove_project():
-    if request.headers.get("Content-Type") == "application/json":
-        project_name = request.json.get("project_name")
-        authentication = request.json.get("authentication")
-        if authentication == configs.vcs_token:
+            project_name = request.json.get("project_name")
             scheduler.cancel(project_name)
-        else:
-            return Response("Authentication failed", 401)
-        return Response("Removed", 200)
+            return Response("Removed", 200)
+    return abort(400)
 
 
 @app.route("/api/")
