@@ -82,6 +82,25 @@ def check_configs(func):
     return wrapper
 
 
+def user(func):
+    @oauth_app.login_required
+    def wrapper(*args, **kwargs):
+        username = request.environ.get("beaker.session").get("username")
+        if not (username in configs.users or (configs.admins and (not username in configs.admins))):
+            return abort(401)
+        return func(*args, **kwargs)
+    return wrapper
+        
+
+def admin(func):
+    @oauth_app.login_required
+    def wrapper(*args, **kwargs):
+        username = request.environ.get("beaker.session").get("username")
+        if configs.admins and (not username in configs.admins):
+            return abort(401)
+        return func(*args, **kwargs)
+    return wrapper
+
 @app.hook("after_request")
 def enable_cors_disable_cache():
     response.headers["Access-Control-Allow-Origin"] = "*"
@@ -203,13 +222,10 @@ def is_authenticated():
 
 
 @app.route("/api/initial_config", method=["GET", "POST"])
-@oauth_app.login_required
+@admin
 def initial_config():
     """Initial configuration for the ci before start working.
     """
-    if configs.admins and (not request.environ.get("beaker.session").get("username") in configs.admins):
-        return abort(401)
-
     confs = ["iyo_id", "iyo_secret", "domain", "chat_id", "bot_token", "vcs_host", "vcs_token", "repos"]
     conf_dict = {}
     if request.method == "GET":
@@ -238,19 +254,16 @@ def initial_config():
         if isinstance(request.json["repos"], list):
             configs.repos = request.json["repos"]
         if not configs.admins:
-            configs.admins.append(request.environ.get("beaker.session").get("username"))
+            admin = request.environ.get("beaker.session").get("username")
+            configs.admins.append(admin)
         configs.configured = True
         configs.save()
         sys.exit(1)
 
 
 @app.route("/api/users", method=["GET", "POST", "DELETE"])
-@oauth_app.login_required
+@admin
 def users():
-    user_login = request.environ.get("beaker.session").get("username")
-    if not user_login in configs.admins:
-        return abort(401)
-
     if request.method == "GET":
         all_users = {"admins": configs.admins, "users": configs.users}
         all_json = json.dumps(all_users)
@@ -307,10 +320,9 @@ def git_trigger():
 
 
 @app.route("/api/run_trigger", method=["POST", "GET"])
-@oauth_app.login_required
+@user
 @check_configs
 def run_trigger():
-    # this api should be protected by user
     if request.method == "GET":
         redirect("/")
 
@@ -347,7 +359,7 @@ def run_trigger():
 
 
 @app.route("/api/add_project", method=["POST"])
-@oauth_app.login_required
+@user
 @check_configs
 def add_project():
     if request.headers.get("Content-Type") == "application/json":
@@ -392,7 +404,7 @@ def add_project():
 
 
 @app.route("/api/remove_project", method=["DELETE"])
-@oauth_app.login_required
+@user
 @check_configs
 def remove_project():
     if request.headers.get("Content-Type") == "application/json":
@@ -450,7 +462,7 @@ def branch(repo):
 
 
 @app.route("/api/run_config/<name:path>", method=["GET", "POST", "DELETE"])
-@oauth_app.login_required
+@user
 @check_configs
 def run_config(name):
     run_config = RunConfig.find(name=name)
