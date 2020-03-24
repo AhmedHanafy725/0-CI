@@ -21,7 +21,7 @@ r = redis.Redis()
 class Actions:
     _REPOS_DIR = "/opt/code/vcs_repos"
 
-    def test_run(self, node_ip, port, id, test_script, db_run, timeout):
+    def test_run(self, id, test_script, db_run, timeout):
         """Runs tests with specific commit and store the result in DB.
         
         :param image_name: docker image tag.
@@ -37,7 +37,7 @@ class Actions:
                 status = "success"
                 if line.startswith("#"):
                     continue
-                response, file_path = vms.run_test(id=id, run_cmd=line, node_ip=node_ip, port=port, env=env)
+                response, file_path = vms.run_test(id=id, run_cmd=line, env=env)
                 if file_path:
                     if response.returncode:
                         status = "failure"
@@ -68,7 +68,7 @@ class Actions:
             repo_run.result.append({"type": "log", "status": status, "name": "No tests", "content": "No tests found"})
             repo_run.save()
 
-    def test_black(self, node_ip, port, id, db_run, timeout):
+    def test_black(self, id, db_run, timeout):
         """Runs black formatting test on the repo with specific commit.
 
         :param image_name: docker image tag.
@@ -82,7 +82,7 @@ class Actions:
         line = "black {}/{} -l 120 -t py37 --diff --exclude 'templates' 1>/dev/null".format(
             self._REPOS_DIR, repo_run.repo
         )
-        response, _ = vms.run_test(id=id, run_cmd=line, node_ip=node_ip, port=port, env=env)
+        response, _ = vms.run_test(id=id, run_cmd=line, env=env)
         if response.returncode:
             status = "failure"
         elif "reformatted" in response.stdout:
@@ -101,9 +101,9 @@ class Actions:
         if install_script:
             repo_run = db_run(id=id)
             env = self._get_run_env(id=id, db_run=db_run)
-            uuid, node_ip, port = vms.deploy_vm(prequisties=prequisties)
-            if uuid:
-                response = vms.install_app(id=id, node_ip=node_ip, port=port, install_script=install_script, env=env)
+            deployed = vms.deploy_vm(prequisties=prequisties)
+            if deployed:
+                response = vms.install_app(id=id, install_script=install_script, env=env)
                 if response.returncode:
                     repo_run.result.append(
                         {"type": "log", "status": "error", "name": "Installation", "content": response.stdout}
@@ -111,7 +111,7 @@ class Actions:
                     repo_run.save()
                     r.rpush(id, "hamada ok")
                     self.cal_status(id=id, db_run=db_run)
-                return uuid, response, node_ip, port
+                return deployed, response
 
             else:
                 repo_run = db_run(id=id)
@@ -128,7 +128,7 @@ class Actions:
             repo_run.save()
             self.cal_status(id=id, db_run=db_run)
 
-        return None, None, None, None
+        return None, None
 
     def cal_status(self, id, db_run):
         """Calculates the status of whole tests ran on the BD's id.
@@ -205,15 +205,13 @@ class Actions:
         :type id: str
         """
         prequisties, install_script, test_script = self._install_test_scripts(id=id)
-        uuid, response, node_ip, port = self.build(
-            install_script=install_script, id=id, db_run=RepoRun, prequisties=prequisties
-        )
-        if uuid:
+        deployed, response = self.build(install_script=install_script, id=id, db_run=RepoRun, prequisties=prequisties)
+        if deployed:
             if not response.returncode:
-                self.test_black(node_ip=node_ip, port=port, id=id, db_run=RepoRun, timeout=500)
-                self.test_run(node_ip=node_ip, port=port, id=id, test_script=test_script, db_run=RepoRun, timeout=3600)
+                self.test_black(id=id, db_run=RepoRun, timeout=500)
+                self.test_run(id=id, test_script=test_script, db_run=RepoRun, timeout=3600)
                 self.cal_status(id=id, db_run=RepoRun)
-        vms.destroy_vm(uuid)
+        vms.destroy_vm()
         reporter.report(id=id, db_run=RepoRun)
 
     def run_project(self, project_name, install_script, test_script, prequisties, timeout):
@@ -223,16 +221,12 @@ class Actions:
         id = str(project_run.id)
         data["id"] = id
         r.publish(project_name, json.dumps(data))
-        uuid, response, node_ip, port = self.build(
+        deployed, response = self.build(
             install_script=install_script, id=id, db_run=ProjectRun, prequisties=prequisties
         )
-        if uuid:
+        if deployed:
             if not response.returncode:
-                self.test_run(
-                    node_ip=node_ip, port=port, id=id, test_script=test_script, db_run=ProjectRun, timeout=timeout
-                )
+                self.test_run(id=id, test_script=test_script, db_run=ProjectRun, timeout=timeout)
                 self.cal_status(id=id, db_run=ProjectRun)
-                project_run = ProjectRun(id=id)
-
-            vms.destroy_vm(uuid)
+            vms.destroy_vm()
         reporter.report(id=id, db_run=ProjectRun, project_name=project_name)

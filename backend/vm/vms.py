@@ -193,10 +193,10 @@ class VMS(Utils):
 
         time.sleep(40)
         if self.vm_uuid:
-            return self.vm_uuid, self.node_ip, self.port
-        return None, None, None
+            return True
+        return
 
-    def install_app(self, id, node_ip, port, install_script, env={}):
+    def install_app(self, id, install_script, env={}):
         """Install application to be tested.
 
         :param node_ip: mahcine's ip
@@ -208,10 +208,10 @@ class VMS(Utils):
         """
         prepare_script = self.prepare_script()
         script = prepare_script + install_script
-        response = self.execute_command(cmd=script, id=id, ip=node_ip, port=port, environment=env)
+        response = self.execute_command(cmd=script, id=id, ip=self.node_ip, port=self.port, environment=env)
         return response
 
-    def run_test(self, run_cmd, id, node_ip, port, env={}):
+    def run_test(self, run_cmd, id, env={}):
         """Run test command and get the result as xml file if the running command is following junit otherwise result will be log.
 
         :param run_cmd: test command to be run.
@@ -224,28 +224,25 @@ class VMS(Utils):
         :type timeout: int
         :return: path to xml file if exist and subprocess object containing (returncode, stdout, stderr)
         """
-        response = self.execute_command(run_cmd, id=id, ip=node_ip, port=port, environment=env)
+        response = self.execute_command(run_cmd, id=id, ip=self.node_ip, port=self.port, environment=env)
         file_path = "/var/zeroci/{}.xml".format(self.random_string())
         remote_path = "/test.xml"
-        copied = self.get_remote_file(ip=node_ip, port=port, remote_path=remote_path, local_path=file_path)
+        copied = self.get_remote_file(ip=self.node_ip, port=self.port, remote_path=remote_path, local_path=file_path)
         if copied:
             file_path = file_path
             delete_cmd = f"rm -f {remote_path}"
-            self.execute_command(delete_cmd, id=id, ip=node_ip, port=port)
+            self.execute_command(delete_cmd, id=id, ip=self.node_ip, port=self.port)
         else:
             if os.path.exists(file_path):
                 os.remove(file_path)
             file_path = None
         return response, file_path
 
-    def destroy_vm(self, uuid):
+    def destroy_vm(self):
         """Destory the virtual machine after finishing test.
-        
-        :param uuid: machine's uuid.
-        :type uuid: str
         """
-        if uuid:
-            self.node.client.container.terminate(int(uuid))
+        if self.vm_uuid:
+            self.node.client.container.terminate(int(self._vm_uuid))
         if self.media:
             self.node.client.bash("rm -rf {}".format(self.disk_path)).get()
 
