@@ -76,8 +76,7 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
 
 def check_configs(func):
     def wrapper(*args, **kwargs):
-        initial_config = InitialConfig()
-        if not initial_config.configured:
+        if not configs.configured:
             return redirect("/api/initial_config")
         return func(*args, **kwargs)
     return wrapper
@@ -208,8 +207,7 @@ def is_authenticated():
 def initial_config():
     """Initial configuration for the ci before start working.
     """
-    initial_config = InitialConfig()
-    if initial_config.admins and (not request.environ.get("beaker.session").get("username") in initial_config.admins):
+    if configs.admins and (not request.environ.get("beaker.session").get("username") in configs.admins):
         return abort(401)
 
     confs = ["iyo_id", "iyo_secret", "domain", "chat_id", "bot_token", "vcs_host", "vcs_token", "repos"]
@@ -217,7 +215,7 @@ def initial_config():
     if request.method == "GET":
         confs.extend(["configured", "admins", "users"])
         for conf in confs:
-            conf_dict[conf] = getattr(initial_config, conf)
+            conf_dict[conf] = getattr(configs, conf)
             conf_json = json.dumps(conf_dict)
         return conf_json
     if request.headers.get("Content-Type") == "application/json":
@@ -230,19 +228,19 @@ def initial_config():
             if conf is not "repos" and not isinstance(value, str):
                 return Response(f"{conf} should be str", 400)
 
-        initial_config.iyo_id = request.json["iyo_id"]
-        initial_config.iyo_secret = request.json["iyo_secret"]
-        initial_config.domain = request.json["domain"]
-        initial_config.chat_id = request.json["chat_id"]
-        initial_config.bot_token = request.json["bot_token"]
-        initial_config.vcs_host = request.json["vcs_host"]
-        initial_config.vcs_token = request.json["vcs_token"]
+        configs.iyo_id = request.json["iyo_id"]
+        configs.iyo_secret = request.json["iyo_secret"]
+        configs.domain = request.json["domain"]
+        configs.chat_id = request.json["chat_id"]
+        configs.bot_token = request.json["bot_token"]
+        configs.vcs_host = request.json["vcs_host"]
+        configs.vcs_token = request.json["vcs_token"]
         if isinstance(request.json["repos"], list):
-            initial_config.repos = request.json["repos"]
-        if not initial_config.admins:
-            initial_config.admins.append(request.environ.get("beaker.session").get("username"))
-        initial_config.configured = True
-        initial_config.save()
+            configs.repos = request.json["repos"]
+        if not configs.admins:
+            configs.admins.append(request.environ.get("beaker.session").get("username"))
+        configs.configured = True
+        configs.save()
         sys.exit(1)
 
 
@@ -250,12 +248,11 @@ def initial_config():
 @oauth_app.login_required
 def users():
     user_login = request.environ.get("beaker.session").get("username")
-    initial_config = InitialConfig()
-    if not user_login in initial_config.admins:
+    if not user_login in configs.admins:
         return abort(401)
 
     if request.method == "GET":
-        all_users = {"admins": initial_config.admins, "users": initial_config.users}
+        all_users = {"admins": configs.admins, "users": configs.users}
         all_json = json.dumps(all_users)
         return all_json
     if not request.headers.get("Content-Type") == "application/json":
@@ -265,17 +262,21 @@ def users():
     admin = request.json.get("admin")
     if request.method == "POST":
         if user:
-            initial_config.users.append(user)
+            configs.users.append(user)
+            configs.save()
             return Response("Added", 200)
         if admin:
-            initial_config.admins.append(admin)
+            configs.admins.append(admin)
+            configs.save()
             return Response("Added", 200)
     if request.method == "DELETE":
-        if user and user in initial_config.users:
-            initial_config.users.remove(user)
+        if user and user in configs.users:
+            configs.users.remove(user)
+            configs.save()
             return Response("Deleted", 200)
-        if admin and admin in initial_config.admins:
-            initial_config.admins.remove(admin)
+        if admin and admin in configs.admins:
+            configs.admins.remove(admin)
+            configs.save()
             return Response("Deleted", 200)
     return abort(400)
 
