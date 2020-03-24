@@ -20,8 +20,11 @@ r = redis.Redis()
 
 class Actions:
     _REPOS_DIR = "/opt/code/vcs_repos"
+    prequisties = None
+    install_script = None
+    test_script = None
 
-    def test_run(self, id, test_script, db_run, timeout):
+    def test_run(self, id, db_run, timeout):
         """Runs tests with specific commit and store the result in DB.
         
         :param image_name: docker image tag.
@@ -32,8 +35,8 @@ class Actions:
         repo_run = db_run(id=id)
         env = self._get_run_env(id=id, db_run=db_run)
         status = "success"
-        if test_script:
-            for i, line in enumerate(test_script):
+        if self.test_script:
+            for i, line in enumerate(self.test_script):
                 status = "success"
                 if line.startswith("#"):
                     continue
@@ -61,7 +64,7 @@ class Actions:
                         status = "failure"
                     repo_run.result.append({"type": "log", "status": status, "name": line, "content": response.stdout})
                 repo_run.save()
-                if i + 1 == len(test_script):
+                if i + 1 == len(self.test_script):
                     r.rpush(id, "hamada ok")
         else:
             r.rpush(id, "hamada ok")
@@ -97,13 +100,13 @@ class Actions:
         VCSObject = VCSFactory().get_cvn(repo=repo_run.repo)
         VCSObject.status_send(status=status, link=link, commit=repo_run.commit, context="Black-Formatting")
 
-    def build(self, install_script, id, db_run, prequisties=""):
-        if install_script:
+    def build(self, id, db_run):
+        if self.install_script:
             repo_run = db_run(id=id)
             env = self._get_run_env(id=id, db_run=db_run)
-            deployed = vms.deploy_vm(prequisties=prequisties)
+            deployed = vms.deploy_vm(prequisties=self.prequisties)
             if deployed:
-                response = vms.install_app(id=id, install_script=install_script, env=env)
+                response = vms.install_app(id=id, install_script=self.install_script, env=env)
                 if response.returncode:
                     repo_run.result.append(
                         {"type": "log", "status": "error", "name": "Installation", "content": response.stdout}
@@ -154,7 +157,7 @@ class Actions:
         if isinstance(run, RepoRun):
             name = run.repo
         else:
-            name = run.name
+            name = run.project_name
         run_config = RunConfig.find(name=name)
         if run_config and len(run_config) == 1:
             run_config = run_config[0]
@@ -191,42 +194,41 @@ class Actions:
         script = VCSObject.get_content(ref=repo_run.commit, file_path="zeroCI.yaml")
         if script:
             yaml_script = yaml.load(script)
-            prequisties = yaml_script.get("prequisties")
+            self.prequisties = yaml_script.get("prequisties")
             install = " && ".join(yaml_script.get("install"))
-            install_script = clone + install
-            test_script = yaml_script.get("script")
-            return prequisties, install_script, test_script
-        return None, None, None
+            self.install_script = clone + install
+            self.test_script = yaml_script.get("script")
 
-    def build_and_test(self, id):
+    def build_and_test(self, id, project_name=None, timeout=None):
         """Builds, runs tests, calculates status and gives report on telegram and your version control system.
         
         :param id: DB id of this commit details.
         :type id: str
         """
-        prequisties, install_script, test_script = self._install_test_scripts(id=id)
-        deployed, response = self.build(install_script=install_script, id=id, db_run=RepoRun, prequisties=prequisties)
+        if project_name:
+            db_run = ProjectRun
+        else:
+            self._install_test_scripts(id=id)
+            db_run = RepoRun
+        import ipdb; ipdb.set_trace()    
+        deployed, response = self.build(id=id, db_run=db_run)
         if deployed:
             if not response.returncode:
-                self.test_black(id=id, db_run=RepoRun, timeout=500)
-                self.test_run(id=id, test_script=test_script, db_run=RepoRun, timeout=3600)
-                self.cal_status(id=id, db_run=RepoRun)
+                if not project_name:
+                    self.test_black(id=id, db_run=db_run, timeout=500)
+                self.test_run(id=id, db_run=db_run, timeout=3600)
+                self.cal_status(id=id, db_run=db_run)
         vms.destroy_vm()
-        reporter.report(id=id, db_run=RepoRun)
+        reporter.report(id=id, db_run=db_run, project_name=project_name)
 
     def run_project(self, project_name, install_script, test_script, prequisties, timeout):
-        data = {"status": "pending", "timestamp": datetime.now().timestamp(), "name": project_name}
+        data = {"status": "pending", "timestamp": datetime.now().timestamp(), "project_name": project_name}
         project_run = ProjectRun(**data)
         project_run.save()
         id = str(project_run.id)
         data["id"] = id
         r.publish(project_name, json.dumps(data))
-        deployed, response = self.build(
-            install_script=install_script, id=id, db_run=ProjectRun, prequisties=prequisties
-        )
-        if deployed:
-            if not response.returncode:
-                self.test_run(id=id, test_script=test_script, db_run=ProjectRun, timeout=timeout)
-                self.cal_status(id=id, db_run=ProjectRun)
-            vms.destroy_vm()
-        reporter.report(id=id, db_run=ProjectRun, project_name=project_name)
+        self.prequisties = prequisties
+        self.install_script = install_script
+        self.test_script = test_script
+        self.build_and_test(id=id, project_name=project_name, timeout=timeout)

@@ -131,7 +131,7 @@ class ProjectRun(Base):
     _bcdb = j.data.bcdb.get("zeroci")
     _schema_text = """@url = zeroci.project
     timestamp** = (F)
-    name ** = (S)
+    project_name** = (S)
     status** = (S)
     result = (dict)
     """
@@ -144,7 +144,7 @@ class ProjectRun(Base):
         else:
             self._model_obj = self._model.new()
             self._model_obj.timestamp = kwargs["timestamp"]
-            self._model_obj.name = kwargs["name"]
+            self._model_obj.project_name = kwargs["project_name"]
             self._model_obj.status = kwargs.get("status", "pending")
             self._model_obj.result = {"result": []}
             self._model_obj.result["result"] = kwargs.get("result", [])
@@ -174,12 +174,12 @@ class ProjectRun(Base):
         self._model_obj.result["result"] = result
 
     @property
-    def name(self):
-        return self._model_obj.name
+    def project_name(self):
+        return self._model_obj.project_name
 
-    @name.setter
-    def name(self, name):
-        self._model_obj.name = name
+    @project_name.setter
+    def project_name(self, project_name):
+        self._model_obj.project_name = project_name
 
 
 class RunConfig(Base):

@@ -40,7 +40,7 @@ class Reporter(InitialConfig):
                 msg=msg, link=link, repo=run.repo, branch=run.branch, commit=run.commit, committer=run.committer
             )
         else:
-            link = f"{self.domain}/projects/{run.name.replace(' ', '%20')}/{str(run.id)}"
+            link = f"{self.domain}/projects/{run.project_name.replace(' ', '%20')}/{str(run.id)}"
             r.publish(project_name, json.dumps({"id": id, "status": run.status}))
             telegram.send_msg(msg=msg, link=link)
 

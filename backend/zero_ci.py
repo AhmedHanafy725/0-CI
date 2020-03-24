@@ -358,7 +358,7 @@ def run_trigger():
 @app.route("/api/project", method=["POST", "DELETE"])
 @user
 @check_configs
-def add_project():
+def project():
     if request.headers.get("Content-Type") == "application/json":
         if request.method == "POST":
             data = ["project_name", "run_time", "timeout"]
@@ -414,7 +414,7 @@ def home():
     """
     result = {"repos": [], "projects": []}
     result["repos"] = RepoRun.distinct("repo")
-    result["projects"] = ProjectRun.distinct("name")
+    result["projects"] = ProjectRun.distinct("project_name")
     result_json = json.dumps(result)
     return result_json
 
@@ -479,7 +479,7 @@ def run_config(name):
 
 @app.route("/api/projects/<project>")
 @check_configs
-def project(project):
+def projects(project):
     """Returns tests ran on this project or test details if id is sent.
 
     :param project: project's name
@@ -492,8 +492,8 @@ def project(project):
         return result
 
     fields = ["status", "timestamp"]
-    where = f"name='{project}'"
-    project_runs = RepoRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
+    where = f"project_name='{project}'"
+    project_runs = ProjectRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
     result = json.dumps(project_runs)
     return result
 
@@ -509,7 +509,7 @@ def status():
     result = request.query.get("result")  # to return the run result
     fields = ["status"]
     if project:
-        where = f"name='{project}' and status!='pending'"
+        where = f"project_name='{project}' and status!='pending'"
         project_run = ProjectRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
         if len(project_run) == 0:
             return abort(404)
