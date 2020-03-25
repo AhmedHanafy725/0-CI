@@ -9,9 +9,6 @@
 export default {
   name: "AsideProjects",
   props: ["project"],
-  data() {
-    return {};
-  },
   computed: {
     projectName() {
       return this.project.replace(' ', '%20')

@@ -104,29 +104,63 @@
       <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">keys</h5>
+            <h5 class="modal-title" id="exampleModalLabel">Environment Variables</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <!--begin::Form-->
             <form class="kt-form kt-form--label-right">
               <div class="kt-portlet__body">
-                <div class="form-group row">
-                  <div class="col">
-                    <label for="key" class="col-2 col-form-label">Key</label>
-                    <input class="col-9 form-control" type="text" required />
+                <div class="form-group" v-if="keys">
+                  <div class="row" v-for="(value, key, index) in keys" :key="index">
+                    <div class="col align-self-center text-right">{{ index + 1}}.</div>
+                    <div class="col-md-5">
+                      <input class="form-control" type="text" :value="key" disabled />
+                    </div>
+                    <div class="col-md-5">
+                      <input class="form-control" type="password" :value="value" disabled />
+                    </div>
+                    <div class="col align-self-center">
+                      <i class="flaticon2-delete kt-font-error" @click="deleteKey(key, value)"></i>
+                    </div>
                   </div>
-                  <div class="col">
-                    <label for="value" class="col-2 col-form-label">Value</label>
-                    <input class="col-9 form-control" type="text" required />
+
+                  <div class="row" v-if="fireInput">
+                    <div class="offset-md-1 col-md-5">
+                      <input
+                        class="form-control"
+                        type="text"
+                        placeholder="Key"
+                        v-model="newKey"
+                        required
+                      />
+                    </div>
+                    <div class="col-md-5">
+                      <input
+                        class="form-control"
+                        type="text"
+                        placeholder="Value"
+                        v-model="newValue"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="offset-md-1 px-2">
+                      <span class="kt-link" @click="fireInput = true">
+                        <i class="flaticon2-plus"></i>
+                        Add new key
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div class="kt-portlet__foot text-right">
+              <div class="kt-portlet__foot text-right" v-if="fireInput">
                 <div class="kt-form__actions">
                   <div class="row">
                     <div class="col">
-                      <button type="submit" class="btn btn-success" @click="addKey()">Add</button>
+                      <button type="button" class="btn btn-success" @click.prevent="addKey()">Add</button>
                       <button type="reset" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                     </div>
                   </div>
@@ -158,7 +192,11 @@ export default {
         { text: "Time", value: "timestamp" }
       ],
       details: [],
-      newKeyModel: true
+      newKeyModel: true,
+      keys: null,
+      fireInput: false,
+      newKey: null,
+      newValue: null
     };
   },
   methods: {
@@ -228,59 +266,50 @@ export default {
       }
     },
     restart() {
-      const path = "https://staging.zeroci.grid.tf/run_trigger/";
-      axios
-        .post(
-          path,
-          { id: "4" },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "Access-Control-Allow-Origin": "*"
-            }
+      const path = process.env.VUE_APP_BASE_URL + `run_trigger`;
+      axios.post(
+        path,
+        {
+          repo: this.orgName + "/" + this.repoName,
+          branch: this.$route.query.branch
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
           }
-        )
-        .then(response => {
-          console.log(response);
-        })
-        .catch(error => {
-          console.log("Error! Could not reach the API. " + error);
-        });
+        }
+      );
+      this.getRepos();
     },
     runConfig() {
-      const path = `https://staging.zeroci.grid.tf/api/run_config/${this.name}`;
+      const path =
+        process.env.VUE_APP_BASE_URL +
+        `run_config/${this.orgName}/${this.repoName}`;
+      process.env.VUE_APP_BASE_URL + `run_config/AhmedHanafy725/test_zeroci`;
       axios
         .get(path)
         .then(response => {
-          if (Object.keys(response.data).length === 0) {
-            this.newKeyModel = true;
-          } else {
-            console.log(response.data);
-          }
+          this.keys = response.data;
         })
         .catch(error => {
           console.log("Error! Could not reach the API. " + error);
         });
     },
     addKey() {
-      const path = `https://staging.zeroci.grid.tf/api/run_config/`;
-      axios
-        .post(
-          path,
-          { key: this.key, value: this.value },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "Access-Control-Allow-Origin": "*"
-            }
-          }
-        )
-        .then(response => {
-          console.log(response);
-        })
-        .catch(error => {
-          console.log("Error! Could not reach the API. " + error);
-        });
+      const path =
+        process.env.VUE_APP_BASE_URL +
+        `run_config/${this.orgName}/${this.repoName}`;
+      axios.post(path, { key: this.newKey, value: this.newValue });
+      this.runConfig();
+      this.fireInput = false;
+    },
+    deleteKey(key, value) {
+      const path =
+        process.env.VUE_APP_BASE_URL +
+        `run_config/${this.orgName}/${this.repoName}`;
+      axios.delete(path, { data: { key: key, value: value } });
+      this.runConfig();
     }
   },
   created() {
