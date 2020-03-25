@@ -7,7 +7,7 @@ import codecs
 
 import xmltodict
 
-from bcdb.bcdb import InitialConfig
+from models.initial_config import InitialConfig
 
 ansi_escape = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
 

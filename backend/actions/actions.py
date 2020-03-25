@@ -5,7 +5,10 @@ from datetime import datetime
 import redis
 import yaml
 
-from bcdb.bcdb import InitialConfig, ProjectRun, RepoRun, RunConfig
+from models.scheduler_run import SchedulerRun
+from models.trigger_run import TriggerRun
+from models.run_config import RunConfig
+from models.initial_config import InitialConfig
 from packages.vcs.vcs import VCSFactory
 from utils.reporter import Reporter
 from utils.utils import Utils
@@ -154,7 +157,7 @@ class Actions:
         :type id: str
         """
         run = db_run(id=id)
-        if isinstance(run, RepoRun):
+        if isinstance(run, TriggerRun):
             name = run.repo
         else:
             name = run.project_name
@@ -172,7 +175,7 @@ class Actions:
         :type id: str
         :return: prequisties, install, test script.
         """
-        repo_run = RepoRun(id=id)
+        repo_run = TriggerRun(id=id)
         org_repo_name = repo_run.repo.split("/")[0]
         clone = """mkdir -p {repos_dir}/{org_repo_name} &&
         cd {repos_dir}/{org_repo_name} &&
@@ -206,11 +209,11 @@ class Actions:
         :type id: str
         """
         if project_name:
-            db_run = ProjectRun
+            db_run = SchedulerRun
         else:
             self._install_test_scripts(id=id)
-            db_run = RepoRun
-        import ipdb; ipdb.set_trace()    
+            db_run = TriggerRun
+
         deployed, response = self.build(id=id, db_run=db_run)
         if deployed:
             if not response.returncode:
@@ -218,12 +221,12 @@ class Actions:
                     self.test_black(id=id, db_run=db_run, timeout=500)
                 self.test_run(id=id, db_run=db_run, timeout=3600)
                 self.cal_status(id=id, db_run=db_run)
-        vms.destroy_vm()
+            vms.destroy_vm()
         reporter.report(id=id, db_run=db_run, project_name=project_name)
 
     def run_project(self, project_name, install_script, test_script, prequisties, timeout):
         data = {"status": "pending", "timestamp": datetime.now().timestamp(), "project_name": project_name}
-        project_run = ProjectRun(**data)
+        project_run = SchedulerRun(**data)
         project_run.save()
         id = str(project_run.id)
         data["id"] = id

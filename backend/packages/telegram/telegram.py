@@ -2,7 +2,7 @@ import time
 
 from telegram import Bot, ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
 
-from bcdb.bcdb import InitialConfig
+from models.initial_config import InitialConfig
 
 RETRIES = 5
 

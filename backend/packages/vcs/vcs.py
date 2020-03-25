@@ -1,11 +1,11 @@
 from abc import ABCMeta, abstractmethod
 import base64
 import time
-from bcdb.bcdb import InitialConfig
+from models.initial_config import InitialConfig
 from github import Github as GH
 import giteapy
 
-c = InitialConfig()
+configs = InitialConfig()
 
 
 class VCSInterface(metaclass=ABCMeta):
@@ -105,9 +105,9 @@ class Github(VCSInterface):
         :param repo: full repo name
         :type repo: str
         """
-        if c.configured:
+        if configs.configured:
             self.repo = repo
-            self.github_cl = GH(c.vcs_token)
+            self.github_cl = GH(configs.vcs_token)
             self.repo_obj = self.github_cl.get_repo(self.repo)
 
     @VCSInterface.call_trial
@@ -154,11 +154,11 @@ class Gitea(VCSInterface):
 
         def _get_gitea_cl():
             configuration = giteapy.Configuration()
-            configuration.host = c.vcs_host + "/api/v1"
-            configuration.api_key["token"] = c.vcs_token
+            configuration.host = configs.vcs_host + "/api/v1"
+            configuration.api_key["token"] = configs.vcs_token
             return giteapy.api_client.ApiClient(configuration)
 
-        if c.configured:
+        if configs.configured:
             self.repo = repo
             self.owner = repo.split("/")[0]  # org name
             self.repo_name = self.repo.split("/")[-1]
@@ -201,7 +201,7 @@ class VCSFactory:
 
     @staticmethod
     def get_cvn(repo):
-        if c.vcs_type == "github":
+        if configs.vcs_type == "github":
             return Github(repo)
         else:
             return Gitea(repo)

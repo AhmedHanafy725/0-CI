@@ -17,7 +17,10 @@ from rq_scheduler import Scheduler
 from worker import conn
 
 from actions.actions import Actions
-from bcdb.bcdb import InitialConfig, ProjectRun, RepoRun, RunConfig
+from models.scheduler_run import SchedulerRun
+from models.trigger_run import TriggerRun
+from models.run_config import RunConfig
+from models.initial_config import InitialConfig
 from beaker.middleware import SessionMiddleware
 from bottle import Bottle, Response, abort, redirect, request, response, static_file
 from geventwebsocket import WebSocketError
@@ -44,7 +47,7 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
     status = "pending"
     timestamp = datetime.now().timestamp()
     if id:
-        repo_run = RepoRun(id=id)
+        repo_run = TriggerRun(id=id)
         repo_run.status = status
         repo_run.result = []
         repo_run.save()
@@ -60,7 +63,7 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
                 "repo": repo,
                 "branch": branch,
             }
-            repo_run = RepoRun(**data)
+            repo_run = TriggerRun(**data)
             repo_run.save()
             id = str(repo_run.id)
             data["id"] = id
@@ -327,7 +330,7 @@ def run_trigger():
         id = request.json.get("id")
         if id:
             where = f'id="{id}" and status="pending"'
-            run = RepoRun.get_objects(fields=["status"], where=where)
+            run = TriggerRun.get_objects(fields=["status"], where=where)
             if run:
                 return Response(
                     f"There is a running job for this id {id}, please try again after this run finishes", 503
@@ -341,7 +344,7 @@ def run_trigger():
         last_commit = VCSObject.get_last_commit(branch=branch)
         committer = VCSObject.get_committer(commit=last_commit)
         where = f'repo="{repo}" and branch="{branch}" and [commit]="{last_commit}" and status="pending"'
-        run = RepoRun.get_objects(fields=["status"], where=where)
+        run = TriggerRun.get_objects(fields=["status"], where=where)
         if run:
             return Response(
                 f"There is a running job from this commit {last_commit}, please try again after this run finishes", 503
@@ -413,8 +416,8 @@ def home():
     """Return repos and projects which are running on the server.
     """
     result = {"repos": [], "projects": []}
-    result["repos"] = RepoRun.distinct("repo")
-    result["projects"] = ProjectRun.distinct("project_name")
+    result["repos"] = TriggerRun.distinct("repo")
+    result["projects"] = SchedulerRun.distinct("project_name")
     result_json = json.dumps(result)
     return result_json
 
@@ -432,19 +435,19 @@ def branch(repo):
     id = request.query.get("id")
 
     if id:
-        repo_run = RepoRun(id=id)
+        repo_run = TriggerRun(id=id)
         result = json.dumps(repo_run.result)
         return result
     if branch:
         fields = ["status", "commit", "committer", "timestamp"]
         where = f'repo="{repo}" and branch="{branch}"'
-        repo_runs = RepoRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
+        repo_runs = TriggerRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
         result = json.dumps(repo_runs)
         return result
 
     VCSObject = VCSFactory().get_cvn(repo=repo)
     exist_branches = VCSObject.get_branches()
-    all_branches = RepoRun.distinct(field="branch", where=f"repo='{repo}'")
+    all_branches = TriggerRun.distinct(field="branch", where=f"repo='{repo}'")
     deleted_branches = list(set(all_branches) - set(exist_branches))
     branches = {"exist": exist_branches, "deleted": deleted_branches}
     result = json.dumps(branches)
@@ -487,13 +490,13 @@ def projects(project):
     """
     id = request.query.get("id")
     if id:
-        project_run = ProjectRun(id=id)
+        project_run = SchedulerRun(id=id)
         result = json.dumps(project_run.result)
         return result
 
     fields = ["status", "timestamp"]
     where = f"project_name='{project}'"
-    project_runs = ProjectRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
+    project_runs = SchedulerRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
     result = json.dumps(project_runs)
     return result
 
@@ -510,7 +513,7 @@ def status():
     fields = ["status"]
     if project:
         where = f"project_name='{project}' and status!='pending'"
-        project_run = ProjectRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
+        project_run = SchedulerRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
         if len(project_run) == 0:
             return abort(404)
 
@@ -526,7 +529,7 @@ def status():
         if not branch:
             branch = "master"
         where = f"repo='{repo}' and branch='{branch}' and status!='pending'"
-        repo_run = RepoRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
+        repo_run = TriggerRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
         if len(repo_run) == 0:
             return abort(404)
         if result:

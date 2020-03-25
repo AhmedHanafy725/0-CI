@@ -2,7 +2,7 @@ import json
 
 from redis import Redis
 
-from bcdb.bcdb import InitialConfig
+from models.initial_config import InitialConfig
 from packages.telegram.telegram import Telegram
 from packages.vcs.vcs import VCSFactory
 
