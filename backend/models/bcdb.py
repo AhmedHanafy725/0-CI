@@ -5,6 +5,9 @@ class Base:
     def save(self):
         self._model_obj.save()
 
+    def delete(self):
+        self._model_obj.delete()
+
     @property
     def id(self):
         return self._model_obj.id
