@@ -5,9 +5,9 @@ from .bcdb import Base
 
 class SchedulerRun(Base):
     _bcdb = j.data.bcdb.get("zeroci")
-    _schema_text = """@url = zeroci.project
+    _schema_text = """@url = zeroci.schedule
     timestamp** = (F)
-    project_name** = (S)
+    schedule_name** = (S)
     status** = (S)
     result = (dict)
     """
@@ -20,7 +20,7 @@ class SchedulerRun(Base):
         else:
             self._model_obj = self._model.new()
             self._model_obj.timestamp = kwargs["timestamp"]
-            self._model_obj.project_name = kwargs["project_name"]
+            self._model_obj.schedule_name = kwargs["schedule_name"]
             self._model_obj.status = kwargs.get("status", "pending")
             self._model_obj.result = {"result": []}
             self._model_obj.result["result"] = kwargs.get("result", [])
@@ -50,9 +50,9 @@ class SchedulerRun(Base):
         self._model_obj.result["result"] = result
 
     @property
-    def project_name(self):
-        return self._model_obj.project_name
+    def schedule_name(self):
+        return self._model_obj.schedule_name
 
-    @project_name.setter
-    def project_name(self, project_name):
-        self._model_obj.project_name = project_name
+    @schedule_name.setter
+    def schedule_name(self, schedule_name):
+        self._model_obj.schedule_name = schedule_name

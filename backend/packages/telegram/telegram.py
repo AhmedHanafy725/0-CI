@@ -18,6 +18,8 @@ class Telegram(InitialConfig):
 
         :param msg: message to be sent.
         :type msg: str
+        :param link: result link
+        :type link: str
         :param repo: full repo name
         :type repo: str
         :param branch: branch name

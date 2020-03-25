@@ -86,9 +86,7 @@ class VMS(Utils):
         :type ip: str
         :param port: machine's ssh port.
         :type port: int
-        :param timout: stop execution after a certain time.
-        :type timeout: int
-        :return: subprocess object containing (returncode, stdout, stderr)
+        :return: subprocess object containing (returncode, stdout)
         """
         r = redis.Redis()
         out = ""
@@ -154,7 +152,7 @@ class VMS(Utils):
 
         :param prequisties: list of prequisties needed.
         :type prequisties: list
-        :return: node info (uuid, ip, port) required to access the virtual machine created.
+        :return: bool (True: if virtual machine is created).
         """
         iyo_name = self.random_string()
         iyo = j.clients.itsyouonline.get(
@@ -199,12 +197,12 @@ class VMS(Utils):
     def install_app(self, id, install_script, env={}):
         """Install application to be tested.
 
-        :param node_ip: mahcine's ip
-        :type node_ip: str
-        :param port: machine's ssh port
-        :type port: int
+        :param id: DB's id of this run details.
+        :type id: str
         :param install_script: bash script to install script
         :type install_script: str
+        :param env: environment variables needed in the installation.
+        :type env: dict
         """
         prepare_script = self.prepare_script()
         script = prepare_script + install_script
@@ -216,12 +214,10 @@ class VMS(Utils):
 
         :param run_cmd: test command to be run.
         :type run_cmd: str
-        :param node_ip: machine's ip
-        :type node_ip: str
-        :param port: machine's ssh port
-        :type port: int
-        :param timout: stop execution after a certain time.
-        :type timeout: int
+        :param id: DB's id of this run details.
+        :type id: str
+        :param env: environment variables needed in running tests.
+        :type env: dict
         :return: path to xml file if exist and subprocess object containing (returncode, stdout, stderr)
         """
         response = self.execute_command(run_cmd, id=id, ip=self.node_ip, port=self.port, environment=env)

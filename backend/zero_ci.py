@@ -47,12 +47,12 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
     status = "pending"
     timestamp = datetime.now().timestamp()
     if id:
-        repo_run = TriggerRun(id=id)
-        repo_run.status = status
-        repo_run.result = []
-        repo_run.save()
+        trigger_run = TriggerRun(id=id)
+        trigger_run.status = status
+        trigger_run.result = []
+        trigger_run.save()
         r.ltrim(id, -1, 0)
-        r.publish(f"{repo_run.repo}_{repo_run.branch}", json.dumps({"id": id, "status": status}))
+        r.publish(f"{trigger_run.repo}_{trigger_run.branch}", json.dumps({"id": id, "status": status}))
     else:
         if repo in configs.repos:
             data = {
@@ -63,15 +63,17 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
                 "repo": repo,
                 "branch": branch,
             }
-            repo_run = TriggerRun(**data)
-            repo_run.save()
-            id = str(repo_run.id)
+            trigger_run = TriggerRun(**data)
+            trigger_run.save()
+            id = str(trigger_run.id)
             data["id"] = id
             r.publish(f"{repo}_{branch}", json.dumps(data))
     if id:
-        link = f"{configs.domain}/repos/{repo_run.repo.replace('/', '%2F')}/{repo_run.branch}/{str(repo_run.id)}"
-        VCSObject = VCSFactory().get_cvn(repo=repo_run.repo)
-        VCSObject.status_send(status=status, link=link, commit=repo_run.commit)
+        link = (
+            f"{configs.domain}/repos/{trigger_run.repo.replace('/', '%2F')}/{trigger_run.branch}/{str(trigger_run.id)}"
+        )
+        VCSObject = VCSFactory().get_cvn(repo=trigger_run.repo)
+        VCSObject.status_send(status=status, link=link, commit=trigger_run.commit)
         job = q.enqueue_call(func=actions.build_and_test, args=(id,), result_ttl=5000, timeout=20000)
         return job
     return None
@@ -161,14 +163,14 @@ def update_repos_table(repo, branch):
                 break
 
 
-@app.route("/websocket/projects/<project>")
-def update_projects_table(project):
+@app.route("/websocket/schedules/<schedule>")
+def update_schedules_table(schedule):
     wsock = request.environ.get("wsgi.websocket")
     if not wsock:
         abort(400, "Expected WebSocket request.")
 
     sub = r.pubsub()
-    sub.subscribe(project)
+    sub.subscribe(schedule)
     for msg in sub.listen():
         data = msg["data"]
         if isinstance(data, bytes):
@@ -358,13 +360,13 @@ def run_trigger():
         return Response("Wrong data", 400)
 
 
-@app.route("/api/project", method=["POST", "DELETE"])
+@app.route("/api/schedule", method=["POST", "DELETE"])
 @user
 @check_configs
-def project():
+def schedule():
     if request.headers.get("Content-Type") == "application/json":
         if request.method == "POST":
-            data = ["project_name", "run_time", "timeout"]
+            data = ["schedule_name", "run_time"]
             list_str_data = ["install_script", "test_script", "prequisties"]
             data.extend(list_str_data)
             job = {}
@@ -372,11 +374,9 @@ def project():
                 value = request.json.get(item)
                 if not value:
                     return Response(f"{item} should have a value", 400)
-                elif item is "timeout" and not isinstance(value, int):
-                    return Response("timeout should be int", 400)
                 elif item in list_str_data and not isinstance(value, (str, list)):
                     return Response(f"{item} should be str or list", 400)
-                elif item is not "timeout" and item not in list_str_data and not isinstance(value, str):
+                elif item not in list_str_data and not isinstance(value, str):
                     return Response(f"{item} should be str", 400)
                 else:
                     job[item] = value
@@ -389,23 +389,17 @@ def project():
             try:
                 scheduler.cron(
                     cron_string=job["run_time"],
-                    func=actions.run_project,
-                    args=[
-                        job["project_name"],
-                        job["install_script"],
-                        job["test_script"],
-                        job["prequisties"],
-                        job["timeout"],
-                    ],
-                    id=job["project_name"],
-                    timeout=job["timeout"] + 3600,
+                    func=actions.schedule_run,
+                    args=[job["schedule_name"], job["install_script"], job["test_script"], job["prequisties"],],
+                    id=job["schedule_name"],
+                    timeout=3600,
                 )
             except:
                 return Response("Wrong time format should be like (0 * * * *)", 400)
             return Response("Added", 201)
         else:
-            project_name = request.json.get("project_name")
-            scheduler.cancel(project_name)
+            schedule_name = request.json.get("schedule_name")
+            scheduler.cancel(schedule_name)
             return Response("Removed", 200)
     return abort(400)
 
@@ -413,11 +407,11 @@ def project():
 @app.route("/api/")
 @check_configs
 def home():
-    """Return repos and projects which are running on the server.
+    """Return repos and schedules which are running on the server.
     """
-    result = {"repos": [], "projects": []}
+    result = {"repos": [], "schedules": []}
     result["repos"] = TriggerRun.distinct("repo")
-    result["projects"] = SchedulerRun.distinct("project_name")
+    result["schedules"] = SchedulerRun.distinct("schedule_name")
     result_json = json.dumps(result)
     return result_json
 
@@ -435,14 +429,14 @@ def branch(repo):
     id = request.query.get("id")
 
     if id:
-        repo_run = TriggerRun(id=id)
-        result = json.dumps(repo_run.result)
+        trigger_run = TriggerRun(id=id)
+        result = json.dumps(trigger_run.result)
         return result
     if branch:
         fields = ["status", "commit", "committer", "timestamp"]
         where = f'repo="{repo}" and branch="{branch}"'
-        repo_runs = TriggerRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
-        result = json.dumps(repo_runs)
+        trigger_runs = TriggerRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
+        result = json.dumps(trigger_runs)
         return result
 
     VCSObject = VCSFactory().get_cvn(repo=repo)
@@ -480,47 +474,47 @@ def run_config(name):
     return abort(404)
 
 
-@app.route("/api/projects/<project>")
+@app.route("/api/schedules/<schedule>")
 @check_configs
-def projects(project):
-    """Returns tests ran on this project or test details if id is sent.
+def schedules(schedule):
+    """Returns tests ran on this schedule or test details if id is sent.
 
-    :param project: project's name
+    :param schedule: schedule's name
     :param id: DB id of test details.
     """
     id = request.query.get("id")
     if id:
-        project_run = SchedulerRun(id=id)
-        result = json.dumps(project_run.result)
+        scheduler_run = SchedulerRun(id=id)
+        result = json.dumps(scheduler_run.result)
         return result
 
     fields = ["status", "timestamp"]
-    where = f"project_name='{project}'"
-    project_runs = SchedulerRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
-    result = json.dumps(project_runs)
+    where = f"schedule_name='{schedule}'"
+    scheduler_runs = SchedulerRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
+    result = json.dumps(scheduler_runs)
     return result
 
 
 @app.route("/status")
 @check_configs
 def status():
-    """Returns repo's branch or project status for your version control system.
+    """Returns repo's branch or schedule status for your version control system.
     """
-    project = request.query.get("project")
+    schedule = request.query.get("schedule")
     repo = request.query.get("repo")
     branch = request.query.get("branch")
     result = request.query.get("result")  # to return the run result
     fields = ["status"]
-    if project:
-        where = f"project_name='{project}' and status!='pending'"
-        project_run = SchedulerRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
-        if len(project_run) == 0:
+    if schedule:
+        where = f"schedule_name='{schedule}' and status!='pending'"
+        scheduler_run = SchedulerRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
+        if len(scheduler_run) == 0:
             return abort(404)
 
         if result:
-            link = f"{configs.domain}/projects/{project}?id={str(project_run[0]['id'])}"
+            link = f"{configs.domain}/schedules/{schedule}?id={str(scheduler_run[0]['id'])}"
             return redirect(link)
-        if project_run[0]["status"] == "success":
+        if scheduler_run[0]["status"] == "success":
             return static_file("svgs/build_passing.svg", mimetype="image/svg+xml", root=".")
         else:
             return static_file("svgs/build_failing.svg", mimetype="image/svg+xml", root=".")
@@ -529,13 +523,13 @@ def status():
         if not branch:
             branch = "master"
         where = f"repo='{repo}' and branch='{branch}' and status!='pending'"
-        repo_run = TriggerRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
-        if len(repo_run) == 0:
+        trigger_run = TriggerRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
+        if len(trigger_run) == 0:
             return abort(404)
         if result:
-            link = f"{configs.domain}/repos/{repo.replace('/', '%2F')}/{branch}/{str(repo_run[0]['id'])}"
+            link = f"{configs.domain}/repos/{repo.replace('/', '%2F')}/{branch}/{str(trigger_run[0]['id'])}"
             return redirect(link)
-        if repo_run[0]["status"] == "success":
+        if trigger_run[0]["status"] == "success":
             return static_file("svgs/build_passing.svg", mimetype="image/svg+xml", root=".")
         else:
             return static_file("svgs/build_failing.svg", mimetype="image/svg+xml", root=".")

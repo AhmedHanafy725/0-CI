@@ -36,6 +36,8 @@ class Utils(InitialConfig):
         :type text: str
         :param file_name: result file name.
         :type file_name: str
+        :param file_path: result file path.
+        :type file_path: str
         """
         text = ansi_escape.sub("", text)
         if file_path == "":
