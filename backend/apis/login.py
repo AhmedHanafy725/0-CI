@@ -1,6 +1,6 @@
 import json
 
-from apis.base import PROVIDERS, app, bot_app, oauth_app
+from apis.base import PROVIDERS, app, bot_app, oauth_app, configs
 from bottle import abort, redirect, request
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
@@ -53,5 +53,11 @@ def is_authenticated():
     if session.get("authorized"):
         username = session["username"]
         email = session["email"]
-        return json.dumps({"username": username, "email": email})
+        if username in configs.admins:
+            permission = "admin"
+        elif username in configs.users:
+            permission = "user"
+        else:
+            permission = ""
+        return json.dumps({"username": username, "email": email, "permission": permission})
     return abort(403)
