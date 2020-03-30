@@ -5,7 +5,7 @@ from .bcdb import Base
 
 class TriggerRun(Base):
     _bcdb = j.data.bcdb.get("zeroci")
-    _schema_text = """@url = zeroci.repo
+    _schema_text = """@url = zeroci.trigger
     timestamp** = (F)
     repo** = (S)
     branch** = (S)
