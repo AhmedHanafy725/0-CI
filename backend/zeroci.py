@@ -1,16 +1,15 @@
 from gevent.pywsgi import WSGIServer
 
-from apis.base import *
-from apis.config import *
-from apis.login import *
-from apis.results import *
-from apis.schedule import *
-from apis.trigger import *
-from apis.websockets import *
-from apis.default import *
+from apis.base import app
+import apis.config
+import apis.login
+import apis.results
+import apis.schedule
+import apis.trigger
+import apis.websockets
+import apis.default
 from beaker.middleware import SessionMiddleware
 from geventwebsocket.handler import WebSocketHandler
-
 
 session_opts = {"session.type": "file", "session.data_dir": "./data", "session.auto": True}
 app_with_session = SessionMiddleware(app, session_opts)
