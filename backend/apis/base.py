@@ -23,7 +23,7 @@ def user(func):
     @oauth_app.login_required
     def wrapper(*args, **kwargs):
         username = request.environ.get("beaker.session").get("username")
-        if not (username in configs.users or (configs.admins and (not username in configs.admins))):
+        if not (username in configs.users or (configs.admins and (username in configs.admins))):
             return abort(401)
         return func(*args, **kwargs)
 

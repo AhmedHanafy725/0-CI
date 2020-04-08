@@ -1,3 +1,7 @@
+from gevent import monkey
+
+monkey.patch_all(subprocess=False)
+
 from gevent.pywsgi import WSGIServer
 
 from apis.base import app
