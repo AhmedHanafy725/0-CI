@@ -37,7 +37,7 @@
 
 <script>
 import BranchDropdown from "./BranchDropdown";
-import axios from "axios";
+import EventService from "../services/EventService";
 export default {
   name: "DashboardRepos",
   props: ["repo"],
@@ -46,14 +46,13 @@ export default {
   },
   data() {
     return {
-      branches: null,
       default_branch: "development",
+      branchData: null,
       committer: null,
       timestamp: null,
       status: null,
       id: null,
-      filteredItems: [],
-      visibility: true
+      filteredItems: []
     };
   },
   filters: {
@@ -62,24 +61,18 @@ export default {
     }
   },
   methods: {
-    getData() {
-      const path =
-        process.env.VUE_APP_BASE_URL +
-        `repos/${this.repo}?branch=${this.default_branch}`;
-      axios
-        .get(path)
+    fetchDetails() {
+      return EventService.getBranchDetails(this.repo, this.default_branch)
         .then(response => {
-          this.branches = response.data;
-          if (this.branches.length > 0) {
-            this.filteredItems = this.branches.filter(
+          this.branchData = response.data;
+          if (this.branchData.length > 0) {
+            this.filteredItems = this.branchData.filter(
               item => item.status !== "pending"
             );
             this.committer = this.filteredItems[0].committer;
             this.timestamp = this.filteredItems[0].timestamp;
             this.status = this.filteredItems[0].status;
             this.id = this.filteredItems[0].id;
-          } else {
-            this.visibility = false;
           }
         })
         .catch(error => {
@@ -88,7 +81,7 @@ export default {
     },
     getSelectedBranch(value) {
       this.default_branch = value;
-      this.getData();
+      this.fetchDetails();
     }
   },
   computed: {
@@ -100,7 +93,7 @@ export default {
     }
   },
   created() {
-    this.getData();
+    this.fetchDetails();
   }
 };
 </script>

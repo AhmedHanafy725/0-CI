@@ -4,7 +4,7 @@
     <div class="kt-subheader__main">
       <!-- <h3 class="kt-subheader__title">Dashboard</h3> -->
       <span class="kt-subheader__separator kt-hidden"></span>
-      <v-breadcrumbs></v-breadcrumbs>
+      <!-- <v-breadcrumbs></v-breadcrumbs> -->
     </div>
   </div>
 
@@ -14,6 +14,9 @@
 <script>
 import Breadcrumb from "./Breadcrumb";
 export default {
-  name: "contentHead"
+  name: "contentHead",
+  components: {
+    "v-breadcrumbs": Breadcrumb
+  }
 };
 </script>

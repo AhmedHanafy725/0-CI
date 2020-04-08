@@ -1,6 +1,7 @@
 <template>
   <!-- begin:: Content -->
   <div class="kt-content kt-grid__item kt-grid__item--fluid" id="kt_content">
+    <Loading v-if="loading" />
     <div class="kt-portlet kt-portlet--mobile">
       <div class="kt-portlet__head kt-portlet__head--lg">
         <div class="kt-portlet__head-label">
@@ -10,7 +11,12 @@
           <h3 class="kt-portlet__head-title">{{ name }}</h3>
         </div>
         <div class="kt-header__topbar pr-0">
-          <button type="button" class="btn btn-primary btn-sm" @click="restart()">
+          <button
+            type="button"
+            class="btn btn-primary btn-sm"
+            :disabled="disabled"
+            @click="restart()"
+          >
             <i class="flaticon2-reload"></i> Restart build
           </button>
           <button
@@ -40,12 +46,11 @@
 
             <v-text-field v-model="search" append-icon="mdi-magnify" label="Search"></v-text-field>
           </v-card-title>
-          <v-data-table :headers="headers" :items="details" :search="search">
+          <v-data-table :headers="headers" :items="schedules" :search="search">
             <template v-slot:item.id="{ item }">
               <router-link
-                :to="'/projects/' + name + '/' + item.id"
-                :class="{'disabled': item.status == 'pending'}"
-              >{{details.length - details.map(function(x) {return x.id; }).indexOf(item.id)}}</router-link>
+                :to="'/schedules/' + name + '/' + item.id"
+              >{{schedules.length - schedules.map(function(x) {return x.id; }).indexOf(item.id)}}</router-link>
             </template>
 
             <template v-slot:item.status="{ item }">
@@ -59,6 +64,8 @@
         </v-card>
       </div>
     </div>
+
+    <!-- :class="{'disabled': item.status == 'pending'}" -->
     <!--begin::Modal-->
     <div
       class="modal fade"
@@ -72,29 +79,74 @@
       <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">keys</h5>
+            <h5 class="modal-title" id="exampleModalLabel">Environment Variables</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <!--begin::Form-->
-            <form class="kt-form kt-form--label-right">
+            <span
+              class="kt-spinner my-5 kt-spinner--v2 kt-spinner--lg kt-spinner--dark"
+              v-if="formLoading"
+            ></span>
+            <!-- <div class="row" v-if="VarsValidate">
+              <div class="offset-md-1 col">
+                <div class="kt-section">
+                  <div class="kt-section__info">{{ msg }}</div>
+                </div>
+              </div>
+            </div>-->
+            <form class="kt-form kt-form--label-right" @submit.prevent="addKey()">
               <div class="kt-portlet__body">
-                <div class="form-group row">
-                  <div class="col">
-                    <label for="key" class="col-2 col-form-label">Key</label>
-                    <input class="col-9 form-control" type="text" required />
+                <div class="form-group" v-if="keys">
+                  <div class="row" v-for="(value, key, index) in keys" :key="index">
+                    <div class="col align-self-center text-right">{{ index + 1}}.</div>
+                    <div class="col-md-5">
+                      <input class="form-control" type="text" :value="key" disabled />
+                    </div>
+                    <div class="col-md-5">
+                      <input class="form-control" type="password" :value="value" disabled />
+                    </div>
+                    <div class="col align-self-center">
+                      <i class="flaticon2-delete kt-font-error" @click="deleteKey(key, value)"></i>
+                    </div>
                   </div>
-                  <div class="col">
-                    <label for="value" class="col-2 col-form-label">Value</label>
-                    <input class="col-9 form-control" type="text" required />
+
+                  <div class="row" v-if="fireInput">
+                    <div class="offset-md-1 col-md-5">
+                      <input
+                        class="form-control"
+                        type="text"
+                        placeholder="Key"
+                        v-model="newKey"
+                        required
+                      />
+                    </div>
+                    <div class="col-md-5">
+                      <input
+                        class="form-control"
+                        type="text"
+                        placeholder="Value"
+                        v-model="newValue"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="offset-md-1 px-2">
+                      <span class="kt-link" @click="fireInput = true, VarsValidate = false">
+                        <i class="flaticon2-plus"></i>
+                        Add new key
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div class="kt-portlet__foot text-right">
+              <div class="kt-portlet__foot text-right" v-if="fireInput">
                 <div class="kt-form__actions">
                   <div class="row">
                     <div class="col">
-                      <button type="submit" class="btn btn-success" @click="addKey()">Add</button>
+                      <button type="submit" class="btn btn-success">Add</button>
                       <button type="reset" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                     </div>
                   </div>
@@ -113,10 +165,15 @@
 </template>
 
 <script>
-import axios from "axios";
+import Loading from "./Loading";
+import EventService from "../services/EventService";
+
 export default {
   name: "ProjectDetails",
   props: ["name"],
+  components: {
+    Loading: Loading
+  },
   data() {
     return {
       search: "",
@@ -125,20 +182,28 @@ export default {
         { text: "Status", value: "status" },
         { text: "Time", value: "timestamp" }
       ],
-      details: [],
-      newKeyModel: true
+      schedules: null,
+      loading: true,
+      newKey: "",
+      newValue: "",
+      newKeyModel: true,
+      disabled: false,
+      fireInput: false,
+      keys: null,
+      formLoading: true,
+      VarsValidate: false,
+      msg: "No Variables Existed"
     };
   },
   methods: {
     clear() {
-      this.details = [];
+      this.schedules = [];
     },
     getDetails() {
-      const path = process.env.VUE_APP_BASE_URL + `projects/${this.formatOrg}`;
-      axios
-        .get(path)
+      EventService.getSchedulesDetails(this.name)
         .then(response => {
-          this.details = response.data;
+          this.loading = false;
+          this.schedules = response.data;
         })
         .catch(error => {
           console.log("Error! Could not reach the API. " + error);
@@ -173,36 +238,42 @@ export default {
       if (seconds > 60) {
         return Math.floor(seconds / 60) + " minutes ago";
       }
+      if (seconds < 60) {
+        return "Now";
+      }
+    },
+    reset() {
+      this.newKey = "";
+      this.newValue = "";
     },
     restart() {
-      const path = "https://staging.zeroci.grid.tf/run_trigger/";
-      axios
-        .post(
-          path,
-          { id: "4" },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "Access-Control-Allow-Origin": "*"
-            }
-          }
-        )
+      this.loading = true;
+      EventService.rebuildJob(this.formatOrg) // need Id
         .then(response => {
-          console.log(response);
+          if (response) {
+            this.loading = false;
+            this.disabled = true;
+            this.getDetails();
+          }
         })
         .catch(error => {
           console.log("Error! Could not reach the API. " + error);
         });
     },
     runConfig() {
-      const path = `https://staging.zeroci.grid.tf/api/run_config/${this.name}`;
-      axios
-        .get(path)
+      this.fireInput = false;
+      EventService.runConfig(this.name)
         .then(response => {
-          if (Object.keys(response.data).length === 0) {
-            this.newKeyModel = true;
-          } else {
-            console.log(response.data);
+          if (response) {
+            this.formLoading = false;
+            this.keys = response.data;
+            // if (Object.keys(response.data).length === 0)
+            if (response.data.length == undefined) {
+              this.VarsValidate = true;
+            }
+          }
+          if (this.keys == null) {
+            this.VarsValidate = true;
           }
         })
         .catch(error => {
@@ -210,20 +281,21 @@ export default {
         });
     },
     addKey() {
-      const path = `https://staging.zeroci.grid.tf/api/run_config/`;
-      axios
-        .post(
-          path,
-          { key: this.key, value: this.value },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "Access-Control-Allow-Origin": "*"
-            }
-          }
-        )
+      EventService.addKey(this.name, this.newKey, this.newValue)
         .then(response => {
-          console.log(response);
+          this.runConfig();
+          this.fireInput = false;
+          this.VarsValidate = false;
+          this.reset();
+        })
+        .catch(error => {
+          console.log("Error! Could not reach the API. " + error);
+        });
+    },
+    deleteKey(key, value) {
+      EventService.deleteKey(this.name, key, value)
+        .then(response => {
+          this.runConfig();
         })
         .catch(error => {
           console.log("Error! Could not reach the API. " + error);
@@ -242,6 +314,7 @@ export default {
     "$route.params": {
       handler(newValue) {
         this.clear();
+        this.loading = true;
         const { name } = newValue;
         this.getDetails();
       },
@@ -250,3 +323,15 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.kt-spinner {
+  margin: auto;
+  display: table;
+}
+
+.kt-link,
+.flaticon2-delete {
+  cursor: pointer;
+}
+</style>

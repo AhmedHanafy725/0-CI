@@ -7,11 +7,11 @@
     >Branches</a>
     <div class="dropdown-menu dropdown-menu-fit dropdown-menu-right">
       <ul class="kt-nav">
-        <li class="kt-nav__item" v-for="(existedBranch, i) in existedBranches" :key="i">
+        <li class="kt-nav__item" v-for="existedBranch in existedBranches" :key="existedBranch.id">
           <a href="#" class="kt-nav__link">
             <span
               class="kt-nav__link-text"
-              @click="selectedBranch(existedBranch)"
+              @click.prevent="selectedBranch(existedBranch)"
             >{{ existedBranch }}</span>
           </a>
         </li>
@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import Axios from "axios";
+import EventService from "../services/EventService";
 export default {
   name: "BranchDropdown",
   props: ["repo"],
@@ -31,9 +31,8 @@ export default {
     };
   },
   methods: {
-    getBranches() {
-      const path = process.env.VUE_APP_BASE_URL + `repos/${this.repo}`;
-      Axios.get(path)
+    getExistedBranches() {
+      EventService.getBranches(this.repo)
         .then(response => {
           this.existedBranches = response.data.exist;
         })
@@ -46,7 +45,7 @@ export default {
     }
   },
   created() {
-    this.getBranches();
+    this.getExistedBranches();
   }
 };
 </script>
@@ -54,5 +53,8 @@ export default {
 <style scoped>
 .dropdown-menu-right {
   z-index: 999;
+}
+ul {
+  padding-left: 0;
 }
 </style>

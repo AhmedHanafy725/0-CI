@@ -23,8 +23,8 @@
         <li
           class="kt-menu__item"
           aria-haspopup="true"
-          v-for="(existedBranch, index) in existedBranches"
-          :key="index"
+          v-for="existedBranch in existedBranches"
+          :key="existedBranch.id"
         >
           <router-link
             :to="branchLink +  existedBranch"
@@ -44,8 +44,8 @@
         <li
           class="kt-menu__item"
           aria-haspopup="true"
-          v-for="(deletedBranch, i) in deletedBranches"
-          :key="i + 'a'"
+          v-for="deletedBranch in deletedBranches"
+          :key="deletedBranch.id"
         >
           <router-link
             :to="branchLink +  deletedBranch"
@@ -63,29 +63,19 @@
   </li>
 </template>
 <script>
-import axios from "axios";
+import EventService from "../services/EventService";
 export default {
   name: "AsideRepos",
-  props: ["repo", "orgName", "branch"],
+  props: ["repo"],
   data() {
     return {
       existedBranches: null,
       deletedBranches: null
     };
   },
-  computed: {
-    repoName: function() {
-      return this.repo.substring(this.repo.indexOf("/") + 1);
-    },
-    branchLink: function() {
-      return "/repos/" + this.repo + "?branch=";
-    }
-  },
   methods: {
-    getBranches() {
-      const path = process.env.VUE_APP_BASE_URL + `repos/${this.repo}`;
-      axios
-        .get(path)
+    fetchBranches() {
+      EventService.getBranches(this.repo)
         .then(response => {
           this.existedBranches = response.data.exist;
           this.deletedBranches = response.data.deleted;
@@ -95,8 +85,16 @@ export default {
         });
     }
   },
+  computed: {
+    repoName: function() {
+      return this.repo.substring(this.repo.indexOf("/") + 1);
+    },
+    branchLink: function() {
+      return "/repos/" + this.repo + "?branch=";
+    }
+  },
   created() {
-    this.getBranches();
+    this.fetchBranches();
   }
 };
 </script>

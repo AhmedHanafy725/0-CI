@@ -3,7 +3,7 @@
   <div id="kt_header_mobile" class="kt-header-mobile kt-header-mobile--fixed">
     <div class="kt-header-mobile__logo">
       <a :href="link">
-        <img alt="Logo" :src="img" />
+        <img alt="Logo" :src="img" width="92"/>
       </a>
     </div>
     <div class="kt-header-mobile__toolbar">
@@ -29,7 +29,7 @@ export default {
   data() {
     return {
       link: "/",
-      img: "/static/assets/media/logos/logo-light.png"
+      img: "/src/assets/media/logos/logo-light.png"
     };
   }
 };

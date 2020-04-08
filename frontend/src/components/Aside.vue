@@ -84,7 +84,7 @@ export default {
   data() {
     return {
       homeLink: "/",
-      logo: "/static/assets/media/logos/logo-light.png"
+      logo: "/src/assets/media/logos/logo-light.png"
     };
   }
 };

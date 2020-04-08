@@ -44,33 +44,48 @@
           <h4 class="kt-menu__section-text">Repos</h4>
           <i class="kt-menu__section-icon flaticon-more-v2"></i>
         </li>
-        <Repos v-for="(repo, index) in repos" :key="index" :repo="repo" />
+        <Repos v-for="repo in repos" :key="repo.id" :repo="repo" />
         <li class="kt-menu__section">
-          <h4 class="kt-menu__section-text">Projects</h4>
+          <h4 class="kt-menu__section-text">Schedules</h4>
           <i class="kt-menu__section-icon flaticon-more-v2"></i>
         </li>
-        <Projects v-for="(project, i) in projects" :key="'A' + i" :project="project" />
+        <Schedules v-for="schedule in schedules" :key="schedule.id" :schedule="schedule" />
       </ul>
     </div>
   </div>
 </template>
 
 <script>
+import EventService from "../services/EventService";
 import Repos from "./AsideRepos";
-import Projects from "./AsideProjects";
-import { mapState } from "vuex";
+import Schedules from "./AsideSchedules";
 
 export default {
   name: "AsideMenu",
   components: {
     Repos,
-    Projects
+    Schedules
   },
-  computed: {
-    ...mapState(["repos", "projects"])
+  data() {
+    return {
+      repos: null,
+      schedules: null
+    };
+  },
+  methods: {
+    getData() {
+      EventService.dashboardData()
+        .then(response => {
+          this.repos = response.data.repos;
+          this.schedules = response.data.schedules;
+        })
+        .catch(error => {
+          console.log("Error! Could not reach the API. " + error);
+        });
+    }
   },
   created() {
-    this.$store.dispatch("initOrgs");
+    this.getData();
   }
 };
 </script>

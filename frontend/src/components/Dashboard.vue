@@ -10,6 +10,7 @@
 import HeaderMobile from "./HeaderMobile";
 import MainContent from "./MainContent";
 import ScrollTop from "./ScrollTop";
+
 export default {
   name: "Dashboard",
   components: {

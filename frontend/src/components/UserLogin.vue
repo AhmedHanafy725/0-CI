@@ -1,17 +1,13 @@
 <template>
   <div class="kt-header__topbar-item kt-header__topbar-item--user">
     <!-- Logged -->
-    <div class="kt-header__topbar-user" v-if="logged">
+    <div class="kt-header__topbar-user">
       <span class="kt-header__topbar-welcome kt-hidden-mobile">Hi,</span>
-      <span class="kt-header__topbar-username kt-hidden-mobile"></span>
-      <img class="kt-hidden" alt="Pic" src="/static/assets/media/users/300_25.jpg" />
+      <span class="kt-header__topbar-username kt-hidden-mobile">{{ formatUser }}</span>
+      <img class="kt-hidden" alt="Pic" src="/src/assets/media/users/300_25.jpg" />
 
       <div class="kt-notification__custom">
-        <a
-          href="custom_user_login-v2.html"
-          target="_blank"
-          class="btn btn-label-brand btn-sm btn-bold"
-        >Logout</a>
+        <a @click="logout()" target="_blank" class="btn btn-label-brand btn-sm btn-bold">Logout</a>
       </div>
       <!--use below badge element instead the user avatar to display username's first letter(remove kt-hidden class to display it) -->
       <!-- <span
@@ -20,11 +16,11 @@
     </div>
 
     <!-- Not Logged -->
-    <div class="kt-header__topbar-user" v-if="!logged">
+    <!-- <div class="kt-header__topbar-user" v-if="!logged">
       <div class="kt-notification__custom">
         <a :href="link" class="btn btn-label-brand btn-sm btn-bold">Login</a>
       </div>
-    </div>
+    </div>-->
   </div>
 
   <!--end: User Bar -->
@@ -33,30 +29,21 @@
 <script>
 export default {
   name: "UserLogin",
-  data() {
-    return {
-      logged: false,
-      link: "https://staging.zeroci.grid.tf/auth/login?provider=3bot",
-      signedAttempt: this.$route.query.signedAttempt,
-      name: null
-    };
-  },
   methods: {
-    parseName() {
-      let str = JSON.parse(this.signedAttempt);
-      this.name = str.doubleName;
+    logout() {
+      this.$store.commit("SET_USER", null);
+      this.$store.commit("SET_TOKEN", null);
+      if (window.localStorage) {
+        window.localStorage.setItem("user", null);
+        window.localStorage.setItem("token", null);
+      }
+      this.$router.push({ name: "Login" });
     }
   },
   computed: {
-    formatName() {
-      return this.name.replace(".3bot", "");
+    formatUser() {
+      return this.$store.getters.formatUser;
     }
-  },
-  created() {
-    this.parseName();
   }
-  //   this.$auth.handleAuthentication().then(data => {
-  //     this.$router.push({ name: "Dashboard" });
-  //   });
 };
 </script>

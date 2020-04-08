@@ -1,1 +1,0 @@
-export const INIT_ORGS = 'INIT_ORGS'

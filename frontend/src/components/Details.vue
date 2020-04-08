@@ -1,6 +1,7 @@
 <template>
   <!-- begin:: Content -->
   <div class="kt-content kt-grid__item kt-grid__item--fluid" id="kt_content">
+    <Loading v-if="loading" />
     <div class="kt-portlet kt-portlet--mobile">
       <div class="kt-portlet__head kt-portlet__head--lg">
         <div class="kt-portlet__head-label">
@@ -9,22 +10,27 @@
           </span>
           <h3 class="kt-portlet__head-title">{{ repoName }}/{{ branch }}</h3>
         </div>
-        <button type="button" class="btn btn-primary btn-sm" @click="rebuild()">
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          :disabled="disabled"
+          @click="rebuild()"
+        >
           <i class="flaticon2-reload"></i> Restart job
         </button>
       </div>
       <div class="kt-portlet__body">
         <!-- logs -->
         <v-expansion-panels>
-          <logs v-for="(log,i) in logs" :key="i" :log="log"></logs>
+          <logs v-for="log in logs" :key="log.id" :log="log"></logs>
         </v-expansion-panels>
         <!-- testcases -->
         <v-expansion-panels>
           <test-suites
-            v-for="(testsuite, index) in testsuites"
-            :key="index"
+            v-for="testsuite in testsuites"
+            :key="testsuite.id"
             :testsuite="testsuite"
-            :index="index"
+            :index="testsuite.id"
           ></test-suites>
         </v-expansion-panels>
       </div>
@@ -35,34 +41,36 @@
 </template>
 
 <script>
-import axios from "axios";
+import EventService from "../services/EventService";
 import Logs from "./Logs";
 import TestSuites from "./TestSuites";
-
+import Loading from "./Loading";
 export default {
   name: "RepoDetails",
   props: ["orgName", "repoName", "branch", "id"],
   components: {
     logs: Logs,
+    Loading: Loading,
     "test-suites": TestSuites
   },
   data() {
     return {
-      data: null,
+      loading: true,
+      logs: [],
       testsuites: [],
-      logs: []
+      disabled: false
     };
   },
   methods: {
-    getDetails() {
-      const path =
-        process.env.VUE_APP_BASE_URL +
-        `repos/${this.orgName}/${this.repoName}?branch=${this.branch}&&id=${this.id}`;
-      axios
-        .get(path)
+    fetchBrancheIdDetails() {
+      EventService.getBranchIdDetails(
+        this.orgName + "/" + this.repoName,
+        this.branch,
+        this.id
+      )
         .then(response => {
-          this.data = response.data;
-          this.data.map((job, index) => {
+          this.loading = false;
+          response.data.map((job, index) => {
             if (job.type == "log") {
               this.logs.push(job);
             } else if (job.type == "testsuite") {
@@ -75,29 +83,21 @@ export default {
         });
     },
     rebuild() {
-      const path = process.env.VUE_APP_BASE_URL + "run_trigger";
-      axios
-        .post(
-          path,
-          { id: this.id }, //repo, branch
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "Access-Control-Allow-Origin": "*"
-            }
-          }
-        )
+      this.loading = true;
+      EventService.rebuildJob(this.id)
         .then(response => {
-          console.log(response);
+          if (response) {
+            this.loading = false;
+            this.disabled = true;
+          }
         })
         .catch(error => {
           console.log("Error! Could not reach the API. " + error);
         });
     }
   },
-
   created() {
-    this.getDetails();
+    this.fetchBrancheIdDetails();
   }
 };
 </script>

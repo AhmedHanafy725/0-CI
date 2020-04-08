@@ -34,9 +34,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
         host: HOST || config.dev.host,
         port: PORT || config.dev.port,
         open: config.dev.autoOpenBrowser,
-        overlay: config.dev.errorOverlay ?
-            { warnings: false, errors: true } :
-            false,
+        overlay: config.dev.errorOverlay ? { warnings: false, errors: true } : false,
         publicPath: config.dev.assetsPublicPath,
         proxy: config.dev.proxyTable,
         quiet: true, // necessary for FriendlyErrorsPlugin
@@ -59,7 +57,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
         }),
         // copy custom static assets
         new CopyWebpackPlugin([{
-            from: path.resolve(__dirname, '../static'),
+            from: path.resolve(__dirname, '../src'),
             to: config.dev.assetsSubDirectory,
             ignore: ['.*']
         }])
@@ -83,8 +81,7 @@ module.exports = new Promise((resolve, reject) => {
                     messages: [`Your application is running here: http://${devWebpackConfig.devServer.host}:${port}`],
                 },
                 onErrors: config.dev.notifyOnErrors ?
-                    utils.createNotifierCallback() :
-                    undefined
+                    utils.createNotifierCallback() : undefined
             }))
 
             resolve(devWebpackConfig)

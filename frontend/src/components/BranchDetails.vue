@@ -1,6 +1,7 @@
 <template>
   <!-- begin:: Content -->
   <div class="kt-content kt-grid__item kt-grid__item--fluid" id="kt_content">
+    <Loading v-if="loading" />
     <div class="kt-portlet kt-portlet--mobile">
       <div class="kt-portlet__head kt-portlet__head--lg">
         <div class="kt-portlet__head-label">
@@ -10,7 +11,12 @@
           <h3 class="kt-portlet__head-title">{{ repoName }}/{{ $route.query.branch }}</h3>
         </div>
         <div class="kt-header__topbar pr-0">
-          <button type="button" class="btn btn-primary btn-sm" @click="restart()">
+          <button
+            type="button"
+            class="btn btn-primary btn-sm"
+            :disabled="disabled"
+            @click="restart()"
+          >
             <i class="flaticon2-reload"></i> Restart build
           </button>
           <button
@@ -50,6 +56,7 @@
             <template v-slot:item.id="{ item }">
               <router-link
                 :to="'/repos/' + orgName + '/' + repoName + '/' + $route.query.branch + '/' + item.id"
+                :class="{'disabled': item.status == 'pending'}"
               >{{details.length - details.map(function(x) {return x.id; }).indexOf(item.id)}}</router-link>
             </template>
 
@@ -109,7 +116,18 @@
           </div>
           <div class="modal-body">
             <!--begin::Form-->
-            <form class="kt-form kt-form--label-right">
+            <span
+              class="kt-spinner my-5 kt-spinner--v2 kt-spinner--lg kt-spinner--dark"
+              v-if="formLoading"
+            ></span>
+            <!-- <div class="row" v-if="VarsValidate">
+              <div class="offset-md-1 col">
+                <div class="kt-section">
+                  <div class="kt-section__info">{{ msg }}</div>
+                </div>
+              </div>
+            </div>-->
+            <form class="kt-form kt-form--label-right" @submit.prevent="addKey()">
               <div class="kt-portlet__body">
                 <div class="form-group" v-if="keys">
                   <div class="row" v-for="(value, key, index) in keys" :key="index">
@@ -148,7 +166,7 @@
 
                   <div class="row">
                     <div class="offset-md-1 px-2">
-                      <span class="kt-link" @click="fireInput = true">
+                      <span class="kt-link" @click="fireInput = true, VarsValidate = false">
                         <i class="flaticon2-plus"></i>
                         Add new key
                       </span>
@@ -160,7 +178,7 @@
                 <div class="kt-form__actions">
                   <div class="row">
                     <div class="col">
-                      <button type="button" class="btn btn-success" @click.prevent="addKey()">Add</button>
+                      <button type="submit" class="btn btn-success">Add</button>
                       <button type="reset" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                     </div>
                   </div>
@@ -176,13 +194,17 @@
   <!-- end:: Content -->
 </template>
 <script>
-import axios from "axios";
+import Loading from "./Loading";
+import EventService from "../services/EventService";
+
 export default {
   name: "BranchDetails",
   props: ["orgName", "repoName"],
+  components: {
+    Loading: Loading
+  },
   data() {
     return {
-      repos: null,
       search: "",
       headers: [
         { text: "#ID", value: "id" },
@@ -191,30 +213,26 @@ export default {
         { text: "Status", value: "status" },
         { text: "Time", value: "timestamp" }
       ],
-      details: [],
+      loading: true,
+      details: null,
       newKeyModel: true,
       keys: null,
       fireInput: false,
-      newKey: null,
-      newValue: null
+      newKey: "",
+      newValue: "",
+      disabled: false,
+      formLoading: true,
+      VarsValidate: false,
+      msg: "No Variables Existed"
     };
   },
   methods: {
-    getRepos() {
-      const path =
-        process.env.VUE_APP_BASE_URL +
-        `repos/${this.orgName}/${this.repoName}?branch=${this.$route.query.branch}`;
-      axios
-        .get(path)
-        .then(response => {
-          this.details = response.data;
-        })
-        .catch(error => {
-          console.log("Error! Could not reach the API. " + error);
-        });
-    },
     clear() {
       this.details = [];
+    },
+    reset() {
+      this.newKey = "";
+      this.newValue = "";
     },
     committerSrc(committer) {
       return "https://github.com/" + committer + ".png";
@@ -264,66 +282,110 @@ export default {
       if (seconds > 60) {
         return Math.floor(seconds / 60) + " minutes ago";
       }
+      if (seconds < 60) {
+        return "Now";
+      }
     },
     restart() {
-      const path = process.env.VUE_APP_BASE_URL + `run_trigger`;
-      axios.post(
-        path,
-        {
-          repo: this.orgName + "/" + this.repoName,
-          branch: this.$route.query.branch
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"
+      this.loading = true;
+      EventService.restartBuild(
+        this.orgName + "/" + this.repoName,
+        this.$route.query.branch
+      )
+        .then(response => {
+          if (response) {
+            this.loading = false;
+            this.disabled = true;
+            this.fetchData();
           }
-        }
-      );
-      this.getRepos();
+        })
+        .catch(error => {
+          console.log("Error! Could not reach the API. " + error);
+        });
     },
     runConfig() {
-      const path =
-        process.env.VUE_APP_BASE_URL +
-        `run_config/${this.orgName}/${this.repoName}`;
-      process.env.VUE_APP_BASE_URL + `run_config/AhmedHanafy725/test_zeroci`;
-      axios
-        .get(path)
+      this.fireInput = false;
+      EventService.runConfig(this.orgName + "/" + this.repoName)
         .then(response => {
-          this.keys = response.data;
+          if (response) {
+            this.formLoading = false;
+            this.keys = response.data;
+            if (response.data.length == undefined) {
+              this.VarsValidate = true;
+            }
+          }
+          if (this.keys == null) {
+            this.VarsValidate = true;
+          }
         })
         .catch(error => {
           console.log("Error! Could not reach the API. " + error);
         });
     },
     addKey() {
-      const path =
-        process.env.VUE_APP_BASE_URL +
-        `run_config/${this.orgName}/${this.repoName}`;
-      axios.post(path, { key: this.newKey, value: this.newValue });
-      this.runConfig();
-      this.fireInput = false;
+      EventService.addKey(
+        this.orgName + "/" + this.repoName,
+        this.newKey,
+        this.newValue
+      )
+        .then(response => {
+          this.runConfig();
+          this.fireInput = false;
+          this.VarsValidate = false;
+          this.reset();
+        })
+        .catch(error => {
+          console.log("Error! Could not reach the API. " + error);
+        });
     },
     deleteKey(key, value) {
-      const path =
-        process.env.VUE_APP_BASE_URL +
-        `run_config/${this.orgName}/${this.repoName}`;
-      axios.delete(path, { data: { key: key, value: value } });
-      this.runConfig();
+      EventService.deleteKey(this.orgName + "/" + this.repoName, key, value)
+        .then(response => {
+          this.runConfig();
+        })
+        .catch(error => {
+          console.log("Error! Could not reach the API. " + error);
+        });
+    },
+    fetchData() {
+      EventService.getBranchDetails(
+        this.orgName + "/" + this.repoName,
+        this.$route.query.branch
+      )
+        .then(response => {
+          this.loading = false;
+          this.details = response.data
+        })
+        .catch(error => {
+          console.log("Error! Could not reach the API. " + error);
+        });
     }
   },
   created() {
-    this.getRepos();
+    this.fetchData();
   },
   watch: {
     "$route.params": {
       handler(newValue) {
         this.clear();
+        this.loading = true;
         const { name } = newValue;
-        this.getRepos();
+        this.fetchData();
       },
       immediate: true
     }
   }
 };
 </script>
+
+<style scoped>
+.kt-spinner {
+  margin: auto;
+  display: table;
+}
+
+.kt-link,
+.flaticon2-delete {
+  cursor: pointer;
+}
+</style>
