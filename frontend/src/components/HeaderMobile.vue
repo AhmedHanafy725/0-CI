@@ -29,7 +29,7 @@ export default {
   data() {
     return {
       link: "/",
-      img: "/src/assets/media/logos/logo-light.png"
+      img: "/static/assets/media/logos/logo-light.png"
     };
   }
 };

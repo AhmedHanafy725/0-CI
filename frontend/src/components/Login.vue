@@ -5,7 +5,7 @@
   >
     <div
       class="kt-grid__item kt-grid__item--fluid kt-grid kt-grid--hor"
-      style="background-image: url(/src/assets/media/bg/bg-2.jpg);"
+      style="background-image: url(/static/assets/media/bg/bg-2.jpg);"
     >
       <div class="kt-grid__item kt-grid__item--fluid kt-login__wrapper">
         <div class="kt-login__container">
@@ -43,7 +43,7 @@ export default {
   name: "Login",
   data() {
     return {
-      logo: "/src/assets/media/logos/logo-light.png",
+      logo: "/static/assets/media/logos/logo-light.png",
       title: "Sign In To Dashboard",
       url: "https://staging.zeroci.grid.tf/auth/login?provider=3bot"
     };

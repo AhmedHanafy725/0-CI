@@ -1,5 +1,4 @@
 'use strict'
 module.exports = {
-    NODE_ENV: '"production"',
-    VUE_APP_BASE_URL: '"/api/"'
+  NODE_ENV: '"production"'
 }
