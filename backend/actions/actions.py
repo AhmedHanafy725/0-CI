@@ -12,9 +12,9 @@ from models.initial_config import InitialConfig
 from packages.vcs.vcs import VCSFactory
 from utils.reporter import Reporter
 from utils.utils import Utils
-from vm.vms import VMS
+from deployment.container import Container
 
-vms = VMS()
+container = Container()
 reporter = Reporter()
 utils = Utils()
 configs = InitialConfig()
@@ -40,7 +40,7 @@ class Actions:
                 status = "success"
                 if line.startswith("#"):
                     continue
-                response, file_path = vms.run_test(id=id, run_cmd=line, env=env)
+                response, file_path = container.run_test(id=id, run_cmd=line, env=env)
                 if file_path:
                     if response.returncode:
                         status = "failure"
@@ -80,7 +80,7 @@ class Actions:
         line = "black {}/{} -l 120 -t py37 --diff --exclude 'templates' 1>/dev/null".format(
             self._REPOS_DIR, model_obj.repo
         )
-        response, _ = vms.run_test(id=id, run_cmd=line, env=env)
+        response, _ = container.run_test(id=id, run_cmd=line, env=env)
         if response.returncode:
             status = "failure"
         elif "reformatted" in response.stdout:
@@ -101,9 +101,9 @@ class Actions:
         model_obj = self.parent_model(id=self.run_id)
         if self.install_script:
             env = self._get_run_env()
-            deployed = vms.deploy_vm(prequisties=self.prequisties)
+            deployed = container.deploy(prequisties=self.prequisties)
             if deployed:
-                response = vms.install_app(id=id, install_script=self.install_script, env=env)
+                response = container.install_app(id=id, install_script=self.install_script, env=env)
                 if response.returncode:
                     model_obj.result.append(
                         {"type": "log", "status": "error", "name": "Installation", "content": response.stdout}
@@ -204,7 +204,7 @@ class Actions:
                     self.test_black()
                 self.test_run()
                 self.cal_status()
-            vms.destroy_vm()
+            container.delete()
         reporter.report(id=id, parent_model=self.parent_model, schedule_name=schedule_name)
 
     def schedule_run(self, schedule_name, install_script, test_script, prequisties):
