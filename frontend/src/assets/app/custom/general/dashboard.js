@@ -166,7 +166,7 @@ var KTDashboard = function() {
 
     // Profit Share Chart.
     // Based on Chartjs plugin - http://www.chartjs.org/
-    var profitShare = function() {
+    var profitShare = function() {        
         if (!KTUtil.getByID('kt_chart_profit_share')) {
             return;
         }
@@ -216,11 +216,11 @@ var KTDashboard = function() {
                     mode: 'nearest',
                     bodySpacing: 5,
                     yPadding: 10,
-                    xPadding: 10,
+                    xPadding: 10, 
                     caretPadding: 0,
                     displayColors: false,
                     backgroundColor: KTApp.getStateColor('brand'),
-                    titleFontColor: '#ffffff',
+                    titleFontColor: '#ffffff', 
                     cornerRadius: 4,
                     footerSpacing: 0,
                     titleSpacing: 0
@@ -250,7 +250,7 @@ var KTDashboard = function() {
                     borderColor: KTApp.getStateColor('brand'),
                     borderWidth: 2,
                     //pointBackgroundColor: KTApp.getStateColor('brand'),
-                    backgroundColor: KTApp.getStateColor('brand'),
+                    backgroundColor: KTApp.getStateColor('brand'),                    
                     pointBackgroundColor: Chart.helpers.color('#ffffff').alpha(0).rgbString(),
                     pointBorderColor: Chart.helpers.color('#ffffff').alpha(0).rgbString(),
                     pointHoverBackgroundColor: KTApp.getStateColor('danger'),
@@ -695,11 +695,11 @@ var KTDashboard = function() {
             ],
             labelColor: '#a7a7c2',
             colors: [
-                    KTApp.getStateColor('success'),
-                    KTApp.getStateColor('brand'),
-                    KTApp.getStateColor('danger')
-                ]
-                //formatter: function (x) { return x + "%"}
+                KTApp.getStateColor('success'),
+                KTApp.getStateColor('brand'),
+                KTApp.getStateColor('danger')
+            ]
+            //formatter: function (x) { return x + "%"}
         });
     }
 
@@ -757,11 +757,11 @@ var KTDashboard = function() {
                     mode: 'nearest',
                     bodySpacing: 5,
                     yPadding: 10,
-                    xPadding: 10,
+                    xPadding: 10, 
                     caretPadding: 0,
                     displayColors: false,
                     backgroundColor: KTApp.getStateColor('brand'),
-                    titleFontColor: '#ffffff',
+                    titleFontColor: '#ffffff', 
                     cornerRadius: 4,
                     footerSpacing: 0,
                     titleSpacing: 0
@@ -792,7 +792,7 @@ var KTDashboard = function() {
                 labels: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October"],
                 datasets: [{
                     label: "Sales Stats",
-                    backgroundColor: Chart.helpers.color('#e14c86').alpha(1).rgbString(), //gradient
+                    backgroundColor: Chart.helpers.color('#e14c86').alpha(1).rgbString(),  //gradient
                     borderColor: '#e13a58',
 
                     pointBackgroundColor: Chart.helpers.color('#000000').alpha(0).rgbString(),
@@ -1263,12 +1263,13 @@ var KTDashboard = function() {
         var color = Chart.helpers.color;
         var barChartData = {
             labels: ['1 Jan', '2 Jan', '3 Jan', '4 Jan', '5 Jan', '6 Jan', '7 Jan'],
-            datasets: [{
+            datasets : [
+				{
                     fill: true,
                     //borderWidth: 0,
                     backgroundColor: color(KTApp.getStateColor('brand')).alpha(0.6).rgbString(),
-                    borderColor: color(KTApp.getStateColor('brand')).alpha(0).rgbString(),
-
+                    borderColor : color(KTApp.getStateColor('brand')).alpha(0).rgbString(),
+                    
                     pointHoverRadius: 4,
                     pointHoverBorderWidth: 12,
                     pointBackgroundColor: Chart.helpers.color('#000000').alpha(0).rgbString(),
@@ -1276,14 +1277,14 @@ var KTDashboard = function() {
                     pointHoverBackgroundColor: KTApp.getStateColor('brand'),
                     pointHoverBorderColor: Chart.helpers.color('#000000').alpha(0.1).rgbString(),
 
-                    data: [20, 30, 20, 40, 30, 60, 30]
-                },
-                {
+					data: [20, 30, 20, 40, 30, 60, 30]
+				},
+				{
                     fill: true,
                     //borderWidth: 0,
-                    backgroundColor: color(KTApp.getStateColor('brand')).alpha(0.2).rgbString(),
-                    borderColor: color(KTApp.getStateColor('brand')).alpha(0).rgbString(),
-
+					backgroundColor : color(KTApp.getStateColor('brand')).alpha(0.2).rgbString(),
+                    borderColor : color(KTApp.getStateColor('brand')).alpha(0).rgbString(),
+                    
                     pointHoverRadius: 4,
                     pointHoverBorderWidth: 12,
                     pointBackgroundColor: Chart.helpers.color('#000000').alpha(0).rgbString(),
@@ -1291,8 +1292,8 @@ var KTDashboard = function() {
                     pointHoverBackgroundColor: KTApp.getStateColor('brand'),
                     pointHoverBorderColor: Chart.helpers.color('#000000').alpha(0.1).rgbString(),
 
-                    data: [15, 40, 15, 30, 40, 30, 50]
-                }
+					data: [15, 40, 15, 30, 40, 30, 50]
+				}
             ]
         };
 
@@ -1341,7 +1342,7 @@ var KTDashboard = function() {
                             zeroLineBorderDash: [3, 4]
                         },
                         ticks: {
-                            max: 70,
+                            max: 70,                            
                             stepSize: 10,
                             display: true,
                             beginAtZero: true,
@@ -1363,11 +1364,11 @@ var KTDashboard = function() {
                     mode: 'nearest',
                     bodySpacing: 5,
                     yPadding: 10,
-                    xPadding: 10,
+                    xPadding: 10, 
                     caretPadding: 0,
                     displayColors: false,
                     backgroundColor: KTApp.getStateColor('brand'),
-                    titleFontColor: '#ffffff',
+                    titleFontColor: '#ffffff', 
                     cornerRadius: 4,
                     footerSpacing: 0,
                     titleSpacing: 0
@@ -1492,15 +1493,15 @@ var KTDashboard = function() {
                 autoHide: false,
                 // callback function support for column rendering
                 template: function(data, i) {
-                    var number = i + 1;
-                    while (number > 5) {
-                        number = number - 3;
-                    }
+                  var number = i + 1;
+                  while (number > 5) {
+                    number = number - 3;
+                  }
                     var img = number + '.png';
 
                     var skills = [
                         'Angular, React',
-                        'Vue, Kendo',
+                        'Vue, Kendo', 
                         '.NET, Oracle, MySQL',
                         'Node, SASS, Webpack',
                         'MangoDB, Java',
@@ -1515,7 +1516,7 @@ var KTDashboard = function() {
                             <div class="kt-user-card-v2__details">\
                                 <a href="#" class="kt-user-card-v2__name">' + data.CompanyName + '</a>\
                                 <span class="kt-user-card-v2__email">' +
-                        skills[number - 1] + '</span>\
+                                skills[number - 1] + '</span>\
                             </div>\
                         </div>';
 
@@ -1546,7 +1547,7 @@ var KTDashboard = function() {
                         3: {
                             'title': 'Success',
                             'class': ' btn-label-success'
-                        },
+                        },                                                
                         4: {
                             'title': 'Delivered',
                             'class': ' btn-label-success'
@@ -1577,20 +1578,20 @@ var KTDashboard = function() {
                         number = number - 3;
                     }
                     var user_img = '100_' + number + '.jpg';
-
+                    
                     var pos = KTUtil.getRandomInt(0, 5);
                     var position = [
                         'Developer',
-                        'Designer',
+                        'Designer', 
                         'CEO',
                         'Manager',
                         'Architect',
                         'Sales'
                     ];
 
-                    var output = '';
-                    if (number > 5) {
-                        output = '<div class="kt-user-card-v2">\
+					var output = '';
+					if (number > 5) {
+						output = '<div class="kt-user-card-v2">\
 							<div class="kt-user-card-v2__pic">\
 								<img src="assets/media/users/' + user_img + '" alt="photo">\
 							</div>\
@@ -1599,20 +1600,20 @@ var KTDashboard = function() {
 								<span class="kt-user-card-v2__desc">' + position[pos] + '</span>\
 							</div>\
 						</div>';
-                    } else {
-                        var stateNo = KTUtil.getRandomInt(0, 6);
-                        var states = [
-                            'success',
-                            'brand',
-                            'danger',
-                            'success',
-                            'warning',
-                            'primary',
-                            'info'
-                        ];
-                        var state = states[stateNo];
+					}
+					else {
+						var stateNo = KTUtil.getRandomInt(0, 6);
+						var states = [
+							'success',
+							'brand',
+							'danger',
+							'success',
+							'warning',
+							'primary',
+							'info'];
+						var state = states[stateNo];
 
-                        output = '<div class="kt-user-card-v2">\
+						output = '<div class="kt-user-card-v2">\
 							<div class="kt-user-card-v2__pic">\
 								<div class="kt-badge kt-badge--xl kt-badge--' + state + '">' + data.CompanyAgent.substring(0, 1) + '</div>\
 							</div>\
@@ -1621,9 +1622,9 @@ var KTDashboard = function() {
 								<span class="kt-user-card-v2__desc">' + position[pos] + '</span>\
 							</div>\
 						</div>';
-                    }
+					}
 
-                    return output;
+					return output;
                 }
             }, {
                 field: "Actions",
@@ -1678,7 +1679,7 @@ var KTDashboard = function() {
         if ($('#kt_calendar').length === 0) {
             return;
         }
-
+        
         var todayDate = moment().startOf('day');
         var YM = todayDate.format('YYYY-MM');
         var YESTERDAY = todayDate.clone().subtract(1, 'day').format('YYYY-MM-DD');
@@ -1696,14 +1697,15 @@ var KTDashboard = function() {
             eventLimit: true, // allow "more" link when too many events
             navLinks: true,
             defaultDate: moment('2017-09-15'),
-            events: [{
+            events: [
+                {
                     title: 'Meeting',
                     start: moment('2017-08-28'),
                     description: 'Lorem ipsum dolor sit incid idunt ut',
                     className: "fc-event-light fc-event-solid-warning"
                 },
                 {
-                    title: 'Conference',
+                    title: 'Conference',                    
                     description: 'Lorem ipsum dolor incid idunt ut labore',
                     start: moment('2017-08-29T13:30:00'),
                     end: moment('2017-08-29T17:30:00'),
@@ -1722,7 +1724,7 @@ var KTDashboard = function() {
                     className: "fc-event-danger fc-event-solid-focus"
                 },
                 {
-                    title: 'Reporting',
+                    title: 'Reporting',                    
                     description: 'Lorem ipsum dolor incid idunt ut labore',
                     start: moment('2017-09-03T13:30:00'),
                     end: moment('2017-09-04T17:30:00'),
@@ -1835,8 +1837,8 @@ var KTDashboard = function() {
         var carousel1 = $('#kt_earnings_widget .kt-widget30__head .owl-carousel');
         var carousel2 = $('#kt_earnings_widget .kt-widget30__body .owl-carousel');
 
-        carousel1.find('.carousel').each(function(index) {
-            $(this).attr('data-position', index);
+        carousel1.find('.carousel').each( function( index ) {
+            $(this).attr( 'data-position', index );
         });
 
         carousel1.owlCarousel({
@@ -1854,23 +1856,23 @@ var KTDashboard = function() {
         });
 
         $(document).on('click', '.carousel', function() {
-            var index = $(this).attr('data-position');
+            var index = $(this).attr( 'data-position' );
             if (index) {
-                carousel1.trigger('to.owl.carousel', index);
-                carousel2.trigger('to.owl.carousel', index);
+                carousel1.trigger('to.owl.carousel', index );
+                carousel2.trigger('to.owl.carousel', index );
             }
         });
 
-        carousel1.on('changed.owl.carousel', function() {
+        carousel1.on('changed.owl.carousel', function () {
             var index = $(this).find('.owl-item.active.center').find('.carousel').attr('data-position');
             if (index) {
                 carousel2.trigger('to.owl.carousel', index);
             }
         });
 
-        carousel2.on('changed.owl.carousel', function() {
+        carousel2.on('changed.owl.carousel', function () {
             var index = $(this).find('.owl-item.active.center').find('.carousel').attr('data-position');
-            if (index) {
+            if (index){
                 carousel1.trigger('to.owl.carousel', index);
             }
         });
@@ -1911,14 +1913,14 @@ var KTDashboard = function() {
             // earnings slide
             earningsSlide();
 
-
+            
             // demo loading
-            // var loading = new KTDialog({ 'type': 'loader', 'placement': 'top center', 'message': 'Loading ...' });
-            // loading.show();
+            var loading = new KTDialog({'type': 'loader', 'placement': 'top center', 'message': 'Loading ...'});
+            loading.show();
 
-            // setTimeout(function() {
-            //     loading.hide();
-            // }, 4000);
+            setTimeout(function() {
+                loading.hide();
+            }, 4000);
         }
     };
 }();
