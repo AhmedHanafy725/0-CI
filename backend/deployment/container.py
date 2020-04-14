@@ -85,17 +85,17 @@ class Container(Utils):
         else:
             self.image_name = "ahmedhanafy725/ubuntu"
 
-    def create_pod(self):
+    def create_pod(self, env):
         host_path = {"path": "/home/rancher/.ssh/id_rsa.pub", "type": "File"}
         mount_path = "/root/.ssh/authorized_keys"
         vol_name = "zeroci-pub-key"
 
         vol_mount = client.V1VolumeMount(mount_path=mount_path, name=vol_name, read_only=True)
         ports = client.V1ContainerPort(container_port=22)
-        env = client.V1EnvVar(name="DEBIAN_FRONTEND", value="noninteractive")
-        commands = ["/bin/bash", "-ce", "service ssh restart && tail -f /dev/null"]
+        env.append(client.V1EnvVar(name="DEBIAN_FRONTEND", value="noninteractive"))
+        commands = ["/bin/bash", "-ce", "env | grep _ >> /etc/environment && service ssh restart && tail -f /dev/null"]
         container = client.V1Container(
-            name=self.name, image=self.image_name, command=commands, env=[env], ports=[ports], volume_mounts=[vol_mount]
+            name=self.name, image=self.image_name, command=commands, env=env, ports=[ports], volume_mounts=[vol_mount]
         )
         vol = client.V1Volume(name=vol_name, host_path=host_path)
 
@@ -111,7 +111,7 @@ class Container(Utils):
         service = client.V1Service(api_version="v1", kind="Service", metadata=meta, spec=spec)
         self.client.create_namespaced_service(body=service, namespace=self.namespace)
 
-    def deploy(self, prequisties=""):
+    def deploy(self, env, prequisties=""):
         """Deploy a container on kubernetes cluster.
 
         :param prequisties: list of prequisties needed.
@@ -124,7 +124,7 @@ class Container(Utils):
         self.name = self.random_string()
         self.namespace = "default"
 
-        self.create_pod()
+        self.create_pod(env=env)
         self.create_service()
         self.wait_for_container()
 
@@ -139,10 +139,10 @@ class Container(Utils):
     def delete(self):
         """Delete the container after finishing test.
         """
-        self.client.delete_namespaced_pod(name=self.container_name, namespace=self.namespace)
-        self.client.delete_namespaced_service(name=self.container_name, namespace=self.namespace)
+        self.client.delete_namespaced_pod(name=self.name, namespace=self.namespace)
+        self.client.delete_namespaced_service(name=self.name, namespace=self.namespace)
 
-    def install_app(self, id, install_script, env={}):
+    def install_app(self, id, install_script):
         """Install application to be tested.
 
         :param id: DB's id of this run details.
@@ -154,10 +154,10 @@ class Container(Utils):
         """
         prepare_script = self.prepare_script()
         script = prepare_script + install_script
-        response = self.execute_command(cmd=script, id=id, ip=self.container_name, environment=env)
+        response = self.execute_command(cmd=script, id=id, ip=self.name)
         return response
 
-    def run_test(self, run_cmd, id, env={}):
+    def run_test(self, run_cmd, id):
         """Run test command and get the result as xml file if the running command is following junit otherwise result will be log.
 
         :param run_cmd: test command to be run.
@@ -168,14 +168,14 @@ class Container(Utils):
         :type env: dict
         :return: path to xml file if exist and subprocess object containing (returncode, stdout, stderr)
         """
-        response = self.execute_command(run_cmd, id=id, ip=self.container_name, environment=env)
+        response = self.execute_command(run_cmd, id=id, ip=self.name)
         file_path = "/var/zeroci/{}.xml".format(self.random_string())
         remote_path = "/test.xml"
-        copied = self.get_remote_file(ip=self.container_name, remote_path=remote_path, local_path=file_path)
+        copied = self.get_remote_file(ip=self.name, remote_path=remote_path, local_path=file_path)
         if copied:
             file_path = file_path
             delete_cmd = f"rm -f {remote_path}"
-            self.execute_command(delete_cmd, id=id, ip=self.container_name)
+            self.execute_command(delete_cmd, id=id, ip=self.name)
         else:
             if os.path.exists(file_path):
                 os.remove(file_path)

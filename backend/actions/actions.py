@@ -5,14 +5,15 @@ from datetime import datetime
 import redis
 import yaml
 
+from deployment.container import Container
+from kubernetes.client import V1EnvVar
+from models.initial_config import InitialConfig
+from models.run_config import RunConfig
 from models.scheduler_run import SchedulerRun
 from models.trigger_run import TriggerRun
-from models.run_config import RunConfig
-from models.initial_config import InitialConfig
 from packages.vcs.vcs import VCSFactory
 from utils.reporter import Reporter
 from utils.utils import Utils
-from deployment.container import Container
 
 container = Container()
 reporter = Reporter()
@@ -33,14 +34,13 @@ class Actions:
         """Runs tests and store the result in DB.
         """
         model_obj = self.parent_model(id=self.run_id)
-        env = self._get_run_env()
         status = "success"
         if self.test_script:
             for i, line in enumerate(self.test_script):
                 status = "success"
                 if line.startswith("#"):
                     continue
-                response, file_path = container.run_test(id=id, run_cmd=line, env=env)
+                response, file_path = container.run_test(id=id, run_cmd=line)
                 if file_path:
                     if response.returncode:
                         status = "failure"
@@ -75,12 +75,11 @@ class Actions:
         """Runs black formatting test on the repository.
         """
         model_obj = self.parent_model(id=self.run_id)
-        env = self._get_run_env()
         link = f"{configs.domain}/repos/{model_obj.repo.replace('/', '%2F')}/{model_obj.branch}/{str(model_obj.id)}"
         line = "black {}/{} -l 120 -t py37 --diff --exclude 'templates' 1>/dev/null".format(
             self._REPOS_DIR, model_obj.repo
         )
-        response, _ = container.run_test(id=id, run_cmd=line, env=env)
+        response, _ = container.run_test(id=id, run_cmd=line)
         if response.returncode:
             status = "failure"
         elif "reformatted" in response.stdout:
@@ -101,9 +100,9 @@ class Actions:
         model_obj = self.parent_model(id=self.run_id)
         if self.install_script:
             env = self._get_run_env()
-            deployed = container.deploy(prequisties=self.prequisties)
+            deployed = container.deploy(env=env, prequisties=self.prequisties)
             if deployed:
-                response = container.install_app(id=id, install_script=self.install_script, env=env)
+                response = container.install_app(id=id, install_script=self.install_script)
                 if response.returncode:
                     model_obj.result.append(
                         {"type": "log", "status": "error", "name": "Installation", "content": response.stdout}
@@ -152,7 +151,13 @@ class Actions:
             run_config = run_config[0]
         else:
             run_config = RunConfig(name=name)
-        return run_config.env
+
+        run_env = run_config.env
+        env = []
+        for key in run_env.keys():
+            env_var = V1EnvVar(name=key, value=run_env.get(key))
+            env.append(env_var)
+        return env
 
     def _install_test_scripts(self):
         """Read zeroCI yaml script from the repo home directory and divide it to prequisties and (install and test) scripts.
