@@ -9,7 +9,8 @@ import redis
 from kubernetes import client, config
 from utils.utils import Utils
 
-TIMEOUT=120
+TIMEOUT = 120
+
 
 class Complete_Executuion:
     returncode = None
@@ -84,12 +85,31 @@ class Container(Utils):
         else:
             self.image_name = "ahmedhanafy725/ubuntu"
 
-    def load_template(self, name):
-        content = self.load_file(f"deployment/kube_templates/{name}")
-        content = content.replace("appname", self.container_name)
-        body_text = content.replace("image_name", self.image_name)
-        body_yaml = yaml.safe_load(body_text)
-        return body_yaml
+    def create_pod(self):
+        host_path = {"path": "/home/rancher/.ssh/id_rsa.pub", "type": "File"}
+        mount_path = "/root/.ssh/authorized_keys"
+        vol_name = "zeroci-pub-key"
+
+        vol_mount = client.V1VolumeMount(mount_path=mount_path, name=vol_name, read_only=True)
+        ports = client.V1ContainerPort(container_port=22)
+        env = client.V1EnvVar(name="DEBIAN_FRONTEND", value="noninteractive")
+        commands = ["/bin/bash", "-ce", "service ssh restart && tail -f /dev/null"]
+        container = client.V1Container(
+            name=self.name, image=self.image_name, command=commands, env=[env], ports=[ports], volume_mounts=[vol_mount]
+        )
+        vol = client.V1Volume(name=vol_name, host_path=host_path)
+
+        spec = client.V1PodSpec(volumes=[vol], containers=[container], hostname=self.name)
+        meta = client.V1ObjectMeta(name=self.name, namespace=self.namespace, labels={"app": self.name})
+        pod = client.V1Pod(api_version="v1", kind="Pod", metadata=meta, spec=spec)
+        self.client.create_namespaced_pod(body=pod, namespace=self.namespace)
+
+    def create_service(self):
+        port = client.V1ServicePort(name="ssh", port=22)
+        spec = client.V1ServiceSpec(ports=[port], selector={"app": self.name})
+        meta = client.V1ObjectMeta(name=self.name, namespace=self.namespace, labels={"app": self.name})
+        service = client.V1Service(api_version="v1", kind="Service", metadata=meta, spec=spec)
+        self.client.create_namespaced_service(body=service, namespace=self.namespace)
 
     def deploy(self, prequisties=""):
         """Deploy a container on kubernetes cluster.
@@ -101,22 +121,17 @@ class Container(Utils):
         self.prepare(prequisties=prequisties)
         config.load_incluster_config()
         self.client = client.CoreV1Api()
-        self.container_name = self.random_string()
+        self.name = self.random_string()
+        self.namespace = "default"
 
-        # create pod 
-        pod = self.load_template("pod.yaml")
-        self.client.create_namespaced_pod(body=pod, namespace="default")
-
-        #create service
-        service = self.load_template("service.yaml")
-        self.client.create_namespaced_service(body=service, namespace="default")
-
+        self.create_pod()
+        self.create_service()
         self.wait_for_container()
 
     def wait_for_container(self):
         time.sleep(5)
         for _ in range(TIMEOUT):
-            container_status = self.client.read_namespaced_pod_status(namespace="default", name=self.container_name)
+            container_status = self.client.read_namespaced_pod_status(namespace=self.namespace, name=self.name)
             status = container_status.status.container_statuses[0]
             if status.ready:
                 break
@@ -124,8 +139,8 @@ class Container(Utils):
     def delete(self):
         """Delete the container after finishing test.
         """
-        self.client.delete_namespaced_pod(name=self.container_name, namespace="default")
-        self.client.delete_namespaced_service(name=self.container_name, namespace="default")
+        self.client.delete_namespaced_pod(name=self.container_name, namespace=self.namespace)
+        self.client.delete_namespaced_service(name=self.container_name, namespace=self.namespace)
 
     def install_app(self, id, install_script, env={}):
         """Install application to be tested.
@@ -168,8 +183,7 @@ class Container(Utils):
         return response, file_path
 
     def prepare_script(self):
-        return """export DEBIAN_FRONTEND=noninteractive &&
-        apt-get update &&
+        return """apt-get update &&
         apt-get install -y git python3.6 python3-pip software-properties-common &&
         pip3 install black==19.10b0 &&
         """
