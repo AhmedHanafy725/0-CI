@@ -4,7 +4,7 @@
     <div class="kt-header__topbar-user">
       <span class="kt-header__topbar-welcome kt-hidden-mobile">Hi,</span>
       <span class="kt-header__topbar-username kt-hidden-mobile">{{ formatUser }}</span>
-      <img class="kt-hidden" alt="Pic" src="/src/assets/media/users/300_25.jpg" />
+      <img class="kt-hidden" alt="Pic" src="/static/assets/media/users/300_25.jpg" />
 
       <div class="kt-notification__custom">
         <a @click="logout()" target="_blank" class="btn btn-label-brand btn-sm btn-bold">Logout</a>

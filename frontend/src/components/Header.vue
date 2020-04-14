@@ -1012,7 +1012,7 @@
             <!--begin: Head -->
             <div
               class="kt-head kt-head--skin-dark kt-head--fit-x kt-head--fit-b"
-              style="background-image: url(/src/assets/media/misc/bg-1.jpg)"
+              style="background-image: url(/static/assets/media/misc/bg-1.jpg)"
             >
               <h3 class="kt-head__title">
                 User Notifications

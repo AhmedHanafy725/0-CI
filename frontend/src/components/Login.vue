@@ -5,7 +5,6 @@
   >
     <div
       class="kt-grid__item kt-grid__item--fluid kt-grid kt-grid--hor"
-      style="background-image: url(/src/assets/media/bg/bg-2.jpg);"
     >
       <div class="kt-grid__item kt-grid__item--fluid kt-login__wrapper">
         <div class="kt-login__container">
@@ -52,6 +51,10 @@ export default {
 </script>
 
 <style scoped>
+.kt-grid--hor {
+background-image: url(/src/assets/media/bg/bg-2.jpg);
+background-size: cover;
+}
 .kt-grid--root {
   height: 100%;
   overflow: hidden;
