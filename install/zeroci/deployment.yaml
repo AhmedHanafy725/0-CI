@@ -16,13 +16,19 @@ spec:
         hostPath:
           path: /home/rancher/.ssh
           type: Directory
+      - name: bcdb
+        hostPath:
+          path: /sandbox/var
+          type: Directory
+
       hostname: zeroci
       containers:
       - name: zeroci
         image: "ahmedhanafy725/zeroci"
-        command: ["/bin/bash", "-ce", "cd /sandbox/code/github/threefoldtech/zeroCI/backend && source /sandbox/env.sh && python3 zeroci.py"]
         ports:
         - containerPort: 80
         volumeMounts:
           - name:  ssh-dir
             mountPath: /root/.ssh
+          - name: bcdb
+            mountPath: /sandbox/var
