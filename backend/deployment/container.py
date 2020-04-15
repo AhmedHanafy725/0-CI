@@ -10,6 +10,7 @@ from kubernetes import client, config
 from utils.utils import Utils
 
 TIMEOUT = 120
+RETRIES = 5
 
 
 class Complete_Executuion:
@@ -123,10 +124,17 @@ class Container(Utils):
         self.client = client.CoreV1Api()
         self.name = self.random_string()
         self.namespace = "default"
-
-        self.create_pod(env=env)
-        self.create_service()
-        self.wait_for_container()
+        for _ in range(RETRIES):
+            try:    
+                self.create_pod(env=env)
+                self.create_service()
+                self.wait_for_container()
+                break
+            except:
+                self.delete()
+        else:
+            return False
+        return True 
 
     def wait_for_container(self):
         time.sleep(5)
@@ -139,8 +147,11 @@ class Container(Utils):
     def delete(self):
         """Delete the container after finishing test.
         """
-        self.client.delete_namespaced_pod(name=self.name, namespace=self.namespace)
-        self.client.delete_namespaced_service(name=self.name, namespace=self.namespace)
+        try:
+            self.client.delete_namespaced_pod(name=self.name, namespace=self.namespace)
+            self.client.delete_namespaced_service(name=self.name, namespace=self.namespace)
+        except:
+            pass
 
     def install_app(self, id, install_script):
         """Install application to be tested.
