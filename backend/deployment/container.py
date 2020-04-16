@@ -137,7 +137,7 @@ class Container(Utils):
         return True 
 
     def wait_for_container(self):
-        time.sleep(5)
+        time.sleep(30)
         for _ in range(TIMEOUT):
             container_status = self.client.read_namespaced_pod_status(namespace=self.namespace, name=self.name)
             status = container_status.status.container_statuses[0]
