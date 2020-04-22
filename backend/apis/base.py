@@ -6,7 +6,7 @@ app = Bottle()
 configs = InitialConfig()
 client = j.clients.oauth_proxy.get("zeroci")
 oauth_app = j.tools.oauth_proxy.get(app, client, "/auth/login")
-bot_app = j.tools.threebotlogin_proxy.get(app)
+bot_app = j.tools.threebotlogin_proxy.get(app, "/auth/login")
 PROVIDERS = list(client.providers_list())
 
 
