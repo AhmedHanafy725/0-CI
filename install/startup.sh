@@ -1,5 +1,6 @@
 set -ex
 ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa -q -P ""
+cp /root/.ssh/id_rsa.pub /sandbox/.ssh/authorized_keys
 source /sandbox/env.sh
 kosmos -p 'exit'
 cd /sandbox/code/github/threefoldtech/zeroCI/backend

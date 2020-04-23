@@ -14,7 +14,7 @@ spec:
       volumes:
       - name: ssh-dir
         hostPath:
-          path: /home/rancher/.ssh
+          path: /sandbox/.ssh
           type: Directory
       - name: bcdb
         hostPath:
@@ -29,6 +29,6 @@ spec:
         - containerPort: 80
         volumeMounts:
           - name:  ssh-dir
-            mountPath: /root/.ssh
+            mountPath: /sandbox/.ssh
           - name: bcdb
             mountPath: /sandbox/var

@@ -87,7 +87,7 @@ class Container(Utils):
             self.image_name = "ahmedhanafy725/ubuntu"
 
     def create_pod(self, env):
-        host_path = {"path": "/home/rancher/.ssh/id_rsa.pub", "type": "File"}
+        host_path = {"path": "/sandbox/.ssh/authorized_keys", "type": "File"}
         mount_path = "/root/.ssh/authorized_keys"
         vol_name = "zeroci-pub-key"
 
