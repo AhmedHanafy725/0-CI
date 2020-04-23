@@ -40,7 +40,7 @@ class Actions:
                 status = "success"
                 if line.startswith("#"):
                     continue
-                response, file_path = container.run_test(id=id, run_cmd=line)
+                response, file_path = container.run_test(id=self.run_id, run_cmd=line)
                 if file_path:
                     if response.returncode:
                         status = "failure"
@@ -65,9 +65,9 @@ class Actions:
                     model_obj.result.append({"type": "log", "status": status, "name": line, "content": response.stdout})
                 model_obj.save()
                 if i + 1 == len(self.test_script):
-                    r.rpush(id, "hamada ok")
+                    r.rpush(self.run_id, "hamada ok")
         else:
-            r.rpush(id, "hamada ok")
+            r.rpush(self.run_id, "hamada ok")
             model_obj.result.append({"type": "log", "status": status, "name": "No tests", "content": "No tests found"})
             model_obj.save()
 
@@ -79,7 +79,7 @@ class Actions:
         line = "black {}/{} -l 120 -t py37 --diff --exclude 'templates' 1>/dev/null".format(
             self._REPOS_DIR, model_obj.repo
         )
-        response, _ = container.run_test(id=id, run_cmd=line)
+        response, _ = container.run_test(id=self.run_id, run_cmd=line)
         if response.returncode:
             status = "failure"
         elif "reformatted" in response.stdout:
@@ -102,13 +102,13 @@ class Actions:
             env = self._get_run_env()
             deployed = container.deploy(env=env, prequisties=self.prequisties)
             if deployed:
-                response = container.install_app(id=id, install_script=self.install_script)
+                response = container.install_app(id=self.run_id, install_script=self.install_script)
                 if response.returncode:
                     model_obj.result.append(
                         {"type": "log", "status": "error", "name": "Installation", "content": response.stdout}
                     )
                     model_obj.save()
-                    r.rpush(id, "hamada ok")
+                    r.rpush(self.run_id, "hamada ok")
                     self.cal_status()
                 return deployed, response
 
@@ -210,7 +210,7 @@ class Actions:
                 self.test_run()
                 self.cal_status()
             container.delete()
-        reporter.report(id=id, parent_model=self.parent_model, schedule_name=schedule_name)
+        reporter.report(id=self.run_id, parent_model=self.parent_model, schedule_name=schedule_name)
 
     def schedule_run(self, schedule_name, install_script, test_script, prequisties):
         """Builds, runs tests, calculates status and gives report on telegram.
