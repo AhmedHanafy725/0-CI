@@ -27,7 +27,7 @@ class Utils(InitialConfig):
         return CompletedProcess(process.args, returncode=retruncode, stdout=stdout, stderr=stderr)
 
     def random_string(self):
-        return 's' + str(uuid4())[:10]
+        return "s" + str(uuid4())[:10]
 
     def write_file(self, text, file_name, file_path=""):
         """Write result file.

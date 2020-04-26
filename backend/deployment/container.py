@@ -1,12 +1,12 @@
 import os
 import random
 import time
+
+import redis
 import yaml
 
-import paramiko
-import redis
-
 from kubernetes import client, config
+from kubernetes.stream import stream
 from utils.utils import Utils
 
 TIMEOUT = 120
@@ -27,66 +27,71 @@ class Container(Utils):
         super().__init__()
         self.node = None
 
-    def execute_command(self, cmd, id, ip, port=22, environment={}):
+    def redis_push(self, id, content, verbose=True):
+        if verbose:
+            r = redis.Redis()
+            r.rpush(id, content)
+
+    def execute_command(self, cmd, id, verbose=True):
         """Execute a command on a remote machine using ssh.
 
         :param cmd: command to be executed on a remote machine.
         :type cmd: str
-        :param ip: machine's ip.
-        :type ip: str
-        :param port: machine's ssh port.
-        :type port: int
         :return: subprocess object containing (returncode, stdout)
         """
-        r = redis.Redis()
         out = ""
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.MissingHostKeyPolicy())
+        rc = None
         try:
-            client.connect(hostname=ip, port=port, timeout=30)
+            response = stream(
+                self.client.connect_get_namespaced_pod_exec,
+                name=self.name,
+                namespace=self.namespace,
+                command=["/bin/bash", "-c", cmd],
+                stderr=True,
+                stdin=True,
+                stdout=True,
+                tty=True,
+                _preload_content=False,
+            )
         except:
-            out = "Couldn't ssh on the testing VM, maybe the test broke the ssh or the VM become unreachable"
-            r.rpush(id, out)
+            out += "Couldn't run on the testing container, container become unreachable"
+            self.redis_push(id, out)
             rc = 1
             return Complete_Executuion(rc, out)
-        _, stdout, _ = client.exec_command(cmd, timeout=600, environment=environment, get_pty=True)
-        while not stdout.channel.exit_status_ready():
-            try:
-                output = stdout.readline()
-                r.rpush(id, output)
-                out += output
-            except:
-                msg = "Timeout Exceeded 10 mins"
-                r.rpush(id, msg)
+
+        while response.is_open():
+            start = time.time()
+            content = response.read_stdout(timeout=600)
+            end = time.time()
+            time_taken = end - start
+            if content:
+                self.redis_push(id, content)
+                out += content
+            elif time_taken > 590:
+                msg = "Timeout exceeded 10 mins with no output"
+                self.redis_push(id, msg)
                 out += msg
-                stdout.channel.close()
-        rc = stdout.channel.recv_exit_status()
+                rc = 124
+                response.close()
+                break
+
+        if not rc:
+            rc = response.returncode
+        if rc == 137:
+            msg = "Runner expired (job takes more than 1 hour)"
+            self.redis_push(id, msg)
+            out += msg
 
         return Complete_Executuion(rc, out)
 
-    def get_remote_file(self, remote_path, local_path, ip, port=22):
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.MissingHostKeyPolicy())
-        client.connect(hostname=ip, port=port, timeout=30)
-        ftp = client.open_sftp()
-        try:
-            ftp.get(remote_path, local_path)
+    def get_remote_file(self, remote_path, local_path):
+        response = self.execute_command(f"cat {remote_path}", id="", verbose=False)
+        if not response.returncode:
+            self.write_file(text=response.stdout, file_name=local_path)
             return True
-        except:
-            return False
+        return False
 
-    def prepare(self, prequisties):
-        """Prepare the machine's parameters before creating it depend on the prequisties needed.
-
-        :param prequisties: list of prequisties needed.
-        :type prequisties: list
-        """
-        if "jsx" in prequisties:
-            self.image_name = "ahmedhanafy725/jsx"
-        else:
-            self.image_name = "ahmedhanafy725/ubuntu"
-
-    def create_pod(self, env):
+    def create_pod(self, env, prequisties):
         host_path = {"path": "/sandbox/.ssh/authorized_keys"}
         mount_path = "/root/.ssh/authorized_keys"
         vol_name = "zeroci-pub-key"
@@ -94,9 +99,9 @@ class Container(Utils):
         vol_mount = client.V1VolumeMount(mount_path=mount_path, name=vol_name, read_only=True)
         ports = client.V1ContainerPort(container_port=22)
         env.append(client.V1EnvVar(name="DEBIAN_FRONTEND", value="noninteractive"))
-        commands = ["/bin/bash", "-ce", "env | grep _ >> /etc/environment && service ssh restart && tail -f /dev/null"]
+        commands = ["/bin/bash", "-ce", "env | grep _ >> /etc/environment && sleep 3600"]
         container = client.V1Container(
-            name=self.name, image=self.image_name, command=commands, env=env, ports=[ports], volume_mounts=[vol_mount]
+            name=self.name, image=prequisties, command=commands, env=env, ports=[ports], volume_mounts=[vol_mount]
         )
         vol = client.V1Volume(name=vol_name, host_path=host_path)
 
@@ -105,36 +110,27 @@ class Container(Utils):
         pod = client.V1Pod(api_version="v1", kind="Pod", metadata=meta, spec=spec)
         self.client.create_namespaced_pod(body=pod, namespace=self.namespace)
 
-    def create_service(self):
-        port = client.V1ServicePort(name="ssh", port=22)
-        spec = client.V1ServiceSpec(ports=[port], selector={"app": self.name})
-        meta = client.V1ObjectMeta(name=self.name, namespace=self.namespace, labels={"app": self.name})
-        service = client.V1Service(api_version="v1", kind="Service", metadata=meta, spec=spec)
-        self.client.create_namespaced_service(body=service, namespace=self.namespace)
-
-    def deploy(self, env, prequisties=""):
+    def deploy(self, env, prequisties):
         """Deploy a container on kubernetes cluster.
 
         :param prequisties: list of prequisties needed.
         :type prequisties: list
         :return: bool (True: if virtual machine is created).
         """
-        self.prepare(prequisties=prequisties)
         config.load_incluster_config()
         self.client = client.CoreV1Api()
         self.name = self.random_string()
         self.namespace = "default"
         for _ in range(RETRIES):
-            try:    
-                self.create_pod(env=env)
-                self.create_service()
+            try:
+                self.create_pod(env=env, prequisties=prequisties)
                 self.wait_for_container()
                 break
             except:
                 self.delete()
         else:
             return False
-        return True 
+        return True
 
     def wait_for_container(self):
         for _ in range(TIMEOUT):
@@ -142,6 +138,7 @@ class Container(Utils):
             container_status = self.client.read_namespaced_pod_status(namespace=self.namespace, name=self.name)
             status = container_status.status.container_statuses[0]
             if status.ready:
+                time.sleep(5)
                 break
 
     def delete(self):
@@ -163,9 +160,7 @@ class Container(Utils):
         :param env: environment variables needed in the installation.
         :type env: dict
         """
-        prepare_script = self.prepare_script()
-        script = prepare_script + install_script
-        response = self.execute_command(cmd=script, id=id, ip=self.name)
+        response = self.execute_command(cmd=install_script, id=id)
         return response
 
     def run_test(self, run_cmd, id):
@@ -179,22 +174,16 @@ class Container(Utils):
         :type env: dict
         :return: path to xml file if exist and subprocess object containing (returncode, stdout, stderr)
         """
-        response = self.execute_command(run_cmd, id=id, ip=self.name)
+        response = self.execute_command(run_cmd, id=id)
         file_path = "/var/zeroci/{}.xml".format(self.random_string())
         remote_path = "/test.xml"
-        copied = self.get_remote_file(ip=self.name, remote_path=remote_path, local_path=file_path)
+        copied = self.get_remote_file(remote_path=remote_path, local_path=file_path)
         if copied:
             file_path = file_path
             delete_cmd = f"rm -f {remote_path}"
-            self.execute_command(delete_cmd, id=id, ip=self.name)
+            self.execute_command(delete_cmd, id=id)
         else:
             if os.path.exists(file_path):
                 os.remove(file_path)
             file_path = None
         return response, file_path
-
-    def prepare_script(self):
-        return """apt-get update &&
-        apt-get install -y git python3.6 python3-pip software-properties-common &&
-        pip3 install black==19.10b0 &&
-        """

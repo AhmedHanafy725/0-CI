@@ -71,29 +71,6 @@ class Actions:
             model_obj.result.append({"type": "log", "status": status, "name": "No tests", "content": "No tests found"})
             model_obj.save()
 
-    def test_black(self):
-        """Runs black formatting test on the repository.
-        """
-        model_obj = self.parent_model(id=self.run_id)
-        link = f"{configs.domain}/repos/{model_obj.repo.replace('/', '%2F')}/{model_obj.branch}/{str(model_obj.id)}"
-        line = "black {}/{} -l 120 -t py37 --diff --exclude 'templates' 1>/dev/null".format(
-            self._REPOS_DIR, model_obj.repo
-        )
-        response, _ = container.run_test(id=self.run_id, run_cmd=line)
-        if response.returncode:
-            status = "failure"
-        elif "reformatted" in response.stdout:
-            status = "failure"
-        else:
-            status = "success"
-        model_obj.result.append(
-            {"type": "log", "status": status, "name": "Black Formatting", "content": response.stdout}
-        )
-        model_obj.save()
-
-        VCSObject = VCSFactory().get_cvn(repo=model_obj.repo)
-        VCSObject.status_send(status=status, link=link, commit=model_obj.commit, context="Black-Formatting")
-
     def build(self):
         """Create VM with the required prerequisties and run installation steps to get it ready for running tests.
         """
@@ -205,8 +182,6 @@ class Actions:
         deployed, response = self.build()
         if deployed:
             if not response.returncode:
-                if not schedule_name:
-                    self.test_black()
                 self.test_run()
                 self.cal_status()
             container.delete()
