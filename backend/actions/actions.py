@@ -141,7 +141,9 @@ class Actions:
         """
         trigger_run = TriggerRun(id=self.run_id)
         org_repo_name = trigger_run.repo.split("/")[0]
-        clone = """mkdir -p {repos_dir}/{org_repo_name} &&
+        clone = """apt-get update &&
+        apt-get install -y git &&
+        mkdir -p {repos_dir}/{org_repo_name} &&
         cd {repos_dir}/{org_repo_name} &&
         git clone {vcs_host}/{repo}.git --branch {branch} &&
         cd {repos_dir}/{repo} &&
