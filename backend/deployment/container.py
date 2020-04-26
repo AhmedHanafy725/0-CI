@@ -92,20 +92,13 @@ class Container(Utils):
         return False
 
     def create_pod(self, env, prequisties):
-        host_path = {"path": "/sandbox/.ssh/authorized_keys"}
-        mount_path = "/root/.ssh/authorized_keys"
-        vol_name = "zeroci-pub-key"
-
-        vol_mount = client.V1VolumeMount(mount_path=mount_path, name=vol_name, read_only=True)
         ports = client.V1ContainerPort(container_port=22)
         env.append(client.V1EnvVar(name="DEBIAN_FRONTEND", value="noninteractive"))
         commands = ["/bin/bash", "-ce", "env | grep _ >> /etc/environment && sleep 3600"]
         container = client.V1Container(
-            name=self.name, image=prequisties, command=commands, env=env, ports=[ports], volume_mounts=[vol_mount]
+            name=self.name, image=prequisties, command=commands, env=env, ports=[ports],
         )
-        vol = client.V1Volume(name=vol_name, host_path=host_path)
-
-        spec = client.V1PodSpec(volumes=[vol], containers=[container], hostname=self.name)
+        spec = client.V1PodSpec(containers=[container], hostname=self.name)
         meta = client.V1ObjectMeta(name=self.name, namespace=self.namespace, labels={"app": self.name})
         pod = client.V1Pod(api_version="v1", kind="Pod", metadata=meta, spec=spec)
         self.client.create_namespaced_pod(body=pod, namespace=self.namespace)

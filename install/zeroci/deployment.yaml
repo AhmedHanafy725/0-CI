@@ -12,9 +12,6 @@ spec:
         app: zeroci
     spec:
       volumes:
-      - name: ssh-dir
-        hostPath:
-          path: /sandbox/.ssh
       - name: bcdb
         hostPath:
           path: /sandbox/var
@@ -28,8 +25,6 @@ spec:
         ports:
         - containerPort: 80
         volumeMounts:
-          - name:  ssh-dir
-            mountPath: /sandbox/.ssh
           - name: bcdb
             mountPath: /sandbox/var
           - name: redis
