@@ -18,6 +18,9 @@ spec:
       - name: bcdb
         hostPath:
           path: /sandbox/var
+      - name: bcdb
+        hostPath:
+          path: /sandbox/redis
       hostname: zeroci
       containers:
       - name: zeroci
@@ -29,3 +32,5 @@ spec:
             mountPath: /sandbox/.ssh
           - name: bcdb
             mountPath: /sandbox/var
+          - name: redis
+            mountPath: /var/lib/redis
