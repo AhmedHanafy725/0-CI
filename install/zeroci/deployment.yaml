@@ -15,12 +15,9 @@ spec:
       - name: ssh-dir
         hostPath:
           path: /sandbox/.ssh
-          type: Directory
       - name: bcdb
         hostPath:
           path: /sandbox/var
-          type: Directory
-
       hostname: zeroci
       containers:
       - name: zeroci

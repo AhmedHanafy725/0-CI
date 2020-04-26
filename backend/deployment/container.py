@@ -87,7 +87,7 @@ class Container(Utils):
             self.image_name = "ahmedhanafy725/ubuntu"
 
     def create_pod(self, env):
-        host_path = {"path": "/sandbox/.ssh/authorized_keys", "type": "File"}
+        host_path = {"path": "/sandbox/.ssh/authorized_keys"}
         mount_path = "/root/.ssh/authorized_keys"
         vol_name = "zeroci-pub-key"
 
@@ -137,8 +137,8 @@ class Container(Utils):
         return True 
 
     def wait_for_container(self):
-        time.sleep(30)
         for _ in range(TIMEOUT):
+            time.sleep(1)
             container_status = self.client.read_namespaced_pod_status(namespace=self.namespace, name=self.name)
             status = container_status.status.container_statuses[0]
             if status.ready:
