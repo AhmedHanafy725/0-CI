@@ -1,0 +1,65 @@
+.kt-font-error {
+    color: #d32a2a !important;
+}
+
+.kt-font-failure {
+    color: #fc3a3a !important;
+}
+
+.kt-bg-error {
+    background-color: #d32a2a !important;
+    color: #fff;
+}
+
+.kt-bg-failure {
+    background-color: #fc3a3a !important;
+    color: #fff;
+}
+
+.kt-bg-success {
+    background-color: #0abb87 !important;
+    color: #fff;
+}
+
+a.disabled {
+    /* Make the disabled links grayish*/
+    color: gray !important;
+    /* And disable the pointer events */
+    pointer-events: none;
+}
+
+.kt-demo-icon {
+    color: #646c9a;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.kt-portlet__head .btn-primary,
+.kt-demo-icon i {
+    margin: auto 0;
+}
+
+code,
+.v-expansion-panel-content__wrap code {
+    background-color: transparent;
+    color: #fff;
+}
+
+.v-application code {
+    display: block;
+    font-size: inherit;
+}
+
+.v-application code:before {
+    display: none;
+}
+
+.form-control {
+    display: inline-block;
+}
+
+.kt-demo-icon__preview,
+.kt-widget24__details {
+    font-weight: 500;
+    color: #6c7293;
+}
