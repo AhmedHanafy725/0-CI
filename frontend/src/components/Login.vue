@@ -42,7 +42,7 @@ export default {
   name: "Login",
   data() {
     return {
-      logo: "/src/assets/media/logos/logo-light.png",
+      logo: "/static/media/logos/logo-light.png",
       title: "Sign In To Dashboard",
       url: "https://staging.zeroci.grid.tf/auth/login?provider=3bot"
     };
