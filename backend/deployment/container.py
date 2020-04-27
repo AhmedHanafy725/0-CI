@@ -87,7 +87,7 @@ class Container(Utils):
     def get_remote_file(self, remote_path, local_path):
         response = self.execute_command(f"cat {remote_path}", id="", verbose=False)
         if not response.returncode:
-            self.write_file(text=response.stdout, file_name=local_path)
+            self.write_file(text=response.stdout, file_path=local_path)
             return True
         return False
 
