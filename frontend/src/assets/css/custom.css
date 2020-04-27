@@ -6,7 +6,8 @@
     color: #fc3a3a !important;
 }
 
-.kt-bg-error {
+.kt-bg-error,
+.toast-error {
     background-color: #d32a2a !important;
     color: #fff;
 }

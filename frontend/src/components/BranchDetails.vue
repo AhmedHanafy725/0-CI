@@ -2,6 +2,7 @@
   <!-- begin:: Content -->
   <div class="kt-content kt-grid__item kt-grid__item--fluid" id="kt_content">
     <Loading v-if="loading" />
+    <Notification v-if="notified" />
     <div class="kt-portlet kt-portlet--mobile">
       <div class="kt-portlet__head kt-portlet__head--lg">
         <div class="kt-portlet__head-label">
@@ -22,9 +23,9 @@
           <button
             type="button"
             class="kt-demo-icon mb-0"
-            data-toggle="modal"
-            data-target="#kt_modal_4"
             @click="runConfig()"
+            data-toggle="modal"
+            :data-target="'#kt_modal_' + model"
           >
             <i class="flaticon2-settings"></i>
           </button>
@@ -206,6 +207,7 @@ export default {
   data() {
     return {
       search: "",
+      model: "",
       headers: [
         { text: "#ID", value: "id" },
         { text: "Author", value: "committer" },
@@ -223,7 +225,8 @@ export default {
       disabled: false,
       formLoading: true,
       VarsValidate: false,
-      msg: "No Variables Existed"
+      msg: "No Variables Existed",
+      notified: false
     };
   },
   methods: {
@@ -287,40 +290,49 @@ export default {
       }
     },
     restart() {
-      this.loading = true;
-      EventService.restartBuild(
-        this.orgName + "/" + this.repoName,
-        this.$route.query.branch
-      )
-        .then(response => {
-          if (response) {
-            this.loading = false;
-            this.disabled = true;
-            this.fetchData();
-          }
-        })
-        .catch(error => {
-          console.log("Error! Could not reach the API. " + error);
-        });
+      if (this.$store.state.user !== null) {
+        this.loading = true;
+        EventService.restartBuild(
+          this.orgName + "/" + this.repoName,
+          this.$route.query.branch
+        )
+          .then(response => {
+            if (response) {
+              this.loading = false;
+              this.disabled = true;
+              this.fetchData();
+            }
+          })
+          .catch(error => {
+            console.log("Error! Could not reach the API. " + error);
+          });
+      } else {
+        toastr.error("Please Login First!");
+      }
     },
     runConfig() {
-      this.fireInput = false;
-      EventService.runConfig(this.orgName + "/" + this.repoName)
-        .then(response => {
-          if (response) {
-            this.formLoading = false;
-            this.keys = response.data;
-            if (response.data.length == undefined) {
+      if (this.$store.state.user !== null) {
+        this.model = 4;
+        this.fireInput = false;
+        EventService.runConfig(this.orgName + "/" + this.repoName)
+          .then(response => {
+            if (response) {
+              this.formLoading = false;
+              this.keys = response.data;
+              if (response.data.length == undefined) {
+                this.VarsValidate = true;
+              }
+            }
+            if (this.keys == null) {
               this.VarsValidate = true;
             }
-          }
-          if (this.keys == null) {
-            this.VarsValidate = true;
-          }
-        })
-        .catch(error => {
-          console.log("Error! Could not reach the API. " + error);
-        });
+          })
+          .catch(error => {
+            console.log("Error! Could not reach the API. " + error);
+          });
+      } else {
+        toastr.error("Please Login First!");
+      }
     },
     addKey() {
       EventService.addKey(
@@ -354,7 +366,7 @@ export default {
       )
         .then(response => {
           this.loading = false;
-          this.details = response.data
+          this.details = response.data;
         })
         .catch(error => {
           console.log("Error! Could not reach the API. " + error);

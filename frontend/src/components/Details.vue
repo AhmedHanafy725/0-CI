@@ -83,17 +83,21 @@ export default {
         });
     },
     rebuild() {
-      this.loading = true;
-      EventService.rebuildJob(this.id)
-        .then(response => {
-          if (response) {
-            this.loading = false;
-            this.disabled = true;
-          }
-        })
-        .catch(error => {
-          console.log("Error! Could not reach the API. " + error);
-        });
+      if (this.$store.state.user !== null) {
+        this.loading = true;
+        EventService.rebuildJob(this.id)
+          .then(response => {
+            if (response) {
+              this.loading = false;
+              this.disabled = true;
+            }
+          })
+          .catch(error => {
+            console.log("Error! Could not reach the API. " + error);
+          });
+      } else {
+        toastr.error("Please Login First!");
+      }
     }
   },
   created() {

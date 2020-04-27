@@ -1,5 +1,16 @@
 import Axios from 'axios';
 
+const authClient = Axios.create({
+    baseURL: '',
+    withCredentials: true,
+    headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Authorization': "Bearer " + localStorage.getItem('token')
+    }
+})
+
 const apiClient = Axios.create({
     baseURL: '/api',
     withCredentials: true,
@@ -12,6 +23,9 @@ const apiClient = Axios.create({
 })
 
 export default {
+    auth() {
+        return authClient.get('/auth/authenticated')
+    },
     dashboardData() {
         return apiClient.get('/')
     },
@@ -58,5 +72,8 @@ export default {
     },
     getProjectIdDetails(scheduleName, id) {
         return apiClient.get('/schedules/' + scheduleName + '?id=' + id)
+    },
+    logout() {
+        return authClient.get('/auth/logout')
     }
 }

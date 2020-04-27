@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import store from '../store/index'
-import Login from '@/components/Login'
+import Login from '@/components/LoginPage'
 import Dashboard from '@/components/Dashboard'
 import Main from '@/components/Main'
 import BranchDetails from '@/components/BranchDetails'
@@ -9,6 +9,7 @@ import ProjectDetails from '@/components/ProjectDetails'
 import Details from "@/components/Details"
 import ProDetails from '@/components/ProDetails'
 import InitialConfig from '@/components/InitialConfig'
+import EventService from '@/services/EventService'
 
 Vue.use(Router)
 
@@ -37,7 +38,7 @@ const router = new Router({
                     beforeEnter(to, from, next) {
                         let str = JSON.parse(to.query.signedAttempt);
                         store.commit('SET_USER', str.doubleName)
-                        store.commit('SET_TOKEN', str.signedAttempt)
+                            // store.commit('SET_TOKEN', str.signedAttempt)
                         next('/')
                     },
                 },
@@ -75,14 +76,20 @@ const router = new Router({
     ]
 })
 
-// router.beforeEach((to, from, next) => {
-//     if (to.matched.some(record => record.meta.requiresAuth) && (!store.state.token || store.state.token === 'null')) {
-//         next({
-//             name: 'Login'
-//         })
-//     } else {
-//         next()
-//     }
-// })
+router.beforeEach((to, from, next) => {
+    // ${to and from are Route Object,next() must be called to resolve the hook}
+    EventService.auth().then(response => {
+            store.commit('SET_USER', response.data.username)
+            store.commit('SET_EMAIL', response.data.email)
+            store.commit('SET_PERMISSION', response.data.permission)
+            next()
+        })
+        .catch(error => {
+            if (error.response.status == 403) {
+                store.commit('SET_USER', null)
+                next()
+            }
+        });
+})
 
 export default router

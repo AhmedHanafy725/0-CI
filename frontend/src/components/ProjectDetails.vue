@@ -23,7 +23,7 @@
             type="button"
             class="kt-demo-icon mb-0"
             data-toggle="modal"
-            data-target="#kt_modal_4"
+            :data-target="'#kt_modal_' + model"
             @click="runConfig()"
           >
             <i class="flaticon2-settings"></i>
@@ -177,6 +177,7 @@ export default {
   data() {
     return {
       search: "",
+      model: "",
       headers: [
         { text: "#ID", value: "id" },
         { text: "Status", value: "status" },
@@ -247,38 +248,47 @@ export default {
       this.newValue = "";
     },
     restart() {
-      this.loading = true;
-      EventService.rebuildJob(this.formatOrg) // need Id
-        .then(response => {
-          if (response) {
-            this.loading = false;
-            this.disabled = true;
-            this.getDetails();
-          }
-        })
-        .catch(error => {
-          console.log("Error! Could not reach the API. " + error);
-        });
+      if (this.$store.state.user !== null) {
+        this.loading = true;
+        EventService.rebuildJob(this.formatOrg) // need Id
+          .then(response => {
+            if (response) {
+              this.loading = false;
+              this.disabled = true;
+              this.getDetails();
+            }
+          })
+          .catch(error => {
+            console.log("Error! Could not reach the API. " + error);
+          });
+      } else {
+        toastr.error("Please Login First!");
+      }
     },
     runConfig() {
-      this.fireInput = false;
-      EventService.runConfig(this.name)
-        .then(response => {
-          if (response) {
-            this.formLoading = false;
-            this.keys = response.data;
-            // if (Object.keys(response.data).length === 0)
-            if (response.data.length == undefined) {
+      if (this.$store.state.user !== null) {
+        this.fireInput = false;
+        this.model = 4;
+        EventService.runConfig(this.name)
+          .then(response => {
+            if (response) {
+              this.formLoading = false;
+              this.keys = response.data;
+              // if (Object.keys(response.data).length === 0)
+              if (response.data.length == undefined) {
+                this.VarsValidate = true;
+              }
+            }
+            if (this.keys == null) {
               this.VarsValidate = true;
             }
-          }
-          if (this.keys == null) {
-            this.VarsValidate = true;
-          }
-        })
-        .catch(error => {
-          console.log("Error! Could not reach the API. " + error);
-        });
+          })
+          .catch(error => {
+            console.log("Error! Could not reach the API. " + error);
+          });
+      } else {
+        toastr.error("Please Login First!");
+      }
     },
     addKey() {
       EventService.addKey(this.name, this.newKey, this.newValue)

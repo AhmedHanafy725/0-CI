@@ -1336,7 +1336,7 @@
 
       <!--end: Notifications -->
       <!--begin: User Bar -->
-      <user-login v-if="$store.state.user"></user-login>
+      <user-login />
     </div>
 
     <!-- end:: Header Topbar -->

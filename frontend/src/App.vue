@@ -38,7 +38,7 @@ export default {
 <style src="../static/vendors/general/summernote/dist/summernote.css"></style>
 <style src="../static/vendors/general/bootstrap-markdown/css/bootstrap-markdown.min.css"></style>
 <style src="../static/vendors/general/animate.css/animate.css"></style>
-<style src="../static/vendors/general/toastr/build/toastr.css"></style>
+<style src="./assets/toastr/build/toastr.css"></style>
 <style src="../static/vendors/general/morris.js/morris.css"></style>
 <style src="../static/vendors/general/sweetalert2/dist/sweetalert2.css"></style>
 <style src="./assets/socicon/css/socicon.css"></style>

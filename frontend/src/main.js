@@ -57,7 +57,6 @@ if (localStorage) {
 
     if (localUser && store.state.user !== localUser) {
         store.commit('SET_USER', localUser)
-        store.commit('SET_TOKEN', localStorage.getItem('token'))
     }
 }
 
