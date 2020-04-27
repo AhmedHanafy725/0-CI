@@ -28,7 +28,6 @@ const router = new Router({
                     path: '/dashboard',
                     name: 'Dashboard',
                     component: Dashboard,
-                    meta: { requiresAuth: true }
                 },
                 {
                     path: '/repos/:orgName/:repoName',
