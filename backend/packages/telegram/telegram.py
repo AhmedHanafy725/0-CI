@@ -2,7 +2,7 @@ import time
 
 from telegram import Bot, ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
 
-from bcdb.bcdb import InitialConfig
+from models.initial_config import InitialConfig
 
 RETRIES = 5
 
@@ -18,6 +18,8 @@ class Telegram(InitialConfig):
 
         :param msg: message to be sent.
         :type msg: str
+        :param link: result link
+        :type link: str
         :param repo: full repo name
         :type repo: str
         :param branch: branch name

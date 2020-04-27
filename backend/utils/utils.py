@@ -1,13 +1,12 @@
-from subprocess import PIPE, Popen, TimeoutExpired, CompletedProcess
-from uuid import uuid4
-import time
 import os
 import re
-import codecs
+import time
+from subprocess import PIPE, CompletedProcess, Popen, TimeoutExpired
+from uuid import uuid4
 
 import xmltodict
 
-from bcdb.bcdb import InitialConfig
+from models.initial_config import InitialConfig
 
 ansi_escape = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
 
@@ -27,27 +26,24 @@ class Utils(InitialConfig):
         return CompletedProcess(process.args, returncode=retruncode, stdout=stdout, stderr=stderr)
 
     def random_string(self):
-        return str(uuid4())[:10]
+        return "s" + str(uuid4())[:10]
 
-    def write_file(self, text, file_name, file_path=""):
+    def write_file(self, text, file_path, append=False):
         """Write result file.
 
         :param text: text will be written to result file.
         :type text: str
-        :param file_name: result file name.
-        :type file_name: str
+        :param file_path: result file path.
+        :type file_path: str
         """
         text = ansi_escape.sub("", text)
-        if file_path == "":
-            file_path = self.result_path
-        file_path = os.path.join(file_path, file_name)
-        if os.path.exists(file_path):
+        if append and os.path.exists(file_path):
             append_write = "a"  # append if already exists
         else:
             append_write = "w"  # make a new file if not
 
-        with codecs.open(file_path, append_write, "utf-8") as f:
-            f.write(text + "\n")
+        with open(file_path, append_write) as f:
+            f.write(text)
 
     def xml_parse(self, path, line):
         """Parse the xml file resulted from junit.

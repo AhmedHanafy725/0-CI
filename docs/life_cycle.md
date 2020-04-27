@@ -1,7 +1,9 @@
-## ZeroCI life cycle:
-### There are two scenarios in which a build will be triggered:
+# ZeroCI life cycle
 
-#### 1- Pushing in repo already defined in [config file](../config.toml):
+## There are two scenarios in which a build will be triggered
+
+### 1- Pushing in repo already defined in zeroCI configuration
+
  For such a scenario, the following steps will be done:
 
 - When a commit is pushed, Automatically a job is created and stored in redis.
@@ -11,9 +13,10 @@
 - Store the result in database in failure case.
 - Run tests commands one by one against this vm as defined in zeroCI.yaml.
 - Store the result in database.
-- Send result url to telegram and update commit status on github.
+- Send result url to telegram and update commit status on version control system.
 
-#### 2- Scheduled nightly builds:
+### 2- Scheduled nightly builds
+
 For such a scenario, the following steps will be done:
 
 - Make post request with install commands, tests commands, timeout and execution time.

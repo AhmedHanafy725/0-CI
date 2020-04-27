@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zeroci
+spec:
+  selector:
+    matchLabels:
+      app: zeroci
+  template:
+    metadata:
+      labels:
+        app: zeroci
+    spec:
+      volumes:
+      - name: bcdb
+        hostPath:
+          path: /sandbox/var
+      - name: bcdb
+        hostPath:
+          path: /sandbox/redis
+      hostname: zeroci
+      containers:
+      - name: zeroci
+        image: "ahmedhanafy725/zeroci"
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - name: bcdb
+            mountPath: /sandbox/var
+          - name: redis
+            mountPath: /var/lib/redis

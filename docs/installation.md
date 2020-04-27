@@ -1,6 +1,6 @@
-## Installation and running
+# Installation and running
 
-### Requirements
+## Requirements
 
 - Create a vm with Ubuntu:18.04.
 - Install [JSX](https://github.com/threefoldtech/jumpscaleX_core/tree/development/docs/Installation)
@@ -16,7 +16,7 @@
     pip3 install -r install/requirement.txt
     ```
 
-- frontend requirements
+- Frontend requirements
   
   ```bash
   apt-get install -y nodejs npm
@@ -25,32 +25,26 @@
   npm run build
   ```
 
-### Configuration
+## Configuration
 
-- config.toml:
+Go to the domain that ZeroCI has been deployed on, you will be asked for login first, then please fill the following configurations:
 
-```toml
-[main]
-domain=                             # The domain that will point to your server
-result_path=                        # The result log file will stored in
+- **Domain**:  The domain that will point to your server.
 
-[telegram]
-chat_id=                            # Telegram chat ID
-token=                              # Telegram bot token
+- **Telegram chat ID**: Should result messages will be sent on.
+- **Telegram bot token**: The bot token that has been created in requirement step.
 
-[iyo]
-id=                                 # itsyouonline ID
-secret=                             # itsyouonline secret
+- **itsyouonline ID and secret**: Used to deploy VMs.
 
-[github]
-access_token=                       # Github access token for user
-repos=                               # list of  repositories Full name that will run on your zeroCI
+- **vcs host**: The domain or ip that the version control system is working on.
+- **vcs token**: Version control system access token for user.
+- **repos**: List of repositories full name that will run on your zeroCI
 
+Also in this page, admins can add or remove admins or users.
 
-[environment]                       # under this a list of environment variables needed to be exported before running tests.
-```
+(**Note**: Once the configuration is done, ZeroCI will set you as admin, This configuration can be changed only by admins)
 
-### How to run the server
+## How to run the server
 
 ```bash
 bash install/run.sh
