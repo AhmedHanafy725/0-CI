@@ -11,7 +11,7 @@ export default {
   name: "App",
    mounted: function() {
     let elHtml = document.getElementsByTagName('html')[0]
-    elHtml.style.overflowY = 'hidden'
+    elHtml.style.overflowY = 'auto'
   },
   destroyed: function() {
     let elHtml = document.getElementsByTagName('html')[0]
@@ -47,10 +47,10 @@ export default {
 <style src="./assets/flaticon2/flaticon.css"></style>
 <style src="./assets/fontawesome5/css/all.min.css"></style>
 
-<style src="./assets/style.bundle.css"></style>
-<style src="./assets/light.css"></style>
-<style src="./assets/dark.css"></style>
-<style src="./assets/aside-dark.css"></style>
+<style src="./assets/css/style.bundle.css"></style>
+<style src="./assets/css/light.css"></style>
+<style src="./assets/css/dark.css"></style>
+<style src="./assets/css/aside-dark.css"></style>
 <style src="./assets/css/custom.css"></style>
 
 
