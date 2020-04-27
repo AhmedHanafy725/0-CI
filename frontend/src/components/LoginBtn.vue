@@ -23,7 +23,10 @@ export default {
       this.$store.commit("SET_USER", null);
       this.$store.commit("SET_EMAIL", null);
       this.$store.commit("SET_PERMISSION", null);
-      EventService.logout();
+      EventService.logout().then(response => {
+        this.$router.push("/");
+      })
+
     }
   },
   computed: {
