@@ -31,18 +31,6 @@ const router = new Router({
                     meta: { requiresAuth: true }
                 },
                 {
-                    path: '/auth/3bot_callback',
-                    name: 'Dashboard',
-                    component: Dashboard,
-                    props: true,
-                    beforeEnter(to, from, next) {
-                        let str = JSON.parse(to.query.signedAttempt);
-                        store.commit('SET_USER', str.doubleName)
-                            // store.commit('SET_TOKEN', str.signedAttempt)
-                        next('/')
-                    },
-                },
-                {
                     path: '/repos/:orgName/:repoName',
                     name: 'BranchDetails',
                     component: BranchDetails,

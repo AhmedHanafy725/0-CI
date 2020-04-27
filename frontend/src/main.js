@@ -50,16 +50,6 @@ requireComponent.keys().forEach(fileName => {
     )
 })
 
-// Check local storage to handle refreshes
-if (localStorage) {
-    var localUserString = localStorage.getItem('user') || 'null'
-    var localUser = JSON.parse(localUserString)
-
-    if (localUser && store.state.user !== localUser) {
-        store.commit('SET_USER', localUser)
-    }
-}
-
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */

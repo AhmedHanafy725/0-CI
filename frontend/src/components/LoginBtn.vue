@@ -23,11 +23,6 @@ export default {
       this.$store.commit("SET_USER", null);
       this.$store.commit("SET_EMAIL", null);
       this.$store.commit("SET_PERMISSION", null);
-      if (window.localStorage) {
-        window.localStorage.setItem("user", null);
-        window.localStorage.setItem("email", null);
-        window.localStorage.setItem("permission", null);
-      }
       EventService.logout();
     }
   },
