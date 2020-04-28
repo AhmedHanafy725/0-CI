@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime
+import traceback
 
 import redis
 import yaml
@@ -27,6 +28,7 @@ class Actions:
     prequisties = None
     install_script = None
     test_script = None
+    clone_script = None
     parent_model = None
     run_id = None
 
@@ -35,74 +37,51 @@ class Actions:
         """
         model_obj = self.parent_model(id=self.run_id)
         status = "success"
-        if self.test_script:
-            for i, line in enumerate(self.test_script):
-                status = "success"
-                if line.startswith("#"):
-                    continue
-                response, file_path = container.run_test(id=self.run_id, run_cmd=line)
-                if file_path:
-                    if response.returncode:
-                        status = "failure"
-                    try:
-                        result = utils.xml_parse(path=file_path, line=line)
-                        model_obj.result.append(
-                            {
-                                "type": "testsuite",
-                                "status": status,
-                                "name": result["summary"]["name"],
-                                "content": result,
-                            }
-                        )
-                    except:
-                        model_obj.result.append(
-                            {"type": "log", "status": status, "name": line, "content": response.stdout}
-                        )
-                    os.remove(file_path)
-                else:
-                    if response.returncode:
-                        status = "failure"
-                    model_obj.result.append({"type": "log", "status": status, "name": line, "content": response.stdout})
-                model_obj.save()
-                if i + 1 == len(self.test_script):
-                    r.rpush(self.run_id, "hamada ok")
-        else:
-            r.rpush(self.run_id, "hamada ok")
-            model_obj.result.append({"type": "log", "status": status, "name": "No tests", "content": "No tests found"})
+        for i, line in enumerate(self.test_script):
+            status = "success"
+            response, file_path = container.run_test(id=self.run_id, run_cmd=line["cmd"])
+            result = response.stdout
+            type = "log"
+            if response.returncode:
+                status = "failure"
+            if file_path:
+                try:
+                    result = utils.xml_parse(path=file_path, line=line["cmd"])
+                    type = "testsuite"
+                except:
+                    pass
+                os.remove(file_path)
+
+            model_obj.result.append({"type": type, "status": status, "name": line["name"], "content": result})
             model_obj.save()
+            if i + 1 == len(self.test_script):
+                r.rpush(self.run_id, "hamada ok")
 
     def build(self):
         """Create VM with the required prerequisties and run installation steps to get it ready for running tests.
         """
         model_obj = self.parent_model(id=self.run_id)
-        if self.install_script:
-            env = self._get_run_env()
-            deployed = container.deploy(env=env, prequisties=self.prequisties)
-            if deployed:
-                response = container.install_app(id=self.run_id, install_script=self.install_script)
-                if response.returncode:
-                    model_obj.result.append(
-                        {"type": "log", "status": "error", "name": "Installation", "content": response.stdout}
-                    )
-                    model_obj.save()
-                    r.rpush(self.run_id, "hamada ok")
-                    self.cal_status()
-                return deployed, response
-
-            else:
-                model_obj.result.append(
-                    {"type": "log", "status": "error", "name": "Deploy", "content": "Couldn't deploy a vm"}
-                )
-                model_obj.save()
-                self.cal_status()
-        else:
-            model_obj.result.append(
-                {"type": "log", "status": "error", "name": "ZeroCI", "content": "Didn't find something to install"}
+        env = self._get_run_env()
+        deployed = container.deploy(env=env, prequisties=self.prequisties)
+        installed = False
+        if deployed:
+            response = container.install_app(
+                id=self.run_id, install_script=self.install_script, clone_script=self.clone_script
             )
-            model_obj.save()
-            self.cal_status()
+            if response.returncode:
+                name = "Installation"
+                result = response.stdout
+                r.rpush(self.run_id, "hamada ok")
+            else:
+                installed = True
+        else:
+            name = "Deploy"
+            result = "Couldn't deploy a container"
+        model_obj.result.append({"type": "log", "status": "error", "name": name, "content": result})
+        model_obj.save()
+        self.cal_status()
 
-        return None, None
+        return deployed, installed
 
     def cal_status(self):
         """Calculate the status of the whole tests result has been stored on the BD's id.
@@ -136,37 +115,84 @@ class Actions:
             env.append(env_var)
         return env
 
-    def _install_test_scripts(self):
+    def _validate_load_yaml(self):
+        model_obj = self.parent_model(id=self.run_id)
+        msg = ""
+        VCSObject = VCSFactory().get_cvn(repo=model_obj.repo)
+        script = VCSObject.get_content(ref=model_obj.commit, file_path="zeroCI.yaml")
+        if script:
+            try:
+                yaml_script = yaml.safe_load(script)
+            except:
+                msg = traceback.format_exc()
+        else:
+            msg = "zeroCI.yaml is not found on the repository's home"
+
+        if not msg:
+            test_script = yaml_script.get("script")
+            if not test_script:
+                msg = "script should be in yaml file and shouldn't be empty"
+            else:
+                if not isinstance(test_script, list):
+                    msg = "script should be list"
+                else:
+                    for item in test_script:
+                        if not isinstance(item, dict):
+                            msg = "Every element in script should be dict"
+                        else:
+                            name = item.get("name")
+                            if not name:
+                                msg = "Every element in script should conttain a name"
+                            cmd = item.get("cmd")
+                            if not cmd:
+                                msg = "Every element in script should conttain a cmd"
+
+            install_script = yaml_script.get("install")
+            if not install_script:
+                msg = "install should be in yaml file and shouldn't be empty"
+            else:
+                if not isinstance(install_script, list):
+                    msg = "install should be list"
+
+            prequisties = yaml_script.get("prequisties")
+            if not prequisties:
+                msg = "prequisties should be in yaml file and shouldn't be empty"
+            else:
+                image_name = yaml_script["prequisties"].get("imageName")
+                if not image_name:
+                    msg = "prequisties should contain imageName and shouldn't be empty"
+
+        if msg:
+            model_obj.result.append({"type": "log", "status": "error", "name": "Yaml File", "content": msg})
+            return False
+
+        self.prequisties = prequisties
+        self.install_script = " && ".join(install_script)
+        self.test_script = yaml_script.get("script")
+        return True
+
+    def _set_clone_script(self):
         """Read zeroCI yaml script from the repo home directory and divide it to prequisties and (install and test) scripts.
         """
-        trigger_run = TriggerRun(id=self.run_id)
-        org_repo_name = trigger_run.repo.split("/")[0]
-        clone = """apt-get update &&
+        model_obj = self.parent_model(id=self.run_id)
+        org_repo_name = model_obj.repo.split("/")[0]
+        self.clone_script = """apt-get update &&
         apt-get install -y git &&
         mkdir -p {repos_dir}/{org_repo_name} &&
         cd {repos_dir}/{org_repo_name} &&
         git clone {vcs_host}/{repo}.git --branch {branch} &&
         cd {repos_dir}/{repo} &&
-        git reset --hard {commit} &&
+        git reset --hard {commit}
         """.format(
             repos_dir=self._REPOS_DIR,
-            repo=trigger_run.repo,
-            branch=trigger_run.branch,
-            commit=trigger_run.commit,
+            repo=model_obj.repo,
+            branch=model_obj.branch,
+            commit=model_obj.commit,
             org_repo_name=org_repo_name,
             vcs_host=configs.vcs_host,
         ).replace(
             "\n", " "
         )
-
-        VCSObject = VCSFactory().get_cvn(repo=trigger_run.repo)
-        script = VCSObject.get_content(ref=trigger_run.commit, file_path="zeroCI.yaml")
-        if script:
-            yaml_script = yaml.load(script)
-            self.prequisties = yaml_script.get("prequisties")
-            install = " && ".join(yaml_script.get("install"))
-            self.install_script = clone + install
-            self.test_script = yaml_script.get("script")
 
     def build_and_test(self, id, schedule_name=None):
         """Builds, runs tests, calculates status and gives report on telegram and your version control system.
@@ -177,16 +203,19 @@ class Actions:
         :param schedule_name: str
         """
         self.run_id = id
+        valid = True
         if not schedule_name:
-            self._install_test_scripts()
             self.parent_model = TriggerRun
+            self._set_clone_script()
+            valid = self._validate_load_yaml()
 
-        deployed, response = self.build()
-        if deployed:
-            if not response.returncode:
-                self.test_run()
-                self.cal_status()
-            container.delete()
+        if valid:
+            deployed, installed = self.build()
+            if deployed:
+                if installed:
+                    self.test_run()
+                    self.cal_status()
+                container.delete()
         reporter.report(id=self.run_id, parent_model=self.parent_model, schedule_name=schedule_name)
 
     def schedule_run(self, schedule_name, install_script, test_script, prequisties):

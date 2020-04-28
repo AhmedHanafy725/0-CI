@@ -140,7 +140,7 @@ class Container(Utils):
         except:
             pass
 
-    def install_app(self, id, install_script):
+    def install_app(self, id, install_script, clone_script=None):
         """Install application to be tested.
 
         :param id: DB's id of this run details.
@@ -150,7 +150,10 @@ class Container(Utils):
         :param env: environment variables needed in the installation.
         :type env: dict
         """
-        response = self.execute_command(cmd=install_script, id=id)
+        if clone_script:
+            response = self.execute_command(cmd=install_script, id="", verbose=False)
+            if not response.returncode:
+                response = self.execute_command(cmd=install_script, id=id)
         return response
 
     def run_test(self, run_cmd, id):
