@@ -95,9 +95,7 @@ class Container(Utils):
         ports = client.V1ContainerPort(container_port=22)
         env.append(client.V1EnvVar(name="DEBIAN_FRONTEND", value="noninteractive"))
         commands = ["/bin/bash", "-ce", "env | grep _ >> /etc/environment && sleep 3600"]
-        container = client.V1Container(
-            name=self.name, image=prequisties, command=commands, env=env, ports=[ports],
-        )
+        container = client.V1Container(name=self.name, image=prequisties, command=commands, env=env, ports=[ports])
         spec = client.V1PodSpec(containers=[container], hostname=self.name)
         meta = client.V1ObjectMeta(name=self.name, namespace=self.namespace, labels={"app": self.name})
         pod = client.V1Pod(api_version="v1", kind="Pod", metadata=meta, spec=spec)
@@ -139,7 +137,6 @@ class Container(Utils):
         """
         try:
             self.client.delete_namespaced_pod(name=self.name, namespace=self.namespace)
-            self.client.delete_namespaced_service(name=self.name, namespace=self.namespace)
         except:
             pass
 
