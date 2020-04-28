@@ -40,7 +40,7 @@
             <span class="kt-menu__link-text">Dashboard</span>
           </a>
         </li>
-        <li class="kt-menu__section">
+        <li class="kt-menu__section" v-if="repos">
           <h4 class="kt-menu__section-text">Repos</h4>
           <i class="kt-menu__section-icon flaticon-more-v2"></i>
         </li>
