@@ -151,9 +151,11 @@ class Container(Utils):
         :type env: dict
         """
         if clone_script:
-            response = self.execute_command(cmd=install_script, id="", verbose=False)
-            if not response.returncode:
-                response = self.execute_command(cmd=install_script, id=id)
+            response = self.execute_command(cmd=clone_script, id="", verbose=False)
+
+        if not clone_script or clone_script and not response.returncode:
+            response = self.execute_command(cmd=install_script, id=id)
+
         return response
 
     def run_test(self, run_cmd, id):
