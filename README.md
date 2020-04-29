@@ -30,7 +30,7 @@ Go to the repository's setting to configure the webhook:
 - Add a file called `zeroCI.yaml` to the home of your repository.
   ![zeroci location](/docs/Images/repo_home.png)
 - This file contains the project's prerequisites, installation and test scripts:
-  - `prequisties`: requirements needed to be installed before starting project installation.
+  - `prerequisites`: requirements needed to be installed before starting project installation.
     (**Note:** `jsx` only supported)
   - `install`: list of bash commands required to install the project.
   - `script`: list of bash commands needed to run the tests ([more details](#zeroci-script-configuration)).

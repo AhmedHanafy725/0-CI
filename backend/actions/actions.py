@@ -1,9 +1,10 @@
 import json
 import os
-from datetime import datetime
 import traceback
+from datetime import datetime
 
 import redis
+import requests
 import yaml
 
 from deployment.container import Container
@@ -25,7 +26,7 @@ r = redis.Redis()
 
 class Actions:
     _REPOS_DIR = "/opt/code/vcs_repos"
-    prequisties = None
+    prerequisites = None
     install_script = None
     test_script = None
     clone_script = None
@@ -62,7 +63,7 @@ class Actions:
         """
         model_obj = self.parent_model(id=self.run_id)
         env = self._get_run_env()
-        deployed = container.deploy(env=env, prequisties=self.prequisties)
+        deployed = container.deploy(env=env, prerequisites=self.prerequisites)
         installed = False
         if deployed:
             response = container.install_app(
@@ -77,9 +78,11 @@ class Actions:
         else:
             name = "Deploy"
             result = "Couldn't deploy a container"
-        model_obj.result.append({"type": "log", "status": "error", "name": name, "content": result})
-        model_obj.save()
-        self.cal_status()
+
+        if not deployed or not installed:
+            model_obj.result.append({"type": "log", "status": "error", "name": name, "content": result})
+            model_obj.save()
+            self.cal_status()
 
         return deployed, installed
 
@@ -143,45 +146,68 @@ class Actions:
                             name = item.get("name")
                             if not name:
                                 msg = "Every element in script should conttain a name"
+                            else:
+                                if not isinstance(name, str):
+                                    msg = "Eveey name in script should be str"
                             cmd = item.get("cmd")
                             if not cmd:
                                 msg = "Every element in script should conttain a cmd"
+                            else:
+                                if not isinstance(cmd, str):
+                                    msg = "Eveey cmd in script should be str"
 
             install_script = yaml_script.get("install")
             if not install_script:
                 msg = "install should be in yaml file and shouldn't be empty"
             else:
-                if not isinstance(install_script, list):
-                    msg = "install should be list"
+                if not isinstance(install_script, str):
+                    msg = "install should be str"
 
-            prequisties = yaml_script.get("prequisties")
-            if not prequisties:
-                msg = "prequisties should be in yaml file and shouldn't be empty"
+            prerequisites = yaml_script.get("prerequisites")
+            if not prerequisites:
+                msg = "prerequisites should be in yaml file and shouldn't be empty"
             else:
-                image_name = yaml_script["prequisties"].get("imageName")
-                if not image_name:
-                    msg = "prequisties should contain imageName and shouldn't be empty"
+                if not isinstance(prerequisites, dict):
+                    msg = "prerequisites should be dict"
+                else:
+                    image_name = yaml_script["prerequisites"].get("imageName")
+                    if not image_name:
+                        msg = "prerequisites should contain imageName and shouldn't be empty"
+                    else:
+                        if not isinstance(image_name, str):
+                            msg = "imageName should be str"
+                        else:
+                            if ":" in image_name:
+                                repository, tag = image_name.split(":")
+                            else:
+                                repository = image_name
+                                tag = "latest"
+                            r = requests.get(f"https://index.docker.io/v1/repositories/{repository}/tags/{tag}")
+                            if r.status_code is not requests.codes.ok:
+                                msg = "Invalid docker image's name "
 
         if msg:
             model_obj.result.append({"type": "log", "status": "error", "name": "Yaml File", "content": msg})
+            model_obj.save()
+            self.cal_status()
             return False
 
-        self.prequisties = prequisties
-        self.install_script = " && ".join(install_script)
+        self.prerequisites = prerequisites
+        self.install_script = install_script
         self.test_script = yaml_script.get("script")
         return True
 
     def _set_clone_script(self):
-        """Read zeroCI yaml script from the repo home directory and divide it to prequisties and (install and test) scripts.
+        """Read zeroCI yaml script from the repo home directory and divide it to prerequisites and (install and test) scripts.
         """
         model_obj = self.parent_model(id=self.run_id)
         org_repo_name = model_obj.repo.split("/")[0]
-        self.clone_script = """apt-get update &&
-        apt-get install -y git &&
-        mkdir -p {repos_dir}/{org_repo_name} &&
-        cd {repos_dir}/{org_repo_name} &&
-        git clone {vcs_host}/{repo}.git --branch {branch} &&
-        cd {repos_dir}/{repo} &&
+        self.clone_script = """apt-get update
+        apt-get install -y git
+        mkdir -p {repos_dir}/{org_repo_name}
+        cd {repos_dir}/{org_repo_name}
+        git clone {vcs_host}/{repo}.git --branch {branch}
+        cd {repos_dir}/{repo}
         git reset --hard {commit}
         """.format(
             repos_dir=self._REPOS_DIR,
@@ -190,8 +216,6 @@ class Actions:
             commit=model_obj.commit,
             org_repo_name=org_repo_name,
             vcs_host=configs.vcs_host,
-        ).replace(
-            "\n", " "
         )
 
     def build_and_test(self, id, schedule_name=None):
@@ -218,7 +242,7 @@ class Actions:
                 container.delete()
         reporter.report(id=self.run_id, parent_model=self.parent_model, schedule_name=schedule_name)
 
-    def schedule_run(self, schedule_name, install_script, test_script, prequisties):
+    def schedule_run(self, schedule_name, install_script, test_script, prerequisites):
         """Builds, runs tests, calculates status and gives report on telegram.
 
         :param schedule_name: the name of the scheduled run.
@@ -227,8 +251,8 @@ class Actions:
         :type install_script: str
         :param test_script: the script that should run the tests.
         :type test_script: list
-        :param prequisties: requires needed in VM.
-        :type prequisties: str
+        :param prerequisites: requires needed in VM.
+        :type prerequisites: str
         """
         data = {"status": "pending", "timestamp": datetime.now().timestamp(), "schedule_name": schedule_name}
         scheduler_run = SchedulerRun(**data)
@@ -237,7 +261,7 @@ class Actions:
         data["id"] = id
         r.publish(schedule_name, json.dumps(data))
         self.parent_model = SchedulerRun
-        self.prequisties = prequisties
+        self.prerequisites = prerequisites
         self.install_script = install_script
         self.test_script = test_script
         self.build_and_test(id=id, schedule_name=schedule_name)

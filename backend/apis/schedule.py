@@ -27,7 +27,7 @@ def schedule():
                 "schedule_name": schedule_name,
                 "install_script": schedule_info.install_script,
                 "test_script": schedule_info.test_script,
-                "prequisties": schedule_info.prequisties,
+                "prerequisites": schedule_info.prerequisites,
                 "run_time": schedule_info.run_time,
             }
             return json.dumps(info)
@@ -38,7 +38,7 @@ def schedule():
     if request.headers.get("Content-Type") == "application/json":
         if request.method == "POST":
             data = ["schedule_name", "run_time"]
-            list_str_data = ["install_script", "test_script", "prequisties"]
+            list_str_data = ["install_script", "test_script", "prerequisites"]
             data.extend(list_str_data)
             job = {}
             for item in data:
@@ -67,7 +67,7 @@ def schedule():
                 scheduler.cron(
                     cron_string=job["run_time"],
                     func=actions.schedule_run,
-                    args=[job["schedule_name"], job["install_script"], job["test_script"], job["prequisties"],],
+                    args=[job["schedule_name"], job["install_script"], job["test_script"], job["prerequisites"],],
                     id=job["schedule_name"],
                     timeout=7200,
                 )
@@ -106,7 +106,7 @@ def schedule_trigger():
         schedule_info = ScheduleInfo(name=schedule_name)
         job = q.enqueue_call(
             func=actions.schedule_run,
-            args=(schedule_name, schedule_info.install_script, schedule_info.test_script, schedule_info.prequisties,),
+            args=(schedule_name, schedule_info.install_script, schedule_info.test_script, schedule_info.prerequisites,),
             result_ttl=5000,
             timeout=20000,
         )

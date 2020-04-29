@@ -10,7 +10,7 @@ class ScheduleInfo(Base):
     install_script = (S)
     run_time = (S)
     test_script = (dict)
-    prequisties = (dict)
+    prerequisites = (dict)
     """
     _schema = j.data.schema.get_from_text(_schema_text)
     _model = _bcdb.model_get(schema=_schema)
@@ -25,8 +25,8 @@ class ScheduleInfo(Base):
             self._model_obj.run_time = kwargs["run_time"]
             self._model_obj.test_script = {"test_script": []}
             self._model_obj.test_script["test_script"] = kwargs.get("test_script", [])
-            self._model_obj.prequisties = {"prequisties": []}
-            self._model_obj.prequisties["prequisties"] = kwargs.get("prequisties", [])
+            self._model_obj.prerequisites = {"prerequisites": []}
+            self._model_obj.prerequisites["prerequisites"] = kwargs.get("prerequisites", [])
 
     @property
     def name(self):
@@ -61,9 +61,9 @@ class ScheduleInfo(Base):
         self._model_obj.test_script["test_script"] = test_script
 
     @property
-    def prequisties(self):
-        return self._model_obj.prequisties["prequisties"]
+    def prerequisites(self):
+        return self._model_obj.prerequisites["prerequisites"]
 
-    @prequisties.setter
-    def prequisties(self, prequisties):
-        self._model_obj.prequisties["prequisties"] = prequisties
+    @prerequisites.setter
+    def prerequisites(self, prerequisites):
+        self._model_obj.prerequisites["prerequisites"] = prerequisites

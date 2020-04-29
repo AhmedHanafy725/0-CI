@@ -46,7 +46,7 @@ class Container(Utils):
                 self.client.connect_get_namespaced_pod_exec,
                 name=self.name,
                 namespace=self.namespace,
-                command=["/bin/bash", "-c", cmd],
+                command=["/bin/bash", "-ce", cmd],
                 stderr=True,
                 stdin=True,
                 stdout=True,
@@ -91,21 +91,23 @@ class Container(Utils):
             return True
         return False
 
-    def create_pod(self, env, prequisties):
+    def create_pod(self, env, prerequisites):
         ports = client.V1ContainerPort(container_port=22)
         env.append(client.V1EnvVar(name="DEBIAN_FRONTEND", value="noninteractive"))
         commands = ["/bin/bash", "-ce", "env | grep _ >> /etc/environment && sleep 3600"]
-        container = client.V1Container(name=self.name, image=prequisties, command=commands, env=env, ports=[ports])
+        container = client.V1Container(
+            name=self.name, image=prerequisites["imageName"], command=commands, env=env, ports=[ports]
+        )
         spec = client.V1PodSpec(containers=[container], hostname=self.name)
         meta = client.V1ObjectMeta(name=self.name, namespace=self.namespace, labels={"app": self.name})
         pod = client.V1Pod(api_version="v1", kind="Pod", metadata=meta, spec=spec)
         self.client.create_namespaced_pod(body=pod, namespace=self.namespace)
 
-    def deploy(self, env, prequisties):
+    def deploy(self, env, prerequisites):
         """Deploy a container on kubernetes cluster.
 
-        :param prequisties: list of prequisties needed.
-        :type prequisties: list
+        :param prerequisites: list of prerequisites needed.
+        :type prerequisites: list
         :return: bool (True: if virtual machine is created).
         """
         config.load_incluster_config()
@@ -114,7 +116,7 @@ class Container(Utils):
         self.namespace = "default"
         for _ in range(RETRIES):
             try:
-                self.create_pod(env=env, prequisties=prequisties)
+                self.create_pod(env=env, prerequisites=prerequisites)
                 self.wait_for_container()
                 break
             except:
