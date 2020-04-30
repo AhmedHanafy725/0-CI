@@ -95,7 +95,50 @@ class VCSInterface(metaclass=ABCMeta):
         :type repo: str
         :return type: tuple
         """
+    
+    @abstractmethod
+    def get_user_repos(username):
+        """Get all user repositories.
 
+        :param username: user name on vcs
+        :type username: str
+        :return type: list
+        """
+
+    @abstractmethod
+    def get_org_repos(org_name):
+        """Get all organization repositories.
+
+        :param username: organization name on vcs
+        :type username: str
+        :return type: list
+        """
+
+    @abstractmethod
+    def create_hook(repo):
+        """Create web hook for zeroci.
+
+        :param repo: repo full name
+        :type repo: str
+        """
+
+    @abstractmethod
+    def list_hooks(repo):
+        """List web hooks in a repo.
+
+        :param repo: repo full name
+        :type repo: str
+        """
+
+    @abstractmethod
+    def delete_hook(repo, id):
+        """Delete web hook.
+
+        :param repo: repo full name
+        :type repo: str
+        :param id: hook id
+        :type id: str
+        """
 
 class Github(VCSInterface):
     """Github Class which implements VCSInterface"""
