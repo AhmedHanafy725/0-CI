@@ -1,12 +1,16 @@
 import json
 import sys
-from telegram import Bot
-from telegram.error import InvalidToken, Unauthorized, BadRequest
+
 import requests
+from telegram import Bot
+from telegram.error import BadRequest, InvalidToken, Unauthorized
 
 from apis.base import admin, app, check_configs, configs, user
 from bottle import Response, abort, request
 from models.run_config import RunConfig
+from packages.vcs.vcs import VCSFactory
+
+vcs_obj = VCSFactory().get_cvn()
 
 @app.route("/api/telegram_config", method=["GET", "POST"])
 @admin
@@ -30,24 +34,27 @@ def validate_telegam():
             else:
                 setattr(configs, conf, value)
 
-    # Check telegram bot token 
-    try:
-        bot = Bot(request.json["bot_token"])
-        bot.sendMessage(request.json["chat_id"], "Configured") 
-    except (InvalidToken, BadRequest, Unauthorized) as error:
-        if error.message == "Unauthorized":
-            error.message += ": Invalid Token"
-        return Response(error.message, 400)                                                                                                
+        # Check telegram bot token
+        try:
+            bot = Bot(request.json["bot_token"])
+            bot.sendMessage(request.json["chat_id"], "Configured")
+        except (InvalidToken, BadRequest, Unauthorized) as error:
+            if error.message == "Unauthorized":
+                error.message += ": Invalid Token"
+            return Response(error.message, 400)
+
+        configs.save()
+        return Response("Configured", 200)        
+
 
 @app.route("/api/git_config", method=["GET", "POST"])
 @admin
 def validate_config_git():
     """Initial configuration for the ci before start working.
     """
-    confs = ["domain", "vcs_host", "vcs_token", "repos"]
+    confs = ["domain", "vcs_host", "vcs_token"]
     conf_dict = {}
     if request.method == "GET":
-        confs.extend(["configured", "admins", "users"])
         for conf in confs:
             conf_dict[conf] = getattr(configs, conf)
             conf_json = json.dumps(conf_dict)
@@ -57,9 +64,7 @@ def validate_config_git():
             value = request.json.get(conf)
             if not value:
                 return Response(f"{conf} should have a value", 400)
-            elif conf is "repos" and not isinstance(value, list):
-                return Response("repos should be list", 400)
-            elif conf is not "repos" and not isinstance(value, str):
+            elif not isinstance(value, str):
                 return Response(f"{conf} should be str", 400)
             else:
                 setattr(configs, conf, value)
@@ -69,15 +74,45 @@ def validate_config_git():
         if r.status_code is not requests.codes.ok:
             return Response(f"Your version control system is not reachable", 400)
 
-        # TODO: continue validation and create hooks 
-
-        if not configs.admins:
-            admin = request.environ.get("beaker.session").get("username")
-            configs.admins.append(admin)
-        configs.configured = True
         configs.save()
-        sys.exit(1)
+        return Response("Configured", 200)
 
+
+@app.route("/api/repos_config", method=["GET", "POST"])
+@admin
+def repos_config():
+    if request.method == "GET":
+        username = request.query.get("username")
+        org_name = request.query.get("org_name")
+        if username:
+            repos = vcs_obj.get_user_repos(username)
+        elif org_name:
+            repos = vcs_obj.get_org_repos(org_name)
+        else:
+            repos = configs.repos
+        return json.dumps(repos)
+    if request.headers.get("Content-Type") == "application/json":
+        repos = request.json.get("repos")
+        if not repos:
+            return Response(f"repos should have a value", 400)
+        elif not isinstance(repos, list):
+            return Response("repos should be list", 400)
+        else:
+            added_repos = set(repos) - set(configs.repos)
+            for repo in added_repos:
+                created = vcs_obj.create_hook(repo)
+                if not created:
+                    return Response(f"Make sure your token has full access for hooks on this repo {repo}", 401)
+            
+            removed_repos = set(configs.repos) - set(repos)
+            for repo in removed_repos:
+                deleted = vcs_obj.delete_hook(repo)
+                if not deleted:
+                    return Response(f"Couldn't delete the hook of this repo {repo}", 401)
+
+            configs.repos = repos
+            configs.save()
+            return Response("Added", 201)
 
 @app.route("/api/users", method=["GET", "POST", "DELETE"])
 @admin
@@ -111,6 +146,22 @@ def users():
             return Response("Deleted", 200)
     return abort(400)
 
+
+@app.route("/api/apply_config", method=["POST"])
+@admin
+def apply_config():
+    if not (configs.domain or configs.vcs_host or configs.vcs_token):
+        return Response("Version Control System is not configured")
+    elif not (configs.bot_token or configs.chat_id):
+        return Response("Telegram is not configured")
+    elif not configs.repos:
+        return Response("There is no repository at least you should have one")
+    else:
+        if not configs.admins:
+            admin = request.environ.get("beaker.session").get("username")
+            configs.admins.append(admin)
+        configs.configured = True
+        sys.exit(1)
 
 @app.route("/api/run_config/<name:path>", method=["GET", "POST", "DELETE"])
 @user
