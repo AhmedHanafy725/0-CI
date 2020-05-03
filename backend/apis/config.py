@@ -10,7 +10,6 @@ from bottle import Response, abort, request
 from models.run_config import RunConfig
 from packages.vcs.vcs import VCSFactory
 
-vcs_obj = VCSFactory().get_cvn()
 
 @app.route("/api/telegram_config", method=["GET", "POST"])
 @admin
@@ -70,8 +69,9 @@ def validate_config_git():
                 setattr(configs, conf, value)
 
         # Check vcs host is reachable
-        r = requests.get(request.json["vcs_host"])
-        if r.status_code is not requests.codes.ok:
+        try:
+            r = requests.get(request.json["vcs_host"])
+        except Exception as e:
             return Response(f"Your version control system is not reachable", 400)
 
         configs.save()
@@ -81,6 +81,7 @@ def validate_config_git():
 @app.route("/api/repos_config", method=["GET", "POST"])
 @admin
 def repos_config():
+    vcs_obj = VCSFactory().get_cvn()
     if request.method == "GET":
         username = request.query.get("username")
         org_name = request.query.get("org_name")
@@ -161,7 +162,8 @@ def apply_config():
             admin = request.environ.get("beaker.session").get("username")
             configs.admins.append(admin)
         configs.configured = True
-        sys.exit(1)
+        return Response("Configured", 200)
+
 
 @app.route("/api/run_config/<name:path>", method=["GET", "POST", "DELETE"])
 @user

@@ -9,8 +9,6 @@ from github import UnknownObjectException
 import giteapy
 from models.initial_config import InitialConfig
 
-configs = InitialConfig()
-HOOK_URL = urljoin(configs.domain, "git_trigger")
 
 class VCSInterface(metaclass=ABCMeta):
     """The Version Control System Interface"""
@@ -151,7 +149,9 @@ class Github(VCSInterface):
         :param repo: full repo name
         :type repo: str
         """
-        if configs.configured:
+        configs = InitialConfig()
+        self.HOOK_URL = urljoin(configs.domain, "git_trigger")
+        if configs.vcs_token:
             self.repo = repo
             self.github_cl = GH(configs.vcs_token)
             if repo:
@@ -215,7 +215,7 @@ class Github(VCSInterface):
 
     def create_hook(self, repo):
         repo = self.github_cl.get_repo(repo)
-        hook_config = {"url": HOOK_URL, "content_type": "json"}
+        hook_config = {"url": self.HOOK_URL, "content_type": "json"}
         try:
             repo.create_hook(name="web", config=hook_config, events=["push"], active=True)
         except UnknownObjectException as e:
@@ -238,7 +238,7 @@ class Github(VCSInterface):
         if hooks == False:
             return False
         for hook in hooks:
-            if hook.config["url"] == HOOK_URL:
+            if hook.config["url"] == self.HOOK_URL:
                 hook.delete()
         return True
 
@@ -250,14 +250,15 @@ class Gitea(VCSInterface):
         :param repo: full repo name
         :type repo: str
         """
-
+        configs = InitialConfig()
+        self.HOOK_URL = urljoin(configs.domain, "git_trigger")
         def _get_gitea_cl():
             configuration = giteapy.Configuration()
             configuration.host = urljoin(configs.vcs_host, "/api/v1")
             configuration.api_key["token"] = configs.vcs_token
             return giteapy.api_client.ApiClient(configuration)
 
-        if configs.configured:
+        if configs.vcs_token:
             self.repo_obj = giteapy.RepositoryApi(_get_gitea_cl())
             self.user_obj = giteapy.UserApi(_get_gitea_cl())
             self.org_obj = giteapy.OrganizationApi(_get_gitea_cl())
@@ -316,11 +317,11 @@ class Gitea(VCSInterface):
         repo_name = repo.split("/")[-1]
         hooks = self.list_hooks(repo=repo)
         for hook in hooks:
-            if hook.config["url"] == HOOK_URL:
+            if hook.config["url"] == self.HOOK_URL:
                 return True
 
         config = giteapy.CreateHookOption(
-            active=True, config={"url": HOOK_URL, "content_type": "json"}, events=["push"], type="gitea"
+            active=True, config={"url": self.HOOK_URL, "content_type": "json"}, events=["push"], type="gitea"
         )
         try:
             self.repo_obj.repo_create_hook(owner, repo_name, body=config)
@@ -344,7 +345,7 @@ class Gitea(VCSInterface):
         if hooks == False:
             return False
         for hook in hooks:
-            if hook.config["url"] == HOOK_URL:
+            if hook.config["url"] == self.HOOK_URL:
                 hook_id = hook.id
 
         owner = repo.split("/")[0]  # org name
@@ -358,6 +359,7 @@ class VCSFactory:
 
     @staticmethod
     def get_cvn(repo=None):
+        configs = InitialConfig()
         if configs.vcs_type == "github":
             return Github(repo)
         else:

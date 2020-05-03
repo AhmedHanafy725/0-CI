@@ -42,8 +42,8 @@ def branch(repo):
         result = json.dumps(trigger_runs)
         return result
 
-    VCSObject = VCSFactory().get_cvn(repo=repo)
-    exist_branches = VCSObject.get_branches()
+    vcs_obj = VCSFactory().get_cvn(repo=repo)
+    exist_branches = vcs_obj.get_branches()
     all_branches = TriggerRun.distinct(field="branch", where=f"repo='{repo}'")
     deleted_branches = list(set(all_branches) - set(exist_branches))
     branches = {"exist": exist_branches, "deleted": deleted_branches}

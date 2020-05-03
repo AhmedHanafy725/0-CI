@@ -97,9 +97,9 @@ def run_trigger():
 
         repo = request.json.get("repo")
         branch = request.json.get("branch")
-        VCSObject = VCSFactory().get_cvn(repo=repo)
-        last_commit = VCSObject.get_last_commit(branch=branch)
-        committer = VCSObject.get_committer(commit=last_commit)
+        vcs_obj = VCSFactory().get_cvn(repo=repo)
+        last_commit = vcs_obj.get_last_commit(branch=branch)
+        committer = vcs_obj.get_committer(commit=last_commit)
         where = f'repo="{repo}" and branch="{branch}" and [commit]="{last_commit}" and status="pending"'
         run = TriggerRun.get_objects(fields=["status"], where=where)
         if run:
