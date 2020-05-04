@@ -1,4 +1,5 @@
 import time
+from urllib.parse import urljoin
 
 from telegram import Bot, ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -31,11 +32,14 @@ class Telegram:
         :type committer: str
         """
         configs = InitialConfig()
+        repo_link = urljoin(configs.vcs_host, repo)
+        commit_link = urljoin(configs.vcs_host, f"{repo}/commit/{commit}")
+        committer_link = urljoin(configs.vcs_host, committer)
         if commit:
             msg = f"""{msg}
-<a href="{configs.vcs_host}/{repo}">{repo}</a>
-{branch} <a href="{configs.vcs_host}/{repo}/commit/{commit}">{commit[:7]}</a>
-👤 <a href="{configs.vcs_host}/{committer}">{committer}</a>"""
+<a href="{repo_link}">{repo}</a>
+{branch} <a href="{commit_link}">{commit[:7]}</a>
+👤 <a href="{committer_link}">{committer}</a>"""
 
         button_list = [InlineKeyboardButton("Result", url=link)]
         reply_markup = InlineKeyboardMarkup([button_list])

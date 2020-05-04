@@ -70,8 +70,8 @@ def validate_config_git():
 
         # Check vcs host is reachable
         try:
-            r = requests.get(request.json["vcs_host"])
-        except Exception as e:
+            requests.get(request.json["vcs_host"])
+        except Exception:
             return Response(f"Your version control system is not reachable", 400)
 
         configs.save()

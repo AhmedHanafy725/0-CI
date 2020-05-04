@@ -1,4 +1,5 @@
 import json
+from urllib.parse import urljoin
 
 from redis import Redis
 
@@ -26,7 +27,9 @@ class Reporter:
         model_obj = parent_model(id=id)
         msg = self.report_msg(status=model_obj.status, schedule_name=schedule_name)
         if not schedule_name:
-            link = f"{configs.domain}/repos/{model_obj.repo.replace('/', '%2F')}/{model_obj.branch}/{str(model_obj.id)}"
+            unslash_repo = model_obj.repo.replace('/', '%2F')
+            url = f"/repos/{unslash_repo}/{model_obj.branch}/{model_obj.id}"
+            link = urljoin(configs.domain, url)
             r.publish(f"{model_obj.repo}_{model_obj.branch}", json.dumps({"id": id, "status": model_obj.status}))
             vcs_obj = VCSFactory().get_cvn(repo=model_obj.repo)
             vcs_obj.status_send(status=model_obj.status, link=link, commit=model_obj.commit)
@@ -40,7 +43,9 @@ class Reporter:
                 committer=model_obj.committer,
             )
         else:
-            link = f"{configs.domain}/schedules/{model_obj.schedule_name.replace(' ', '%20')}/{str(model_obj.id)}"
+            unspaced_schedule = model_obj.schedule_name.replace(' ', '%20').replace("/", "%2F")
+            url = f"/schedules/{unspaced_schedule}/{model_obj.id}"
+            link = urljoin(configs.domain, url)
             r.publish(schedule_name, json.dumps({"id": id, "status": model_obj.status}))
             telegram.send_msg(msg=msg, link=link)
 
