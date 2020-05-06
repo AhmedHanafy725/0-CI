@@ -56,7 +56,7 @@ class Container(Utils):
         except:
             out += "Couldn't run on the testing container, container become unreachable"
             self.redis_push(id, out)
-            rc = 1
+            rc = 137
             return Complete_Executuion(rc, out)
 
         while response.is_open():
@@ -68,7 +68,7 @@ class Container(Utils):
                 self.redis_push(id, content)
                 out += content
             elif time_taken > 590:
-                msg = "Timeout exceeded 10 mins with no output"
+                msg = "\nTimeout exceeded 10 mins with no output"
                 self.redis_push(id, msg)
                 out += msg
                 rc = 124
@@ -98,7 +98,7 @@ class Container(Utils):
         container = client.V1Container(
             name=self.name, image=prerequisites["imageName"], command=commands, env=env, ports=[ports]
         )
-        spec = client.V1PodSpec(containers=[container], hostname=self.name)
+        spec = client.V1PodSpec(containers=[container], hostname=self.name, restart_policy="Never")
         meta = client.V1ObjectMeta(name=self.name, namespace=self.namespace, labels={"app": self.name})
         pod = client.V1Pod(api_version="v1", kind="Pod", metadata=meta, spec=spec)
         self.client.create_namespaced_pod(body=pod, namespace=self.namespace)

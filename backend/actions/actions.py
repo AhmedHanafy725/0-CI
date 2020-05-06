@@ -56,6 +56,9 @@ class Actions:
             model_obj.save()
             if i + 1 == len(self.test_script):
                 r.rpush(self.run_id, "hamada ok")
+            if response.returncode in [137, 124]:
+                r.rpush(self.run_id, "hamada ok")
+                break
 
     def build(self):
         """Create VM with the required prerequisties and run installation steps to get it ready for running tests.
