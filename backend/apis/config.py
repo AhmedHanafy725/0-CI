@@ -46,9 +46,9 @@ def validate_telegam():
         return Response("Configured", 200)        
 
 
-@app.route("/api/git_config", method=["GET", "POST"])
+@app.route("/api/vcs_config", method=["GET", "POST"])
 @admin
-def validate_config_git():
+def vcs_config():
     """Initial configuration for the ci before start working.
     """
     confs = ["domain", "vcs_host", "vcs_token"]
