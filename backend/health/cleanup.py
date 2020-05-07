@@ -33,9 +33,9 @@ def get_total_size():
 
 
 def check():
-    # Remove data if it is more than 30 GB
+    # Remove data if it is more than 10 GB
     for day in range(60, 1, -1):
-        if get_total_size() > 30:
+        if get_total_size() > 10:
             remove("trigger", days=day)
             remove("schedule", days=day)
         else:
