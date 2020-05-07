@@ -18,16 +18,19 @@ def remove(type, days=30):
             obj.delete()
             r.delete(obj.id)
 
+
 def get_size_in_giga_bytes(path):
     root = Path(path)
-    size_in_bytes = sum(f.stat().st_size for f in root.rglob('*') if f.is_file())
+    size_in_bytes = sum(f.stat().st_size for f in root.rglob("*") if f.is_file())
     size_in_giga_bytes = size_in_bytes / (1024 ** 3)
     return size_in_giga_bytes
+
 
 def get_total_size():
     bcdb_data_size = get_size_in_giga_bytes("/sandbox/var")
     redis_data_size = get_size_in_giga_bytes("/var/lib/redis")
     return bcdb_data_size + redis_data_size
+
 
 def check():
     # Remove data if it is more than 30 GB
@@ -37,3 +40,7 @@ def check():
             remove("schedule", days=day)
         else:
             break
+
+
+if __name__ == "__main__":
+    check()

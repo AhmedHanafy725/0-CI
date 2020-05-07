@@ -27,7 +27,7 @@ class Reporter:
         model_obj = parent_model(id=id)
         msg = self.report_msg(status=model_obj.status, schedule_name=schedule_name)
         if not schedule_name:
-            unslash_repo = model_obj.repo.replace('/', '%2F')
+            unslash_repo = model_obj.repo.replace("/", "%2F")
             url = f"/repos/{unslash_repo}/{model_obj.branch}/{model_obj.id}"
             link = urljoin(configs.domain, url)
             r.publish(f"{model_obj.repo}_{model_obj.branch}", json.dumps({"id": id, "status": model_obj.status}))
@@ -43,7 +43,7 @@ class Reporter:
                 committer=model_obj.committer,
             )
         else:
-            unspaced_schedule = model_obj.schedule_name.replace(' ', '%20').replace("/", "%2F")
+            unspaced_schedule = model_obj.schedule_name.replace(" ", "%20").replace("/", "%2F")
             url = f"/schedules/{unspaced_schedule}/{model_obj.id}"
             link = urljoin(configs.domain, url)
             r.publish(schedule_name, json.dumps({"id": id, "status": model_obj.status}))

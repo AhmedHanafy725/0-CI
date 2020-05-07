@@ -43,7 +43,7 @@ def validate_telegam():
             return Response(error.message, 400)
 
         configs.save()
-        return Response("Configured", 200)        
+        return Response("Configured", 200)
 
 
 @app.route("/api/vcs_config", method=["GET", "POST"])
@@ -104,7 +104,7 @@ def repos_config():
                 created = vcs_obj.create_hook(repo)
                 if not created:
                     return Response(f"Make sure your token has full access for hooks on this repo {repo}", 401)
-            
+
             removed_repos = set(configs.repos) - set(repos)
             for repo in removed_repos:
                 deleted = vcs_obj.delete_hook(repo)
@@ -114,6 +114,7 @@ def repos_config():
             configs.repos = repos
             configs.save()
             return Response("Added", 201)
+
 
 @app.route("/api/users", method=["GET", "POST", "DELETE"])
 @admin

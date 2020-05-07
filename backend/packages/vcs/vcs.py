@@ -242,6 +242,7 @@ class Github(VCSInterface):
                 hook.delete()
         return True
 
+
 class Gitea(VCSInterface):
     """Gitea Class which implements VCSInterface"""
 
@@ -252,6 +253,7 @@ class Gitea(VCSInterface):
         """
         configs = InitialConfig()
         self.HOOK_URL = urljoin(configs.domain, "git_trigger")
+
         def _get_gitea_cl():
             configuration = giteapy.Configuration()
             configuration.host = urljoin(configs.vcs_host, "/api/v1")
