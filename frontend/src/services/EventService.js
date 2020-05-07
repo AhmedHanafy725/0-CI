@@ -29,10 +29,11 @@ export default {
     dashboardData() {
         return apiClient.get('/')
     },
-    initial_config(bot_token, chat_id, vcs_host, vcs_token, domain, repos, iyo_id, iyo_secret) {
+    getConfig() {
+        return apiClient.get('/initial_config')
+    },
+    initial_config(bot_token, chat_id, vcs_host, vcs_token, domain, repos) {
         return apiClient.post('/initial_config', {
-            iyo_id: iyo_id,
-            iyo_secret: iyo_secret,
             domain: domain,
             chat_id: chat_id,
             bot_token: bot_token,

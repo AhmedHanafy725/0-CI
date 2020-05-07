@@ -13,7 +13,7 @@
 </template>
 <script>
 export default {
-  name: "Error",
+  name: "NotFound",
   data() {
     return {
       error_no: "Oops...",

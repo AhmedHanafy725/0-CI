@@ -9,13 +9,13 @@
 <script>
 export default {
   name: "App",
-   mounted: function() {
-    let elHtml = document.getElementsByTagName('html')[0]
-    elHtml.style.overflowY = 'auto'
+  mounted: function() {
+    let elHtml = document.getElementsByTagName("html")[0];
+    elHtml.style.overflowY = "auto";
   },
   destroyed: function() {
-    let elHtml = document.getElementsByTagName('html')[0]
-    elHtml.style.overflowY = null
+    let elHtml = document.getElementsByTagName("html")[0];
+    elHtml.style.overflowY = null;
   }
 };
 </script>

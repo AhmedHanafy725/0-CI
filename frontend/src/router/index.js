@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import store from '../store/index'
-import Login from '@/components/LoginPage'
 import Dashboard from '@/components/Dashboard'
 import Main from '@/components/Main'
 import BranchDetails from '@/components/BranchDetails'
@@ -10,15 +9,21 @@ import Details from "@/components/Details"
 import ProDetails from '@/components/ProDetails'
 import InitialConfig from '@/components/InitialConfig'
 import EventService from '@/services/EventService'
+import NotFound from '@/components/404.vue';
 
 Vue.use(Router)
 
 const router = new Router({
     mode: 'history',
     routes: [{
-            path: '/auth/login',
-            name: 'Login',
-            component: Login
+            path: '/initial_config',
+            name: 'InitialConfig',
+            component: InitialConfig,
+            beforeEnter(to, from, next) {
+                if (store.state.user == null) {
+                    next('/')
+                }
+            }
         },
         {
             path: '/',
@@ -27,7 +32,7 @@ const router = new Router({
             children: [{
                     path: '/dashboard',
                     name: 'Dashboard',
-                    component: Dashboard,
+                    component: Dashboard
                 },
                 {
                     path: '/repos/:orgName/:repoName',
@@ -54,10 +59,14 @@ const router = new Router({
                     props: true
                 },
                 {
-                    path: '/initial_config',
-                    name: 'InitialConfig',
-                    component: InitialConfig
-                }
+                    path: '/404',
+                    name: '404',
+                    component: NotFound
+                },
+                // {
+                //     path: '*',
+                //     redirect: '/404'
+                // }
             ]
         }
     ]
