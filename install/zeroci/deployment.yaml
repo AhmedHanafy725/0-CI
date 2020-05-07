@@ -24,6 +24,7 @@ spec:
         image: "ahmedhanafy725/zeroci"
         ports:
         - containerPort: 80
+        - containerPort: 443
         volumeMounts:
           - name: bcdb
             mountPath: /sandbox/var

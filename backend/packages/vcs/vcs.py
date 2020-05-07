@@ -1,11 +1,13 @@
-from abc import ABCMeta, abstractmethod
 import base64
 import time
-from models.initial_config import InitialConfig
-from github import Github as GH
-import giteapy
+from abc import ABCMeta, abstractmethod
+from urllib.parse import urljoin
 
-configs = InitialConfig()
+from github import Github as GH
+from github import UnknownObjectException
+
+import giteapy
+from models.initial_config import InitialConfig
 
 
 class VCSInterface(metaclass=ABCMeta):
@@ -96,19 +98,64 @@ class VCSInterface(metaclass=ABCMeta):
         :return type: tuple
         """
 
+    @abstractmethod
+    def get_user_repos(username):
+        """Get all user repositories.
+
+        :param username: user name on vcs
+        :type username: str
+        :return type: list
+        """
+
+    @abstractmethod
+    def get_org_repos(org_name):
+        """Get all organization repositories.
+
+        :param username: organization name on vcs
+        :type username: str
+        :return type: list
+        """
+
+    @abstractmethod
+    def create_hook(repo):
+        """Create web hook for zeroci.
+
+        :param repo: repo full name
+        :type repo: str
+        """
+
+    @abstractmethod
+    def list_hooks(repo):
+        """List web hooks in a repo.
+
+        :param repo: repo full name
+        :type repo: str
+        """
+
+    @abstractmethod
+    def delete_hook(repo):
+        """Delete web hook.
+
+        :param repo: repo full name
+        :type repo: str
+        """
+
 
 class Github(VCSInterface):
     """Github Class which implements VCSInterface"""
 
-    def __init__(self, repo):
+    def __init__(self, repo=None):
         """
         :param repo: full repo name
         :type repo: str
         """
-        if configs.configured:
+        configs = InitialConfig()
+        self.HOOK_URL = urljoin(configs.domain, "git_trigger")
+        if configs.vcs_token:
             self.repo = repo
             self.github_cl = GH(configs.vcs_token)
-            self.repo_obj = self.github_cl.get_repo(self.repo)
+            if repo:
+                self.repo_obj = self.github_cl.get_repo(self.repo)
 
     @VCSInterface.call_trial
     def status_send(
@@ -142,27 +189,83 @@ class Github(VCSInterface):
         committer = commit_obj.author.login
         return committer
 
+    def _get_property_in_objs_list(self, objs, property=None):
+        i = 0
+        obj_list = objs.get_page(i)
+        obj_results = []
+        while obj_list:
+            obj_list = objs.get_page(i)
+            for obj in obj_list:
+                if property:
+                    obj_results.append(getattr(obj, property))
+                else:
+                    obj_results.append(obj)
+            i += 1
+        return obj_results
+
+    def get_user_repos(self, username):
+        user = self.github_cl.get_user(username)
+        repos = user.get_repos()
+        return self._get_property_in_objs_list(objs=repos, property="full_name")
+
+    def get_org_repos(self, org_name):
+        user = self.github_cl.get_organization(org_name)
+        repos = user.get_repos()
+        return self._get_property_in_objs_list(objs=repos, property="full_name")
+
+    def create_hook(self, repo):
+        repo = self.github_cl.get_repo(repo)
+        hook_config = {"url": self.HOOK_URL, "content_type": "json"}
+        try:
+            repo.create_hook(name="web", config=hook_config, events=["push"], active=True)
+        except UnknownObjectException as e:
+            if e.status == 404:
+                return False
+        return True
+
+    def list_hooks(self, repo):
+        repo = self.github_cl.get_repo(repo)
+        hooks = repo.get_hooks()
+        try:
+            hooks = self._get_property_in_objs_list(objs=hooks)
+        except UnknownObjectException as e:
+            if e.status == 404:
+                return False
+        return hooks
+
+    def delete_hook(self, repo):
+        hooks = self.list_hooks(repo=repo)
+        if hooks == False:
+            return False
+        for hook in hooks:
+            if hook.config["url"] == self.HOOK_URL:
+                hook.delete()
+        return True
 
 class Gitea(VCSInterface):
     """Gitea Class which implements VCSInterface"""
 
-    def __init__(self, repo):
+    def __init__(self, repo=None):
         """
         :param repo: full repo name
         :type repo: str
         """
-
+        configs = InitialConfig()
+        self.HOOK_URL = urljoin(configs.domain, "git_trigger")
         def _get_gitea_cl():
             configuration = giteapy.Configuration()
-            configuration.host = configs.vcs_host + "/api/v1"
+            configuration.host = urljoin(configs.vcs_host, "/api/v1")
             configuration.api_key["token"] = configs.vcs_token
             return giteapy.api_client.ApiClient(configuration)
 
-        if configs.configured:
-            self.repo = repo
-            self.owner = repo.split("/")[0]  # org name
-            self.repo_name = self.repo.split("/")[-1]
+        if configs.vcs_token:
             self.repo_obj = giteapy.RepositoryApi(_get_gitea_cl())
+            self.user_obj = giteapy.UserApi(_get_gitea_cl())
+            self.org_obj = giteapy.OrganizationApi(_get_gitea_cl())
+            if repo:
+                self.repo = repo
+                self.owner = repo.split("/")[0]  # org name
+                self.repo_name = self.repo.split("/")[-1]
 
     @VCSInterface.call_trial
     def status_send(
@@ -195,12 +298,68 @@ class Gitea(VCSInterface):
         committer = commit_obj.author.login
         return committer
 
+    def _get_rpeos_names(self, repos):
+        repos_names = []
+        for repo in repos:
+            repos_names.append(repo.full_name)
+        return repos_names
+
+    def get_user_repos(self, username):
+        repos = self.user_obj.user_list_repos(username)
+        return self._get_rpeos_names(repos)
+
+    def get_org_repos(self, org_name):
+        repos = self.org_obj.org_list_repos(org_name)
+        return self._get_rpeos_names(repos)
+
+    def create_hook(self, repo):
+        owner = repo.split("/")[0]  # org name
+        repo_name = repo.split("/")[-1]
+        hooks = self.list_hooks(repo=repo)
+        for hook in hooks:
+            if hook.config["url"] == self.HOOK_URL:
+                return True
+
+        config = giteapy.CreateHookOption(
+            active=True, config={"url": self.HOOK_URL, "content_type": "json"}, events=["push"], type="gitea"
+        )
+        try:
+            self.repo_obj.repo_create_hook(owner, repo_name, body=config)
+        except Exception as e:
+            if e.status == 401:
+                return False
+        return True
+
+    def list_hooks(self, repo):
+        owner = repo.split("/")[0]  # org name
+        repo_name = repo.split("/")[-1]
+        try:
+            hooks = self.repo_obj.repo_list_hooks(owner, repo_name)
+        except Exception as e:
+            if e.status == 401:
+                return False
+        return hooks
+
+    def delete_hook(self, repo):
+        hooks = self.list_hooks(repo=repo)
+        if hooks == False:
+            return False
+        for hook in hooks:
+            if hook.config["url"] == self.HOOK_URL:
+                hook_id = hook.id
+
+        owner = repo.split("/")[0]  # org name
+        repo_name = repo.split("/")[-1]
+        self.repo_obj.repo_delete_hook(owner, repo_name, hook_id)
+        return True
+
 
 class VCSFactory:
     """The Version Control System Factory Class"""
 
     @staticmethod
-    def get_cvn(repo):
+    def get_cvn(repo=None):
+        configs = InitialConfig()
         if configs.vcs_type == "github":
             return Github(repo)
         else:

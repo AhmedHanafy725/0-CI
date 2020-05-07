@@ -1,4 +1,5 @@
 import time
+from urllib.parse import urljoin
 
 from telegram import Bot, ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -7,11 +8,12 @@ from models.initial_config import InitialConfig
 RETRIES = 5
 
 
-class Telegram(InitialConfig):
+class Telegram:
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        if self.configured:
-            self.telegram_cl = Bot(self.bot_token)
+        configs = InitialConfig()
+        if configs.bot_token:
+            self.telegram_cl = Bot(configs.bot_token)
 
     def send_msg(self, msg, link, repo=None, branch=None, commit=None, committer=None):
         """Send Telegram message using Telegram bot.
@@ -29,11 +31,15 @@ class Telegram(InitialConfig):
         :param committer: committer name.
         :type committer: str
         """
+        configs = InitialConfig()
+        repo_link = urljoin(configs.vcs_host, repo)
+        commit_link = urljoin(configs.vcs_host, f"{repo}/commit/{commit}")
+        committer_link = urljoin(configs.vcs_host, committer)
         if commit:
             msg = f"""{msg}
-<a href="{self.vcs_host}/{repo}">{repo}</a>
-{branch} <a href="{self.vcs_host}/{repo}/commit/{commit}">{commit[:7]}</a>
-👤 <a href="{self.vcs_host}/{committer}">{committer}</a>"""
+<a href="{repo_link}">{repo}</a>
+{branch} <a href="{commit_link}">{commit[:7]}</a>
+👤 <a href="{committer_link}">{committer}</a>"""
 
         button_list = [InlineKeyboardButton("Result", url=link)]
         reply_markup = InlineKeyboardMarkup([button_list])
@@ -42,7 +48,7 @@ class Telegram(InitialConfig):
         for _ in range(RETRIES):
             try:
                 self.telegram_cl.send_message(
-                    chat_id=self.chat_id,
+                    chat_id=configs.chat_id,
                     text=msg,
                     reply_markup=reply_markup,
                     parse_mode="html",

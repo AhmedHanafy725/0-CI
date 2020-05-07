@@ -44,8 +44,8 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
         link = (
             f"{configs.domain}/repos/{trigger_run.repo.replace('/', '%2F')}/{trigger_run.branch}/{str(trigger_run.id)}"
         )
-        VCSObject = VCSFactory().get_cvn(repo=trigger_run.repo)
-        VCSObject.status_send(status=status, link=link, commit=trigger_run.commit)
+        vcs_obj = VCSFactory().get_cvn(repo=trigger_run.repo)
+        vcs_obj.status_send(status=status, link=link, commit=trigger_run.commit)
         job = q.enqueue_call(func=actions.build_and_test, args=(id,), result_ttl=5000, timeout=20000)
         return job
     return None
@@ -97,9 +97,9 @@ def run_trigger():
 
         repo = request.json.get("repo")
         branch = request.json.get("branch")
-        VCSObject = VCSFactory().get_cvn(repo=repo)
-        last_commit = VCSObject.get_last_commit(branch=branch)
-        committer = VCSObject.get_committer(commit=last_commit)
+        vcs_obj = VCSFactory().get_cvn(repo=repo)
+        last_commit = vcs_obj.get_last_commit(branch=branch)
+        committer = vcs_obj.get_committer(commit=last_commit)
         where = f'repo="{repo}" and branch="{branch}" and [commit]="{last_commit}" and status="pending"'
         run = TriggerRun.get_objects(fields=["status"], where=where)
         if run:
