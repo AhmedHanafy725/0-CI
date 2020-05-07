@@ -9,8 +9,6 @@ class InitialConfig(Base):
     configured = False (B)
     admins = {"admins": []} (dict)
     users = {"users": []} (dict)
-    iyo_id = (S)
-    iyo_secret = (S)
     domain = (S)
     chat_id = (S)
     bot_token = (S)
@@ -51,22 +49,6 @@ class InitialConfig(Base):
     @users.setter
     def users(self, users):
         self._model_obj.users["users"] = users
-
-    @property
-    def iyo_id(self):
-        return self._model_obj.iyo_id
-
-    @iyo_id.setter
-    def iyo_id(self, iyo_id):
-        self._model_obj.iyo_id = iyo_id
-
-    @property
-    def iyo_secret(self):
-        return self._model_obj.iyo_secret
-
-    @iyo_secret.setter
-    def iyo_secret(self, iyo_secret):
-        self._model_obj.iyo_secret = iyo_secret
 
     @property
     def domain(self):

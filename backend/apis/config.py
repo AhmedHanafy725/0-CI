@@ -11,7 +11,7 @@ from models.run_config import RunConfig
 def initial_config():
     """Initial configuration for the ci before start working.
     """
-    confs = ["iyo_id", "iyo_secret", "domain", "chat_id", "bot_token", "vcs_host", "vcs_token", "repos"]
+    confs = ["domain", "chat_id", "bot_token", "vcs_host", "vcs_token", "repos"]
     conf_dict = {}
     if request.method == "GET":
         confs.extend(["configured", "admins", "users"])
@@ -25,7 +25,7 @@ def initial_config():
             if not value:
                 return Response(f"{conf} should have a value", 400)
             elif conf is "repos" and not isinstance(value, list):
-                return Response("repos should be str or list", 400)
+                return Response("repos should be list", 400)
             elif conf is not "repos" and not isinstance(value, str):
                 return Response(f"{conf} should be str", 400)
             else:

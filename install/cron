@@ -1,0 +1,1 @@
+0 * * * * python3 /sandbox/code/github/threefoldtech/zeroCI/backend/health/health_check.py

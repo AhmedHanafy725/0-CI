@@ -6,12 +6,10 @@ from uuid import uuid4
 
 import xmltodict
 
-from models.initial_config import InitialConfig
-
 ansi_escape = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
 
 
-class Utils(InitialConfig):
+class Utils:
     def execute_cmd(self, cmd, timeout=3600):
         with Popen(cmd, shell=True, universal_newlines=True, stdout=PIPE, stderr=PIPE, encoding="utf-8") as process:
             try:
