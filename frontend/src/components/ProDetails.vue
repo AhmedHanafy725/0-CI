@@ -12,6 +12,10 @@
         </div>
       </div>
       <div class="kt-portlet__body">
+        <!-- live logs -->
+        <v-expansion-panels v-model="panel" v-if="livelogs > 0">
+          <Live-Logs :livelogs="livelogs" />
+        </v-expansion-panels>
         <!-- logs -->
         <v-expansion-panels>
           <logs v-for="log in logs" :key="log.id" :log="log"></logs>
@@ -30,6 +34,7 @@
 
 <script>
 import EventService from "../services/EventService";
+import LiveLogs from "./LiveLogs";
 import Logs from "./Logs";
 import TestSuites from "./TestSuites";
 import Loading from "./Loading";
@@ -40,14 +45,17 @@ export default {
   components: {
     logs: Logs,
     "test-suites": TestSuites,
-    Loading: Loading
+    Loading: Loading,
+    "Live-Logs": LiveLogs
   },
   data() {
     return {
       disabled: false,
       testsuites: [],
       logs: [],
-      loading: true
+      loading: true,
+      panel: 0,
+      livelogs: []
     };
   },
   methods: {
@@ -66,9 +74,18 @@ export default {
         .catch(error => {
           console.log("Error! Could not reach the API. " + error);
         });
+    },
+    connect() {
+      this.socket = new WebSocket(`ws://localhost/websocket/logs/${this.id}`);
+      this.socket.onopen = () => {
+        this.socket.onmessage = ({ data }) => {
+          this.livelogs.push(data);
+        };
+      };
     }
   },
   created() {
+    this.connect();
     this.getDetails();
   }
 };
