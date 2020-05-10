@@ -20,7 +20,6 @@ from utils.utils import Utils
 container = Container()
 reporter = Reporter()
 utils = Utils()
-configs = InitialConfig()
 r = redis.Redis()
 
 
@@ -57,6 +56,9 @@ class Actions:
             model_obj.save()
             if i + 1 == len(self.test_script):
                 r.rpush(self.run_id, "hamada ok")
+            if response.returncode in [137, 124]:
+                r.rpush(self.run_id, "hamada ok")
+                break
 
     def build(self):
         """Create VM with the required prerequisties and run installation steps to get it ready for running tests.
@@ -121,8 +123,8 @@ class Actions:
     def _validate_load_yaml(self):
         model_obj = self.parent_model(id=self.run_id)
         msg = ""
-        VCSObject = VCSFactory().get_cvn(repo=model_obj.repo)
-        script = VCSObject.get_content(ref=model_obj.commit, file_path="zeroCI.yaml")
+        vcs_obj = VCSFactory().get_cvn(repo=model_obj.repo)
+        script = vcs_obj.get_content(ref=model_obj.commit, file_path="zeroCI.yaml")
         if script:
             try:
                 yaml_script = yaml.safe_load(script)
@@ -200,6 +202,7 @@ class Actions:
     def _set_clone_script(self):
         """Read zeroCI yaml script from the repo home directory and divide it to prerequisites and (install and test) scripts.
         """
+        configs = InitialConfig()
         model_obj = self.parent_model(id=self.run_id)
         org_repo_name = model_obj.repo.split("/")[0]
         self.clone_script = """apt-get update

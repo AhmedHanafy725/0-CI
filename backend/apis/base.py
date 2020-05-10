@@ -13,7 +13,7 @@ PROVIDERS = list(client.providers_list())
 def check_configs(func):
     def wrapper(*args, **kwargs):
         if not configs.configured:
-            return redirect("/api/initial_config")
+            return redirect("/initial_config")
         return func(*args, **kwargs)
 
     return wrapper

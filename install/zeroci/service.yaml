@@ -7,7 +7,11 @@ metadata:
 spec:
   type: NodePort
   ports:
+  - port: 443
+    NodePort: 30443
+    name: https
   - port: 80
-    name: nginx
+    NodePort: 30080
+    name: http
   selector:
     app: zeroci
