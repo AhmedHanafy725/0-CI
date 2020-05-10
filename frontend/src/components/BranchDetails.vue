@@ -57,7 +57,6 @@
             <template v-slot:item.id="{ item }">
               <router-link
                 :to="'/repos/' + orgName + '/' + repoName + '/' + $route.query.branch + '/' + item.id"
-                :class="{'disabled': item.status == 'pending'}"
               >{{details.length - details.map(function(x) {return x.id; }).indexOf(item.id)}}</router-link>
             </template>
 

@@ -1,10 +1,15 @@
 <template>
   <li
     class="kt-menu__item kt-menu__item--submenu"
+    :class="{
+      'kt-menu__item--open': show,
+      '': !show,
+    }"
     aria-haspopup="true"
     data-ktmenu-submenu-toggle="hover"
+    v-if="existedBranches"
   >
-    <a href="javascript:;" class="kt-menu__link kt-menu__toggle">
+    <a href="javascript:;" class="kt-menu__link kt-menu__toggle" @click="toggle()">
       <span class="kt-menu__link-text">{{ repoName }}</span>
       <i class="kt-menu__ver-arrow la la-angle-right"></i>
     </a>
@@ -16,6 +21,7 @@
             <span class="kt-menu__link-text">Subheaders</span>
           </span>
         </li>
+
         <li class="kt-menu__section">
           <h4 class="kt-menu__section-text">Existed</h4>
           <i class="kt-menu__section-icon flaticon-more-v2"></i>
@@ -69,6 +75,7 @@ export default {
   props: ["repo"],
   data() {
     return {
+      show: false,
       existedBranches: null,
       deletedBranches: null
     };
@@ -83,6 +90,9 @@ export default {
         .catch(error => {
           console.log("Error! Could not reach the API. " + error);
         });
+    },
+    toggle() {
+      this.show = !this.show;
     }
   },
   computed: {
@@ -106,5 +116,9 @@ export default {
   .kt-menu__submenu
   .kt-menu__section {
   margin: 0;
+}
+
+.show {
+  display: block !important;
 }
 </style>

@@ -7,6 +7,9 @@
     >Branches</a>
     <div class="dropdown-menu dropdown-menu-fit dropdown-menu-right">
       <ul class="kt-nav">
+        <li class="kt-nav__item text-center" v-if="spinner">
+          <div class="kt-spinner kt-spinner--sm kt-spinner--brand"></div>
+        </li>
         <li class="kt-nav__item" v-for="existedBranch in existedBranches" :key="existedBranch.id">
           <a href="#" class="kt-nav__link">
             <span
@@ -27,6 +30,7 @@ export default {
   props: ["repo"],
   data() {
     return {
+      spinner: true,
       existedBranches: null
     };
   },
@@ -34,6 +38,7 @@ export default {
     getExistedBranches() {
       EventService.getBranches(this.repo)
         .then(response => {
+          this.spinner = false;
           this.existedBranches = response.data.exist;
         })
         .catch(error => {
@@ -56,5 +61,14 @@ export default {
 }
 ul {
   padding-left: 0;
+}
+.kt-nav {
+  min-height: 50px;
+}
+
+.kt-nav .kt-spinner {
+  width: 15%;
+  margin: 20px auto;
+  text-align: center;
 }
 </style>

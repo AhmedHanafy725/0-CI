@@ -9,12 +9,7 @@ import vuetify from './plugins/vuetify'
 import upperFirst from 'lodash/upperFirst'
 import camelCase from 'lodash/camelCase'
 
-
-// var ws = new WebSocket("ws://localhost:8000/websocket/repos/AhmedHanafy725/test_zeroci/development");
-
-// ws.onmessage = function(evt) {
-//     console.log(evt.data);
-// };
+toastr.options.closeButton = true;
 
 const requireComponent = require.context(
     // The relative path of the components folder

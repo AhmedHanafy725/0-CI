@@ -4,7 +4,7 @@
       <div class="kt-portlet__head-label">
         <h3 class="kt-portlet__head-title">{{ repo | removeOrg }}</h3>
       </div>
-      <branch-Dropdown :repo="repo" @childToParent="getSelectedBranch"></branch-Dropdown>
+      <branch-Dropdown :repo="repo" @childToParent="getSelectedBranch" />
     </div>
     <div class="kt-widget24__details kt-portlet__space-x">
       <i class="fa fa-code-branch"></i>

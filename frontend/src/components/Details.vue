@@ -20,9 +20,14 @@
         </button>
       </div>
       <div class="kt-portlet__body">
+        <!-- live logs -->
+        <v-expansion-panels v-model="panel">
+          <Live-Logs :livelogs="livelogs" />
+        </v-expansion-panels>
+
         <!-- logs -->
         <v-expansion-panels>
-          <logs v-for="log in logs" :key="log.id" :log="log"></logs>
+          <logs v-for="log in logs" :key="log.id" :log="log" />
         </v-expansion-panels>
         <!-- testcases -->
         <v-expansion-panels>
@@ -31,7 +36,7 @@
             :key="testsuite.id"
             :testsuite="testsuite"
             :index="testsuite.id"
-          ></test-suites>
+          />
         </v-expansion-panels>
       </div>
     </div>
@@ -42,6 +47,7 @@
 
 <script>
 import EventService from "../services/EventService";
+import LiveLogs from "./LiveLogs";
 import Logs from "./Logs";
 import TestSuites from "./TestSuites";
 import Loading from "./Loading";
@@ -49,6 +55,7 @@ export default {
   name: "RepoDetails",
   props: ["orgName", "repoName", "branch", "id"],
   components: {
+    "Live-Logs": LiveLogs,
     logs: Logs,
     Loading: Loading,
     "test-suites": TestSuites
@@ -56,12 +63,23 @@ export default {
   data() {
     return {
       loading: true,
+      panel: 0,
       logs: [],
+      livelogs: [],
       testsuites: [],
       disabled: false
     };
   },
   methods: {
+    connect() {
+      this.socket = new WebSocket("ws://localhost/websocket/logs/158");
+      this.socket.onopen = () => {
+        this.socket.onmessage = ({ data }) => {
+          this.livelogs.push(data);
+        };
+      };
+    },
+
     fetchBrancheIdDetails() {
       EventService.getBranchIdDetails(
         this.orgName + "/" + this.repoName,
@@ -101,7 +119,14 @@ export default {
     }
   },
   created() {
+    this.connect();
     this.fetchBrancheIdDetails();
   }
 };
 </script>
+
+<style scoped>
+.v-expansion-panels {
+  margin-bottom: 10px;
+}
+</style>
