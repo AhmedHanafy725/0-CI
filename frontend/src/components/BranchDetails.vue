@@ -299,7 +299,6 @@ export default {
             if (response) {
               this.loading = false;
               this.disabled = true;
-              this.fetchData();
             }
           })
           .catch(error => {
@@ -370,10 +369,31 @@ export default {
         .catch(error => {
           console.log("Error! Could not reach the API. " + error);
         });
+    },
+
+    connect() {
+      this.socket = new WebSocket(
+        "ws://" +
+          window.location.hostname +
+          "/websocket/repos/" +
+          `${this.fullRepoName}/${this.$route.query.branch}`
+      );
+      this.socket.onopen = () => {
+        this.socket.onmessage = ({ data }) => {
+          console.log(data);
+        };
+      };
+    }
+  },
+
+  computed: {
+    fullRepoName() {
+      return this.orgName + "/" + this.repoName;
     }
   },
   created() {
     this.fetchData();
+    this.connect();
   },
   watch: {
     "$route.params": {

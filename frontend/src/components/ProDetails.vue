@@ -76,7 +76,9 @@ export default {
         });
     },
     connect() {
-      this.socket = new WebSocket(`ws://localhost/websocket/logs/${this.id}`);
+      this.socket = new WebSocket(
+        "ws://" + window.location.hostname + `/websocket/logs/${this.id}`
+      );
       this.socket.onopen = () => {
         this.socket.onmessage = ({ data }) => {
           this.livelogs.push(data);

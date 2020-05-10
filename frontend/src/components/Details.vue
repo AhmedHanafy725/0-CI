@@ -21,7 +21,7 @@
       </div>
       <div class="kt-portlet__body">
         <!-- live logs -->
-        <v-expansion-panels v-model="panel" v-if="livelogs > 0">
+        <v-expansion-panels v-model="panel" v-if="livelogs.length > 0">
           <Live-Logs :livelogs="livelogs" />
         </v-expansion-panels>
 
@@ -72,7 +72,9 @@ export default {
   },
   methods: {
     connect() {
-      this.socket = new WebSocket(`ws://localhost/websocket/logs/${this.id}`);
+      this.socket = new WebSocket(
+        "ws://" + window.location.hostname + `/websocket/logs/${this.id}`
+      );
       this.socket.onopen = () => {
         this.socket.onmessage = ({ data }) => {
           this.livelogs.push(data);
