@@ -25,8 +25,8 @@ def schedule():
             schedule_info = ScheduleInfo(name=schedule_name)
             info = {
                 "schedule_name": schedule_name,
-                "install_script": schedule_info.install_script,
-                "test_script": schedule_info.test_script,
+                "install": schedule_info.install,
+                "script": schedule_info.script,
                 "prerequisites": schedule_info.prerequisites,
                 "run_time": schedule_info.run_time,
             }
@@ -37,26 +37,21 @@ def schedule():
 
     if request.headers.get("Content-Type") == "application/json":
         if request.method == "POST":
-            data = ["schedule_name", "run_time"]
-            list_str_data = ["install_script", "test_script", "prerequisites"]
-            data.extend(list_str_data)
+            data = ["schedule_name", "run_time", "prerequisites", "install", "script"]
             job = {}
             for item in data:
                 value = request.json.get(item)
                 if not value:
                     return Response(f"{item} should have a value", 400)
-                elif item in list_str_data and not isinstance(value, (str, list)):
+                elif item is "script" and not isinstance(value, list):
                     return Response(f"{item} should be str or list", 400)
-                elif item not in list_str_data and not isinstance(value, str):
+                elif item is not "script" and not isinstance(value, str):
                     return Response(f"{item} should be str", 400)
                 else:
                     job[item] = value
 
-            if isinstance(job["install_script"], list):
-                job["install_script"] = " && ".join(job["install_script"])
-
-            if isinstance(job["test_script"], str):
-                job["test_script"] = [job["test_script"]]
+            created_by = request.environ.get("beaker.session").get("username")
+            job["created_by"] = created_by
 
             if job["schedule_name"] in ScheduleInfo.distinct("name"):
                 return Response("Schedule name {job['schedule_name']} is already used", 400)
@@ -67,7 +62,7 @@ def schedule():
                 scheduler.cron(
                     cron_string=job["run_time"],
                     func=actions.schedule_run,
-                    args=[job["schedule_name"], job["install_script"], job["test_script"], job["prerequisites"],],
+                    args=[job["schedule_name"], job,],
                     id=job["schedule_name"],
                     timeout=7200,
                 )
@@ -104,12 +99,12 @@ def schedule_trigger():
             return Response(f"Schedule name {schedule_name} is not found", 400)
 
         schedule_info = ScheduleInfo(name=schedule_name)
-        job = q.enqueue_call(
-            func=actions.schedule_run,
-            args=(schedule_name, schedule_info.install_script, schedule_info.test_script, schedule_info.prerequisites,),
-            result_ttl=5000,
-            timeout=20000,
-        )
+        script = {
+            "prerequisites": schedule_info.install,
+            "install": schedule_info.install,
+            "script": schedule_info.script,
+        }
+        job = q.enqueue_call(func=actions.schedule_run, args=(schedule_name, script,), result_ttl=5000, timeout=20000,)
         if job:
             return Response(job.get_id(), 200)
     return Response("Wrong data", 400)

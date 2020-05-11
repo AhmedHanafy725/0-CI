@@ -120,21 +120,29 @@ class Actions:
             env.append(env_var)
         return env
 
-    def _validate_load_yaml(self):
+    def _load_yaml(self):
         model_obj = self.parent_model(id=self.run_id)
-        msg = ""
         vcs_obj = VCSFactory().get_cvn(repo=model_obj.repo)
         script = vcs_obj.get_content(ref=model_obj.commit, file_path="zeroCI.yaml")
         if script:
             try:
-                yaml_script = yaml.safe_load(script)
+                return yaml.safe_load(script)
             except:
                 msg = traceback.format_exc()
         else:
             msg = "zeroCI.yaml is not found on the repository's home"
 
+        model_obj.result.append({"type": "log", "status": "error", "name": "Yaml File", "content": msg})
+        model_obj.save()
+        self.cal_status()
+        return False
+
+    def _validate_yaml(self, script):
+        model_obj = self.parent_model(id=self.run_id)
+        msg = ""
+
         if not msg:
-            test_script = yaml_script.get("script")
+            test_script = script.get("script")
             if not test_script:
                 msg = "script should be in yaml file and shouldn't be empty"
             else:
@@ -158,21 +166,21 @@ class Actions:
                                 if not isinstance(cmd, str):
                                     msg = "Eveey cmd in script should be str"
 
-            install_script = yaml_script.get("install")
+            install_script = script.get("install")
             if not install_script:
                 msg = "install should be in yaml file and shouldn't be empty"
             else:
                 if not isinstance(install_script, str):
                     msg = "install should be str"
 
-            prerequisites = yaml_script.get("prerequisites")
+            prerequisites = script.get("prerequisites")
             if not prerequisites:
                 msg = "prerequisites should be in yaml file and shouldn't be empty"
             else:
                 if not isinstance(prerequisites, dict):
                     msg = "prerequisites should be dict"
                 else:
-                    image_name = yaml_script["prerequisites"].get("imageName")
+                    image_name = script["prerequisites"].get("imageName")
                     if not image_name:
                         msg = "prerequisites should contain imageName and shouldn't be empty"
                     else:
@@ -196,7 +204,7 @@ class Actions:
 
         self.prerequisites = prerequisites
         self.install_script = install_script
-        self.test_script = yaml_script.get("script")
+        self.test_script = test_script
         return True
 
     def _set_clone_script(self):
@@ -221,7 +229,7 @@ class Actions:
             vcs_host=configs.vcs_host,
         )
 
-    def build_and_test(self, id, schedule_name=None):
+    def build_and_test(self, id, schedule_name=None, script=None):
         """Builds, runs tests, calculates status and gives report on telegram and your version control system.
         
         :param id: DB's id of this run details.
@@ -230,32 +238,29 @@ class Actions:
         :param schedule_name: str
         """
         self.run_id = id
-        valid = True
         if not schedule_name:
             self.parent_model = TriggerRun
             self._set_clone_script()
-            valid = self._validate_load_yaml()
+            script = self._load_yaml()
 
-        if valid:
-            deployed, installed = self.build()
-            if deployed:
-                if installed:
-                    self.test_run()
-                    self.cal_status()
-                container.delete()
+        if script:
+            valid = self._validate_yaml(script)
+            if valid:
+                deployed, installed = self.build()
+                if deployed:
+                    if installed:
+                        self.test_run()
+                        self.cal_status()
+                    container.delete()
         reporter.report(id=self.run_id, parent_model=self.parent_model, schedule_name=schedule_name)
 
-    def schedule_run(self, schedule_name, install_script, test_script, prerequisites):
+    def schedule_run(self, schedule_name, script):
         """Builds, runs tests, calculates status and gives report on telegram.
 
         :param schedule_name: the name of the scheduled run.
         :type schedule_name: str
-        :param install_script: the script that should run to build your schedule.
-        :type install_script: str
-        :param test_script: the script that should run the tests.
-        :type test_script: list
-        :param prerequisites: requires needed in VM.
-        :type prerequisites: str
+        :param script: the script that should run your schedule.
+        :type script: str
         """
         data = {"status": "pending", "timestamp": datetime.now().timestamp(), "schedule_name": schedule_name}
         scheduler_run = SchedulerRun(**data)
@@ -264,7 +269,4 @@ class Actions:
         data["id"] = id
         r.publish(schedule_name, json.dumps(data))
         self.parent_model = SchedulerRun
-        self.prerequisites = prerequisites
-        self.install_script = install_script
-        self.test_script = test_script
-        self.build_and_test(id=id, schedule_name=schedule_name)
+        self.build_and_test(id=id, schedule_name=schedule_name, script=script)
