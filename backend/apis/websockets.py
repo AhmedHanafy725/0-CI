@@ -20,7 +20,7 @@ def logs(id):
         if start > length:
             break
         if start == length:
-            sleep(1)
+            sleep(0.1)
         result_list = redis.lrange(id, start, length)
         if b"hamada ok" in result_list:
             result_list.remove(b"hamada ok")
