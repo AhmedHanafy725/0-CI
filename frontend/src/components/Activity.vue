@@ -69,9 +69,6 @@ export default {
     }
   },
   created() {
-    // EventService.initial_config().then(response => {
-    //   console.log(response.data);
-    // });
     this.getData();
   }
 };

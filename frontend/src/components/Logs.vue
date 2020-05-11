@@ -7,7 +7,7 @@
       </span>
     </v-expansion-panel-header>
     <v-expansion-panel-content class="v-card v-card--flat v-sheet v-sheet--tile theme--dark">
-      <pre><code>{{ content }}</code></pre>
+      <pre><code v-html="content"></code></pre>
     </v-expansion-panel-content>
   </v-expansion-panel>
 </template>

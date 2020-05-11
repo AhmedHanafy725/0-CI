@@ -9,7 +9,7 @@
           <span class="kt-portlet__head-icon">
             <i class="kt-font-brand flaticon2-line-chart"></i>
           </span>
-          <h3 class="kt-portlet__head-title">{{ repoName }}/{{ $route.query.branch }}</h3>
+          <h3 class="kt-portlet__head-title">{{ repoName }}/{{ branch }}</h3>
         </div>
         <div class="kt-header__topbar pr-0">
           <button
@@ -35,16 +35,6 @@
         <v-card>
           <v-card-title>
             <!-- title -->
-            <v-spacer></v-spacer>
-            <v-spacer></v-spacer>
-            <v-spacer></v-spacer>
-            <v-spacer></v-spacer>
-            <v-spacer></v-spacer>
-            <v-spacer></v-spacer>
-            <v-spacer></v-spacer>
-            <v-spacer></v-spacer>
-            <v-spacer></v-spacer>
-
             <v-text-field
               v-model="search"
               append-icon="mdi-magnify"
@@ -56,7 +46,7 @@
           <v-data-table :headers="headers" :items="details" :search="search">
             <template v-slot:item.id="{ item }">
               <router-link
-                :to="'/repos/' + orgName + '/' + repoName + '/' + $route.query.branch + '/' + item.id"
+                :to="'/repos/' + orgName + '/' + repoName + '/' + branch + '/' + item.id"
               >{{details.length - details.map(function(x) {return x.id; }).indexOf(item.id)}}</router-link>
             </template>
 
@@ -199,7 +189,7 @@ import EventService from "../services/EventService";
 
 export default {
   name: "BranchDetails",
-  props: ["orgName", "repoName"],
+  props: ["orgName", "repoName", "branch"],
   components: {
     Loading: Loading
   },
@@ -293,7 +283,7 @@ export default {
         this.loading = true;
         EventService.restartBuild(
           this.orgName + "/" + this.repoName,
-          this.$route.query.branch
+          this.branch
         )
           .then(response => {
             if (response) {
@@ -360,7 +350,7 @@ export default {
     fetchData() {
       EventService.getBranchDetails(
         this.orgName + "/" + this.repoName,
-        this.$route.query.branch
+        this.branch
       )
         .then(response => {
           this.loading = false;
@@ -376,7 +366,7 @@ export default {
         "ws://" +
           window.location.hostname +
           "/websocket/repos/" +
-          `${this.fullRepoName}/${this.$route.query.branch}`
+          `${this.fullRepoName}/${this.branch}`
       );
       this.socket.onopen = () => {
         this.socket.onmessage = ({ data }) => {
@@ -418,5 +408,11 @@ export default {
 .kt-link,
 .flaticon2-delete {
   cursor: pointer;
+}
+
+
+.v-card__title .v-input {
+  max-width: 25%;
+  margin-left: auto;
 }
 </style>

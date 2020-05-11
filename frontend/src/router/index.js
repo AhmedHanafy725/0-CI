@@ -35,7 +35,7 @@ const router = new Router({
                     component: Dashboard
                 },
                 {
-                    path: '/repos/:orgName/:repoName',
+                    path: '/repos/:orgName/:repoName/:branch',
                     name: 'BranchDetails',
                     component: BranchDetails,
                     props: true

@@ -1,12 +1,10 @@
 <template>
   <li
     class="kt-menu__item kt-menu__item--submenu"
-    :class="{
-      'kt-menu__item--open': show,
-      '': !show,
-    }"
     aria-haspopup="true"
     data-ktmenu-submenu-toggle="hover"
+    :class="{
+      'kt-menu__item--open': show}"
     v-if="existedBranches"
   >
     <a href="javascript:;" class="kt-menu__link kt-menu__toggle" @click="toggle()">
@@ -100,11 +98,12 @@ export default {
       return this.repo.substring(this.repo.indexOf("/") + 1);
     },
     branchLink: function() {
-      return "/repos/" + this.repo + "?branch=";
+      return "/repos/" + this.repo + "/";
     }
   },
   created() {
     this.fetchBranches();
+    // console.log(this.repo)
   }
 };
 </script>

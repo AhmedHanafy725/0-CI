@@ -1,3 +1,7 @@
+.v-application {
+    font-family: "Poppins";
+}
+
 .kt-font-error {
     color: #d32a2a !important;
 }
@@ -48,7 +52,7 @@ code,
 
 .v-application code {
     display: block;
-    font-size: inherit;
+    font-size: 0.8rem;
 }
 
 .v-application code:before {
@@ -67,4 +71,8 @@ code,
 
 .kt-content {
     min-height: 87vh;
+}
+
+.v-data-table th {
+    font-size: 0.8125rem;
 }

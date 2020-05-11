@@ -10,18 +10,23 @@
           </span>
           <h3 class="kt-portlet__head-title">{{ repoName }}/{{ branch }}</h3>
         </div>
-        <button
-          type="button"
-          class="btn btn-primary btn-sm"
-          :disabled="disabled"
-          @click="rebuild()"
-        >
-          <i class="flaticon2-reload"></i> Restart job
-        </button>
+
+        <div class="kt-header__topbar pr-0">
+          <button type="button" @click="viewLogs()" class="btn btn-primary btn-sm mr-1">View Logs</button>
+
+          <button
+            type="button"
+            class="btn btn-primary btn-sm"
+            :disabled="disabled"
+            @click="rebuild()"
+          >
+            <i class="flaticon2-reload"></i> Restart build
+          </button>
+        </div>
       </div>
       <div class="kt-portlet__body">
         <!-- live logs -->
-        <v-expansion-panels v-model="panel" v-if="livelogs.length > 0">
+        <v-expansion-panels v-model="panel" v-if="live">
           <Live-Logs :livelogs="livelogs" />
         </v-expansion-panels>
 
@@ -63,6 +68,7 @@ export default {
   data() {
     return {
       loading: true,
+      live: false,
       panel: 0,
       logs: [],
       livelogs: [],
@@ -81,7 +87,6 @@ export default {
         };
       };
     },
-
     fetchBrancheIdDetails() {
       EventService.getBranchIdDetails(
         this.orgName + "/" + this.repoName,
@@ -95,6 +100,8 @@ export default {
               this.logs.push(job);
             } else if (job.type == "testsuite") {
               this.testsuites.push(job);
+            } else {
+              this.viewLogs();
             }
           });
         })
@@ -118,10 +125,14 @@ export default {
       } else {
         toastr.error("Please Login First!");
       }
+    },
+    viewLogs() {
+      this.panel = 1;
+      this.live = !this.live;
+      this.connect();
     }
   },
   created() {
-    this.connect();
     this.fetchBrancheIdDetails();
   }
 };
