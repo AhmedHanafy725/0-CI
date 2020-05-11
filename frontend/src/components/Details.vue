@@ -12,7 +12,7 @@
         </div>
 
         <div class="kt-header__topbar pr-0">
-          <button type="button" @click="viewLogs()" class="btn btn-primary btn-sm mr-1">View Logs</button>
+          <button type="button" @click="viewLogs()" class="btn btn-primary btn-sm mr-1">{{ result }}</button>
 
           <button
             type="button"
@@ -26,16 +26,16 @@
       </div>
       <div class="kt-portlet__body">
         <!-- live logs -->
-        <v-expansion-panels v-model="panel" v-if="live">
+        <v-expansion-panels v-model="panel" v-if="live && livelogs.length > 0">
           <Live-Logs :livelogs="livelogs" />
         </v-expansion-panels>
-
+        <span v-if="live && livelogs.length < 0">No data available</span>
         <!-- logs -->
-        <v-expansion-panels>
+        <v-expansion-panels v-model="panel" v-if="!live">
           <logs v-for="log in logs" :key="log.id" :log="log" />
         </v-expansion-panels>
         <!-- testcases -->
-        <v-expansion-panels>
+        <v-expansion-panels v-if="!live">
           <test-suites
             v-for="testsuite in testsuites"
             :key="testsuite.id"
@@ -68,8 +68,9 @@ export default {
   data() {
     return {
       loading: true,
-      live: false,
       panel: 0,
+      live: false,
+      result: "View Logs",
       logs: [],
       livelogs: [],
       testsuites: [],
@@ -127,9 +128,13 @@ export default {
       }
     },
     viewLogs() {
-      this.panel = 1;
       this.live = !this.live;
-      this.connect();
+      if (this.live) {
+        this.result = "View Result";
+        this.connect();
+      } else {
+        this.result = "View Logs";
+      }
     }
   },
   created() {

@@ -410,9 +410,11 @@ export default {
   cursor: pointer;
 }
 
-
 .v-card__title .v-input {
   max-width: 25%;
   margin-left: auto;
+}
+.kt-user-card-v2 .kt-user-card-v2__details .kt-user-card-v2__email {
+ font-weight: 500;
 }
 </style>

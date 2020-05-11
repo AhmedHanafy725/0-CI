@@ -46,7 +46,7 @@ export default {
   },
   data() {
     return {
-      default_branch: "development",
+      default_branch: "master",
       branchData: null,
       committer: null,
       timestamp: null,
@@ -66,9 +66,6 @@ export default {
         .then(response => {
           this.branchData = response.data;
           if (this.branchData.length > 0) {
-            this.filteredItems = this.branchData.filter(
-              item => item.status !== "pending"
-            );
             this.committer = this.filteredItems[0].committer;
             this.timestamp = this.filteredItems[0].timestamp;
             this.status = this.filteredItems[0].status;

@@ -103,7 +103,6 @@ export default {
   },
   created() {
     this.fetchBranches();
-    // console.log(this.repo)
   }
 };
 </script>
