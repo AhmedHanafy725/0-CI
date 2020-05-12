@@ -24,6 +24,7 @@ class Reporter:
         :param schedule_name: str
         """
         configs = InitialConfig()
+        telegram = Telegram()
         model_obj = parent_model(id=id)
         msg = self.report_msg(status=model_obj.status, schedule_name=schedule_name)
         if not schedule_name:
@@ -33,7 +34,6 @@ class Reporter:
             r.publish(f"{model_obj.repo}_{model_obj.branch}", json.dumps({"id": id, "status": model_obj.status}))
             vcs_obj = VCSFactory().get_cvn(repo=model_obj.repo)
             vcs_obj.status_send(status=model_obj.status, link=link, commit=model_obj.commit)
-            telegram = Telegram()
             telegram.send_msg(
                 msg=msg,
                 link=link,

@@ -52,7 +52,7 @@ def schedule():
             job["created_by"] = created_by
 
             if job["schedule_name"] in ScheduleInfo.distinct("name"):
-                return Response("Schedule name {job['schedule_name']} is already used", 400)
+                return Response(f"Schedule name {job['schedule_name']} is already used", 400)
 
             schedule_info = ScheduleInfo(**job)
             schedule_info.save()
