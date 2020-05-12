@@ -45,8 +45,6 @@ def schedule():
                     return Response(f"{item} should have a value", 400)
                 elif item is "script" and not isinstance(value, list):
                     return Response(f"{item} should be str or list", 400)
-                elif item is not "script" and not isinstance(value, str):
-                    return Response(f"{item} should be str", 400)
                 else:
                     job[item] = value
 
