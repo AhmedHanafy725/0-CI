@@ -35,7 +35,7 @@ def logs(id):
 
 
 @app.route("/websocket/status")
-def update_repos_table(repo, branch):
+def update_status():
     wsock = request.environ.get("wsgi.websocket")
     if not wsock:
         abort(400, "Expected WebSocket request.")
