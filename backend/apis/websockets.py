@@ -34,31 +34,14 @@ def logs(id):
                 break
 
 
-@app.route("/websocket/repos/<repo:path>/<branch>")
+@app.route("/websocket/status")
 def update_repos_table(repo, branch):
     wsock = request.environ.get("wsgi.websocket")
     if not wsock:
         abort(400, "Expected WebSocket request.")
 
     sub = redis.pubsub()
-    sub.subscribe(f"{repo}_{branch}")
-    for msg in sub.listen():
-        data = msg["data"]
-        if isinstance(data, bytes):
-            try:
-                wsock.send(msg["data"].decode())
-            except WebSocketError:
-                break
-
-
-@app.route("/websocket/schedules/<schedule>")
-def update_schedules_table(schedule):
-    wsock = request.environ.get("wsgi.websocket")
-    if not wsock:
-        abort(400, "Expected WebSocket request.")
-
-    sub = redis.pubsub()
-    sub.subscribe(schedule)
+    sub.subscribe("zeroci_status")
     for msg in sub.listen():
         data = msg["data"]
         if isinstance(data, bytes):

@@ -31,7 +31,7 @@ class Reporter:
             unslash_repo = model_obj.repo.replace("/", "%2F")
             url = f"/repos/{unslash_repo}/{model_obj.branch}/{model_obj.id}"
             link = urljoin(configs.domain, url)
-            r.publish(f"{model_obj.repo}_{model_obj.branch}", json.dumps({"id": id, "status": model_obj.status}))
+            r.publish("zeroci_status", json.dumps({"id": id, "status": model_obj.status}))
             vcs_obj = VCSFactory().get_cvn(repo=model_obj.repo)
             vcs_obj.status_send(status=model_obj.status, link=link, commit=model_obj.commit)
             telegram.send_msg(
@@ -46,7 +46,7 @@ class Reporter:
             unspaced_schedule = model_obj.schedule_name.replace(" ", "%20").replace("/", "%2F")
             url = f"/schedules/{unspaced_schedule}/{model_obj.id}"
             link = urljoin(configs.domain, url)
-            r.publish(schedule_name, json.dumps({"id": id, "status": model_obj.status}))
+            r.publish("zeroci_status", json.dumps({"id": id, "status": model_obj.status}))
             telegram.send_msg(msg=msg, link=link)
 
     def report_msg(self, status, schedule_name=None):

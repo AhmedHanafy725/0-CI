@@ -267,6 +267,6 @@ class Actions:
         scheduler_run.save()
         id = str(scheduler_run.id)
         data["id"] = id
-        r.publish(schedule_name, json.dumps(data))
+        r.publish("zeroci_status", json.dumps(data))
         self.parent_model = SchedulerRun
         self.build_and_test(id=id, schedule_name=schedule_name, script=script)
