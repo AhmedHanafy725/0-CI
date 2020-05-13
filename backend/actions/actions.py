@@ -74,14 +74,15 @@ class Actions:
             if response.returncode:
                 name = "Installation"
                 result = response.stdout
-                r.rpush(self.run_id, "hamada ok")
             else:
                 installed = True
         else:
             name = "Deploy"
             result = "Couldn't deploy a container"
+            r.rpush(self.run_id, result)
 
         if not deployed or not installed:
+            r.rpush(self.run_id, "hamada ok")
             model_obj.result.append({"type": "log", "status": "error", "name": name, "content": result})
             model_obj.save()
             self.cal_status()
@@ -132,6 +133,8 @@ class Actions:
         else:
             msg = "zeroCI.yaml is not found on the repository's home"
 
+        r.rpush(self.run_id, msg)
+        r.rpush(self.run_id, "hamada ok")
         model_obj.result.append({"type": "log", "status": "error", "name": "Yaml File", "content": msg})
         model_obj.save()
         self.cal_status()
@@ -197,6 +200,8 @@ class Actions:
                                 msg = "Invalid docker image's name "
 
         if msg:
+            r.rpush(self.run_id, msg)
+            r.rpush(self.run_id, "hamada ok")
             model_obj.result.append({"type": "log", "status": "error", "name": "Yaml File", "content": msg})
             model_obj.save()
             self.cal_status()
