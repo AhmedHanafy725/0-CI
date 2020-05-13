@@ -195,8 +195,8 @@ class Actions:
                             else:
                                 repository = image_name
                                 tag = "latest"
-                            r = requests.get(f"https://index.docker.io/v1/repositories/{repository}/tags/{tag}")
-                            if r.status_code is not requests.codes.ok:
+                            response = requests.get(f"https://index.docker.io/v1/repositories/{repository}/tags/{tag}")
+                            if response.status_code is not requests.codes.ok:
                                 msg = "Invalid docker image's name "
 
         if msg:
