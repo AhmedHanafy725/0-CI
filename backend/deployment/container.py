@@ -61,7 +61,14 @@ class Container(Utils):
 
         while response.is_open():
             start = time.time()
-            content = response.read_stdout(timeout=600)
+            try:
+                content = response.read_stdout(timeout=600)
+            except:
+                msg = "\nConnectionError: Couldn't execute cmd on the runner"
+                self.redis_push(id, msg)
+                out += msg
+                rc = 124
+                break
             end = time.time()
             time_taken = end - start
             if content:

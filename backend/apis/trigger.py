@@ -24,7 +24,7 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
         trigger_run.result = []
         trigger_run.save()
         redis.ltrim(id, -1, 0)
-        redis.publish(f"{trigger_run.repo}_{trigger_run.branch}", json.dumps({"id": id, "status": status}))
+        redis.publish("zeroci_status", json.dumps({"id": id, "status": status}))
     else:
         if repo in configs.repos:
             data = {
@@ -39,7 +39,7 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
             trigger_run.save()
             id = str(trigger_run.id)
             data["id"] = id
-            redis.publish(f"{repo}_{branch}", json.dumps(data))
+            redis.publish("zeroci_status", json.dumps(data))
     if id:
         link = (
             f"{configs.domain}/repos/{trigger_run.repo.replace('/', '%2F')}/{trigger_run.branch}/{str(trigger_run.id)}"
