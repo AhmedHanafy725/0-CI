@@ -28,7 +28,7 @@
             <v-card-text>
               <v-expansion-panels>
                 <v-expansion-panel v-for="testcase in testcases" :key="testcase.id">
-                  <v-expansion-panel-header>
+                  <v-expansion-panel-header class="text-left">
                     <span class="kt-portlet__head-icon">
                       <i class="kt-font-brand" :class="getStatus(testcase.status)"></i>
                       {{ testcase.classname }} {{ testcase.name }}
@@ -38,7 +38,9 @@
                     class="v-card v-card--flat v-sheet v-sheet--tile theme--dark"
                   >
                     <pre class="white--text"><code>{{ testcase.status }} &nbsp; (Executed in {{ testcase.time }} seconds)</code>
-                            <code v-if="testcase.details">{{ testcase.details.content }} {{ testcase.details.message }}</code></pre>
+                            <code
+  v-if="testcase.details"
+>{{ testcase.details.content }} {{ testcase.details.message }}</code></pre>
                   </v-expansion-panel-content>
                 </v-expansion-panel>
               </v-expansion-panels>
@@ -61,7 +63,9 @@
                     class="v-card v-card--flat v-sheet v-sheet--tile theme--dark"
                   >
                     <pre class="white--text"><code>{{ error.status }} &nbsp; (Executed in {{ error.time }} seconds)</code>
-                            <code v-if="error.details">{{ error.details.content }} {{ error.details.message }}</code></pre>
+                            <code
+  v-if="error.details"
+>{{ error.details.content }} {{ error.details.message }}</code></pre>
                   </v-expansion-panel-content>
                 </v-expansion-panel>
               </v-expansion-panels>
@@ -84,7 +88,9 @@
                     class="v-card v-card--flat v-sheet v-sheet--tile theme--dark"
                   >
                     <pre class="white--text"><code>{{ failure.status }} &nbsp; (Executed in {{ failure.time }} seconds)</code>
-                            <code v-if="failure.details">{{ failure.details.content }} {{ failure.details.message }}</code></pre>
+                            <code
+  v-if="failure.details"
+>{{ failure.details.content }} {{ failure.details.message }}</code></pre>
                   </v-expansion-panel-content>
                 </v-expansion-panel>
               </v-expansion-panels>
@@ -107,7 +113,9 @@
                     class="v-card v-card--flat v-sheet v-sheet--tile theme--dark"
                   >
                     <pre class="white--text"><code>{{ skip.status }} &nbsp; (Executed in {{ skip.time }} seconds)</code>
-                            <code v-if="skip.details">{{ skip.details.content }} {{skip.details.message }}</code></pre>
+                            <code
+  v-if="skip.details"
+>{{ skip.details.content }} {{skip.details.message }}</code></pre>
                   </v-expansion-panel-content>
                 </v-expansion-panel>
               </v-expansion-panels>
@@ -170,3 +178,14 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.kt-portlet__head-icon {
+  text-align: left;
+}
+
+.v-application code {
+  background-color: transparent;
+  color: #fff;
+}
+</style>

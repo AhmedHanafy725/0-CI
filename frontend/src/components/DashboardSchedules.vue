@@ -1,7 +1,7 @@
 <template>
   <!--begin:: Widgets/Inbound Bandwidth-->
   <div
-    class="kt-portlet kt-portlet--fit kt-portlet--head-noborder kt-portlet--height-fluid-half"
+    class="kt-portlet kt-portlet--fit kt-portlet--head-noborder kt-portlet--height-fluid-half mb-0"
     @click="selectedId(id)"
   >
     <div class="kt-portlet__head kt-portlet__space-x">

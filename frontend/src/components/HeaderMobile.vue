@@ -2,8 +2,8 @@
   <!-- begin:: Header Mobile -->
   <div id="kt_header_mobile" class="kt-header-mobile kt-header-mobile--fixed">
     <div class="kt-header-mobile__logo">
-      <a :href="link">
-        <img alt="Logo" :src="img" width="92"/>
+      <a :href="url">
+        <img alt="Logo" :src="logo" />
       </a>
     </div>
     <div class="kt-header-mobile__toolbar">
@@ -21,6 +21,8 @@
       </button>
     </div>
   </div>
+
+  <!-- end:: Header Mobile -->
 </template>
 
 <script>
@@ -28,8 +30,8 @@ export default {
   name: "HeaderMobile",
   data() {
     return {
-      link: "/",
-      img: "/static/media/logos/logo-light.png"
+      url: "/",
+      logo: "/static/assets/media/logos/logo-light.png"
     };
   }
 };

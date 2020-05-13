@@ -9,6 +9,7 @@ import vuetify from './plugins/vuetify'
 import upperFirst from 'lodash/upperFirst'
 import camelCase from 'lodash/camelCase'
 
+
 toastr.options.closeButton = true;
 
 const requireComponent = require.context(

@@ -3,12 +3,9 @@
     class="kt-menu__item kt-menu__item--submenu"
     aria-haspopup="true"
     data-ktmenu-submenu-toggle="hover"
-    :class="{
-      'kt-menu__item--open': show}"
-    v-if="existedBranches"
   >
-    <a href="javascript:;" class="kt-menu__link kt-menu__toggle" @click="toggle()">
-      <span class="kt-menu__link-text">{{ repoName }}</span>
+    <a href="javascript:;" class="kt-menu__link kt-menu__toggle">
+      <span class="kt-menu__link-text">{{ formatName }}</span>
       <i class="kt-menu__ver-arrow la la-angle-right"></i>
     </a>
     <div class="kt-menu__submenu">
@@ -16,7 +13,7 @@
       <ul class="kt-menu__subnav">
         <li class="kt-menu__item kt-menu__item--parent" aria-haspopup="true">
           <span class="kt-menu__link">
-            <span class="kt-menu__link-text">Subheaders</span>
+            <span class="kt-menu__link-text">{{ formatName }}</span>
           </span>
         </li>
 
@@ -24,11 +21,12 @@
           <h4 class="kt-menu__section-text">Existed</h4>
           <i class="kt-menu__section-icon flaticon-more-v2"></i>
         </li>
+
         <li
           class="kt-menu__item"
           aria-haspopup="true"
           v-for="existedBranch in existedBranches"
-          :key="existedBranch.id"
+          :key="existedBranch"
         >
           <router-link
             :to="branchLink +  existedBranch"
@@ -41,15 +39,17 @@
             <span class="kt-menu__link-text">{{ existedBranch }}</span>
           </router-link>
         </li>
+
         <li class="kt-menu__section">
           <h4 class="kt-menu__section-text">Deleted</h4>
           <i class="kt-menu__section-icon flaticon-more-v2"></i>
         </li>
+
         <li
           class="kt-menu__item"
           aria-haspopup="true"
           v-for="deletedBranch in deletedBranches"
-          :key="deletedBranch.id"
+          :key="deletedBranch"
         >
           <router-link
             :to="branchLink +  deletedBranch"
@@ -66,6 +66,7 @@
     </div>
   </li>
 </template>
+
 <script>
 import EventService from "../services/EventService";
 export default {
@@ -73,10 +74,20 @@ export default {
   props: ["repo"],
   data() {
     return {
-      show: false,
       existedBranches: null,
       deletedBranches: null
     };
+  },
+  computed: {
+    formatName() {
+      return this.repo.substring(this.repo.indexOf("/") + 1);
+    },
+    repoName: function() {
+      return this.repo.substring(this.repo.indexOf("/") + 1);
+    },
+    branchLink: function() {
+      return "/repos/" + this.repo + "/";
+    }
   },
   methods: {
     fetchBranches() {
@@ -88,17 +99,6 @@ export default {
         .catch(error => {
           console.log("Error! Could not reach the API. " + error);
         });
-    },
-    toggle() {
-      this.show = !this.show;
-    }
-  },
-  computed: {
-    repoName: function() {
-      return this.repo.substring(this.repo.indexOf("/") + 1);
-    },
-    branchLink: function() {
-      return "/repos/" + this.repo + "/";
     }
   },
   created() {
@@ -106,17 +106,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-.kt-aside-menu
-  .kt-menu__nav
-  > .kt-menu__item
-  .kt-menu__submenu
-  .kt-menu__section {
-  margin: 0;
-}
-
-.show {
-  display: block !important;
-}
-</style>

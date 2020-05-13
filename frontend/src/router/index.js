@@ -1,15 +1,14 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import store from '../store/index'
-import Dashboard from '@/components/Dashboard'
-import Main from '@/components/Main'
-import BranchDetails from '@/components/BranchDetails'
-import ProjectDetails from '@/components/ProjectDetails'
-import Details from "@/components/Details"
-import ProDetails from '@/components/ProDetails'
-import InitialConfig from '@/components/InitialConfig'
+import store from '../store'
 import EventService from '@/services/EventService'
-import NotFound from '@/components/404.vue';
+import Content from '@/components/Content'
+import Dashboard from "@/views/Dashboard";
+import BranchDetails from "@/views/BranchDetails";
+import Details from "@/views/Details";
+import Schedules from "@/views/Schedules";
+import SchedulesDetails from "@/views/SchedulesDetails";
+import InitialConfig from '@/views/InitialConfig'
 
 Vue.use(Router)
 
@@ -27,7 +26,7 @@ const router = new Router({
         },
         {
             path: '/',
-            component: Main,
+            component: Content,
             redirect: '/dashboard',
             children: [{
                     path: '/dashboard',
@@ -48,25 +47,16 @@ const router = new Router({
                 },
                 {
                     path: '/schedules/:name',
-                    name: 'ProjectDetails',
-                    component: ProjectDetails,
+                    name: 'Schedules',
+                    component: Schedules,
                     props: true
                 },
                 {
                     path: '/schedules/:name/:id',
                     name: 'ScheduleDetails',
-                    component: ProDetails,
+                    component: SchedulesDetails,
                     props: true
-                },
-                {
-                    path: '/404',
-                    name: '404',
-                    component: NotFound
-                },
-                // {
-                //     path: '*',
-                //     redirect: '/404'
-                // }
+                }
             ]
         }
     ]

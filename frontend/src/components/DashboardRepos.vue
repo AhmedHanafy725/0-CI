@@ -1,5 +1,5 @@
 <template>
-  <div class="kt-portlet kt-portlet--fit kt-portlet--head-noborder kt-portlet--height-fluid-half">
+  <div class="kt-portlet kt-portlet--fit kt-portlet--head-noborder kt-portlet--height-fluid-half mb-0">
     <div class="kt-portlet__head kt-portlet__space-x">
       <div class="kt-portlet__head-label">
         <h3 class="kt-portlet__head-title">{{ repo | removeOrg }}</h3>
@@ -46,7 +46,7 @@ export default {
   },
   data() {
     return {
-      default_branch: "master",
+      default_branch: "jsx",
       branchData: null,
       committer: null,
       timestamp: null,
@@ -66,10 +66,10 @@ export default {
         .then(response => {
           this.branchData = response.data;
           if (this.branchData.length > 0) {
-            this.committer = this.filteredItems[0].committer;
-            this.timestamp = this.filteredItems[0].timestamp;
-            this.status = this.filteredItems[0].status;
-            this.id = this.filteredItems[0].id;
+            this.committer = response.data[0].committer;
+            this.timestamp = response.data[0].timestamp;
+            this.status = response.data[0].status;
+            this.id = response.data[0].id;
           }
         })
         .catch(error => {
@@ -79,6 +79,26 @@ export default {
     getSelectedBranch(value) {
       this.default_branch = value;
       this.fetchDetails();
+    },
+
+    connect() {
+      this.socket = new WebSocket(
+        "ws://" +
+          window.location.hostname +
+          "/websocket/repos/" +
+          `${this.fullRepoName}/${this.branch}`
+      );
+      this.socket.onopen = () => {
+        this.socket.onmessage = ({ data }) => {
+          this.branchData = data;
+          if (this.branchData.length > 0) {
+            this.committer = this.filteredItems[0].committer;
+            this.timestamp = this.filteredItems[0].timestamp;
+            this.status = this.filteredItems[0].status;
+            this.id = this.filteredItems[0].id;
+          }
+        };
+      };
     }
   },
   computed: {
@@ -91,6 +111,15 @@ export default {
   },
   created() {
     this.fetchDetails();
+  },
+  updated() {
+    this.connect();
   }
 };
 </script>
+
+<style scoped>
+.kt-widget20__content a {
+  margin-bottom: 10px ;
+}
+</style>

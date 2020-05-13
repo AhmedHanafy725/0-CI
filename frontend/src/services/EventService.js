@@ -65,8 +65,8 @@ export default {
     getBranchIdDetails(orgName, branch, id) {
         return apiClient.get('/repos/' + orgName + '?branch=' + branch + '&&id=' + id)
     },
-    rebuildJob(id) {
-        return apiClient.post('/run_trigger', { id: id })
+    rebuildJob(name) {
+        return apiClient.post('/schedule_trigger', { schedule_name: name })
     },
     getSchedulesDetails(scheduleName) {
         return apiClient.get('/schedules/' + scheduleName)

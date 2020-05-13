@@ -1,7 +1,7 @@
 <template>
   <v-expansion-panel>
     <v-expansion-panel-header>
-      <span class="kt-portlet__head-icon">
+      <span class="kt-portlet__head-icon text-left">
         <i class="kt-font-brand" :class="getStatus(log.status)"></i>
         {{ log.name }}
       </span>
@@ -53,3 +53,11 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+  .v-application code {
+    background-color: transparent;
+    color: #fff;
+}
+
+</style>

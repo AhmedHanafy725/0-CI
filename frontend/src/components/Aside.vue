@@ -2,8 +2,8 @@
   <!-- begin:: Aside -->
   <div class="kt-aside__brand kt-grid__item" id="kt_aside_brand">
     <div class="kt-aside__brand-logo">
-      <a :href="homeLink">
-        <img alt="Logo" :src="logo" />
+      <a :href="url">
+        <img alt="Logo" :src="logo" width="100px" />
       </a>
     </div>
     <div class="kt-aside__brand-tools">
@@ -70,8 +70,7 @@
       </button>
 
       <!--
-			<button class="kt-aside__brand-aside-toggler kt-aside__brand-aside-toggler--left" id="kt_aside_toggler"><span></span></button>
-      -->
+      <button class="kt-aside__brand-aside-toggler kt-aside__brand-aside-toggler--left" id="kt_aside_toggler"><span></span></button>-->
     </div>
   </div>
 
@@ -83,15 +82,9 @@ export default {
   name: "Aside",
   data() {
     return {
-      homeLink: "/",
-      logo: "/static/media/logos/logo-light.png"
+      url: "/",
+      logo: "/static/assets/media/logos/logo-light.png"
     };
   }
 };
 </script>
-
-<style>
-.kt-aside__brand-logo img {
-  width: 92px;
-}
-</style>

@@ -1,0 +1,84 @@
+.kt-font-error {
+    color: #d32a2a !important;
+}
+
+.kt-font-failure {
+    color: #fc3a3a !important;
+}
+
+.kt-bg-error {
+    background-color: #d32a2a !important;
+    color: #fff;
+}
+
+.kt-bg-failure {
+    background-color: #fc3a3a !important;
+    color: #fff;
+}
+
+.kt-bg-success {
+    background-color: #0abb87 !important;
+    color: #fff;
+}
+
+a.disabled {
+    /* Make the disabled links grayish*/
+    color: gray !important;
+    /* And disable the pointer events */
+    pointer-events: none;
+}
+
+.kt-demo-icon {
+    color: #646c9a;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.kt-portlet__head .btn-primary,
+.kt-demo-icon i {
+    margin: auto 0;
+}
+
+code,
+.v-expansion-panel-content__wrap code {
+    background-color: transparent;
+    color: #fff;
+}
+
+.v-application code {
+    display: block;
+    font-size: inherit;
+}
+
+.v-application code:before {
+    display: none;
+}
+
+.form-control {
+    display: inline-block;
+}
+
+.kt-demo-icon__preview,
+.kt-widget24__details {
+    font-weight: 500;
+    color: #6c7293;
+}
+
+.kt-aside-menu .kt-menu__nav>.kt-menu__item>.kt-menu__link .kt-menu__link-text,
+.kt-aside-menu .kt-menu__nav>.kt-menu__section .kt-menu__section-text,
+.kt-aside-menu .kt-menu__nav>.kt-menu__item .kt-menu__submenu .kt-menu__item>.kt-menu__link .kt-menu__link-text,
+.kt-header__topbar .kt-header__topbar-item.kt-header__topbar-item--user .kt-header__topbar-user .kt-header__topbar-welcome,
+.kt-header__topbar .kt-header__topbar-item.kt-header__topbar-item--user .kt-header__topbar-user .kt-header__topbar-username,
+.kt-subheader .kt-subheader__main .kt-subheader__title,
+.kt-subheader .kt-subheader__main .kt-subheader__breadcrumbs .kt-subheader__breadcrumbs-link,
+.kt-footer .kt-footer__menu .kt-footer__menu-link,
+.kt-footer .kt-footer__copyright,
+.btn-sm,
+.kt-nav .kt-nav__item>.kt-nav__link .kt-nav__link-text,
+.kt-widget20 .kt-widget20__content .kt-widget20__desc {
+    font-size: 0.813rem;
+}
+
+.kt-portlet .kt-portlet__head .kt-portlet__head-label .kt-portlet__head-title {
+    font-size: 0.875rem;
+}

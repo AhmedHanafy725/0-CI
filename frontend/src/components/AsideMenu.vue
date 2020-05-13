@@ -9,7 +9,7 @@
     >
       <ul class="kt-menu__nav">
         <li class="kt-menu__item kt-menu__item--active" aria-haspopup="true">
-          <a href="/" class="kt-menu__link">
+          <a :href="url" class="kt-menu__link">
             <span class="kt-menu__link-icon">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -44,12 +44,15 @@
           <h4 class="kt-menu__section-text">Repos</h4>
           <i class="kt-menu__section-icon flaticon-more-v2"></i>
         </li>
-        <Repos v-for="repo in repos" :key="repo.id" :repo="repo" />
+
+        <Repos-Sec v-for="repo in repos" :key="repo.id" :repo="repo" />
+
         <li class="kt-menu__section">
           <h4 class="kt-menu__section-text">Schedules</h4>
           <i class="kt-menu__section-icon flaticon-more-v2"></i>
         </li>
-        <Schedules v-for="schedule in schedules" :key="schedule.id" :schedule="schedule" />
+
+        <Schedules-Sec v-for="schedule in schedules" :key="schedule.id" :schedule="schedule" />
       </ul>
     </div>
   </div>
@@ -57,17 +60,17 @@
 
 <script>
 import EventService from "../services/EventService";
-import Repos from "./AsideRepos";
-import Schedules from "./AsideSchedules";
-
+import AsideRepos from "./AsideRepos";
+import AsideSchedules from "./AsideSchedules";
 export default {
   name: "AsideMenu",
   components: {
-    Repos,
-    Schedules
+    "Repos-Sec": AsideRepos,
+    "Schedules-Sec": AsideSchedules
   },
   data() {
     return {
+      url: "/",
       repos: null,
       schedules: null
     };
