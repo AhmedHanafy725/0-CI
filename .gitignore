@@ -103,7 +103,7 @@ venv.bak/
 .mypy_cache/
 .DS_Store
 /frontend/node_modules/
-/dist/
+# /dist/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
