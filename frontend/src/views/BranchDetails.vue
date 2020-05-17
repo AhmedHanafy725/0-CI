@@ -340,6 +340,7 @@ export default {
         if (o.id == data.id) {
           this.details[i].id = data.id;
           this.details[i].status = data.status;
+          this.details[i].timestamp = data.timestamp;
 
           return true;
         }

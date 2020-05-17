@@ -327,6 +327,7 @@ export default {
         if (o.id == data.id) {
           this.schedules[i].id = data.id;
           this.schedules[i].status = data.status;
+          this.schedules[i].timestamp = data.timestamp;
 
           return true;
         }
