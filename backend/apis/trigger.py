@@ -20,11 +20,21 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
     timestamp = datetime.now().timestamp()
     if id:
         trigger_run = TriggerRun(id=id)
+        data = {
+            "timestamp": timestamp,
+            "commit": trigger_run.commit,
+            "committer": trigger_run.committer,
+            "status": trigger_run.status,
+            "repo": trigger_run.repo,
+            "branch": trigger_run.branch,
+            "id": id,
+        }
+        trigger_run.timestamp = timestamp
         trigger_run.status = status
         trigger_run.result = []
         trigger_run.save()
         redis.ltrim(id, -1, 0)
-        redis.publish("zeroci_status", json.dumps({"id": id, "status": status}))
+        redis.publish("zeroci_status", json.dumps(data))
     else:
         if repo in configs.repos:
             data = {
