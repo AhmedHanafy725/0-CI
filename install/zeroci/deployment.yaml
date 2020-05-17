@@ -15,7 +15,7 @@ spec:
       - name: bcdb
         hostPath:
           path: /sandbox/var
-      - name: bcdb
+      - name: redis
         hostPath:
           path: /sandbox/redis
       hostname: zeroci
