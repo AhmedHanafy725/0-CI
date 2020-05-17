@@ -46,6 +46,6 @@ def update_status():
         data = msg["data"]
         if isinstance(data, bytes):
             try:
-                wsock.send(msg["data"].decode())
+                wsock.send(data.decode())
             except WebSocketError:
                 break
