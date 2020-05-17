@@ -51,6 +51,9 @@ export default {
     restartBuild(repo, branch) {
         return apiClient.post('/run_trigger', { repo: repo, branch: branch })
     },
+    restartBuildId(id) {
+        return apiClient.post('/run_trigger', { id: id })
+    },
     runConfig(orgName) {
         return apiClient.get('/run_config/' + orgName);
     },

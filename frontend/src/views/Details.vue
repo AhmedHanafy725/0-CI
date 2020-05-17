@@ -111,7 +111,7 @@ export default {
     rebuild() {
       if (this.$store.state.user !== null) {
         this.loading = true;
-        EventService.rebuildJob(this.id)
+        EventService.restartBuildId(this.id)
           .then(response => {
             if (response) {
               this.loading = false;
