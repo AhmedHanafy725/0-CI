@@ -7,7 +7,7 @@
 
       <!--use below badge element instead the user avatar to display username's first letter(remove kt-hidden class to display it) -->
       <span
-        class="kt-badge kt-badge--username kt-badge--unified-success kt-badge--lg kt-badge--rounded kt-badge--bold"
+        class="kt-badge kt-badge--username kt-badge--unified-success kt-badge--lg kt-badge--rounded kt-badge--bold text-uppercase"
       >{{ userLogo }}</span>
     </div>
   </div>
