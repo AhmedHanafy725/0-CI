@@ -82,8 +82,7 @@ export default {
       this.socket.onopen = () => {
         console.log("connecting...");
         this.socket.onmessage = ({ data }) => {
-          console.log(data);
-          this.livelogs.push(data);
+          this.livelogs = data;
         };
       };
     },

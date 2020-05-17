@@ -1,5 +1,7 @@
 <template>
-  <div class="kt-portlet kt-portlet--fit kt-portlet--head-noborder kt-portlet--height-fluid-half mb-0">
+  <div
+    class="kt-portlet kt-portlet--fit kt-portlet--head-noborder kt-portlet--height-fluid-half mb-0"
+  >
     <div class="kt-portlet__head kt-portlet__space-x">
       <div class="kt-portlet__head-label">
         <h3 class="kt-portlet__head-title">{{ repo | removeOrg }}</h3>
@@ -46,7 +48,7 @@ export default {
   },
   data() {
     return {
-      default_branch: "jsx",
+      default_branch: "master",
       branchData: null,
       committer: null,
       timestamp: null,
@@ -70,6 +72,8 @@ export default {
             this.timestamp = response.data[0].timestamp;
             this.status = response.data[0].status;
             this.id = response.data[0].id;
+          } else {
+            this.clear();
           }
         })
         .catch(error => {
@@ -81,24 +85,11 @@ export default {
       this.fetchDetails();
     },
 
-    connect() {
-      this.socket = new WebSocket(
-        "ws://" +
-          window.location.hostname +
-          "/websocket/repos/" +
-          `${this.fullRepoName}/${this.branch}`
-      );
-      this.socket.onopen = () => {
-        this.socket.onmessage = ({ data }) => {
-          this.branchData = data;
-          if (this.branchData.length > 0) {
-            this.committer = this.filteredItems[0].committer;
-            this.timestamp = this.filteredItems[0].timestamp;
-            this.status = this.filteredItems[0].status;
-            this.id = this.filteredItems[0].id;
-          }
-        };
-      };
+    clear() {
+      this.committer = null;
+      this.timestamp = null;
+      this.status = null;
+      this.id = null;
     }
   },
   computed: {
@@ -112,14 +103,20 @@ export default {
   created() {
     this.fetchDetails();
   },
-  updated() {
-    this.connect();
+  mounted() {
+    this.$options.sockets.onmessage = msg => {
+      var data = JSON.parse(msg.data);
+      this.committer = data.committer;
+      this.timestamp = data.timestamp;
+      this.status = data.status;
+      this.id = data.id;
+    };
   }
 };
 </script>
 
 <style scoped>
 .kt-widget20__content a {
-  margin-bottom: 10px ;
+  margin-bottom: 10px;
 }
 </style>

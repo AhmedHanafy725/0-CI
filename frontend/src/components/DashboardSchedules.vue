@@ -17,7 +17,8 @@
             :class="{
             'kt-font-success': status == 'success',
             'kt-font-error': status == 'error',
-            'kt-font-failure': status == 'failure'}"
+            'kt-font-failure': status == 'failure',
+            'kt-font-pending': status == 'pending'}"
           >{{ status }}</span>
           <span class="kt-widget20__desc text-right">{{ time }}</span>
         </div>
@@ -45,12 +46,9 @@ export default {
       EventService.getSchedulesDetails(this.schedule)
         .then(response => {
           if (response.data.length > 0) {
-            this.filteredItems = response.data.filter(
-              item => item.status !== "pending"
-            );
-            this.timestamp = this.filteredItems[0].timestamp;
-            this.status = this.filteredItems[0].status;
-            this.id = this.filteredItems[0].id;
+            this.timestamp = response.data[0].timestamp;
+            this.status = response.data[0].status;
+            this.id = response.data[0].id;
           } else {
             state.visibility = false;
           }
@@ -94,6 +92,14 @@ export default {
   },
   created() {
     this.getSchedules();
+  },
+  mounted() {
+    this.$options.sockets.onmessage = msg => {
+      var data = JSON.parse(msg.data);
+      this.timestamp = data.timestamp;
+      this.status = data.status;
+      this.id = data.id;
+    };
   }
 };
 </script>

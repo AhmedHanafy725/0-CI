@@ -8,7 +8,13 @@ import store from './store/index'
 import vuetify from './plugins/vuetify'
 import upperFirst from 'lodash/upperFirst'
 import camelCase from 'lodash/camelCase'
+import VueNativeSock from 'vue-native-websocket'
 
+Vue.use(VueNativeSock, `ws://${window.location.hostname}/websocket/status`, {
+    reconnection: true, // (Boolean) whether to reconnect automatically (false)
+    reconnectionAttempts: 5, // (Number) number of reconnection attempts before giving up (Infinity),
+    reconnectionDelay: 3000, // (Number) how long to initially wait before attempting a new (1000)
+})
 
 toastr.options.closeButton = true;
 

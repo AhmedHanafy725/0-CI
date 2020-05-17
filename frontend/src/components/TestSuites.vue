@@ -37,10 +37,8 @@
                   <v-expansion-panel-content
                     class="v-card v-card--flat v-sheet v-sheet--tile theme--dark"
                   >
-                    <pre class="white--text"><code>{{ testcase.status }} &nbsp; (Executed in {{ testcase.time }} seconds)</code>
-                            <code
-  v-if="testcase.details"
->{{ testcase.details.content }} {{ testcase.details.message }}</code></pre>
+                    <pre class="white--text"><code>{{ testcase.status }} &nbsp; (Executed in {{ testcase.time }} seconds)</code><br /><code v-if="testcase.details">{{ testcase.details.content }}{{ testcase.details.message }}</code>
+                    </pre>
                   </v-expansion-panel-content>
                 </v-expansion-panel>
               </v-expansion-panels>
@@ -62,10 +60,7 @@
                   <v-expansion-panel-content
                     class="v-card v-card--flat v-sheet v-sheet--tile theme--dark"
                   >
-                    <pre class="white--text"><code>{{ error.status }} &nbsp; (Executed in {{ error.time }} seconds)</code>
-                            <code
-  v-if="error.details"
->{{ error.details.content }} {{ error.details.message }}</code></pre>
+                    <pre class="white--text"><code>{{ error.status }} &nbsp; (Executed in {{ error.time }} seconds)</code><br /><code v-if="error.details">{{ error.details.content }}{{ error.details.message }}</code></pre>
                   </v-expansion-panel-content>
                 </v-expansion-panel>
               </v-expansion-panels>
@@ -87,10 +82,7 @@
                   <v-expansion-panel-content
                     class="v-card v-card--flat v-sheet v-sheet--tile theme--dark"
                   >
-                    <pre class="white--text"><code>{{ failure.status }} &nbsp; (Executed in {{ failure.time }} seconds)</code>
-                            <code
-  v-if="failure.details"
->{{ failure.details.content }} {{ failure.details.message }}</code></pre>
+                    <pre class="white--text"><code>{{ failure.status }} &nbsp; (Executed in {{ failure.time }} seconds)</code><br /><code v-if="failure.details">{{ failure.details.content }}{{ failure.details.message }}</code></pre>
                   </v-expansion-panel-content>
                 </v-expansion-panel>
               </v-expansion-panels>
@@ -112,10 +104,7 @@
                   <v-expansion-panel-content
                     class="v-card v-card--flat v-sheet v-sheet--tile theme--dark"
                   >
-                    <pre class="white--text"><code>{{ skip.status }} &nbsp; (Executed in {{ skip.time }} seconds)</code>
-                            <code
-  v-if="skip.details"
->{{ skip.details.content }} {{skip.details.message }}</code></pre>
+                    <pre class="white--text"><code>{{ skip.status }} &nbsp; (Executed in {{ skip.time }} seconds)</code><br /><code v-if="skip.details">{{ skip.details.content }}{{skip.details.message }}</code></pre>
                   </v-expansion-panel-content>
                 </v-expansion-panel>
               </v-expansion-panels>

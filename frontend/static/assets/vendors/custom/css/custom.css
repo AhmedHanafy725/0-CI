@@ -82,3 +82,7 @@ code,
 .kt-portlet .kt-portlet__head .kt-portlet__head-label .kt-portlet__head-title {
     font-size: 0.875rem;
 }
+
+.kt-font-pending {
+    color: #ff9800 !important;
+}

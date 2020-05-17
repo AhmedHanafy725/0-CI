@@ -250,12 +250,11 @@ export default {
     restart() {
       if (this.$store.state.user !== null) {
         this.loading = true;
-        EventService.rebuildJob(this.name) // need Id
+        EventService.rebuildJob(this.name)
           .then(response => {
             if (response) {
               this.loading = false;
               this.disabled = true;
-              this.getDetails();
             }
           })
           .catch(error => {
@@ -319,6 +318,18 @@ export default {
   },
   created() {
     this.getDetails();
+  },
+  mounted() {
+    this.$options.sockets.onmessage = msg => {
+      var data = JSON.parse(msg.data);
+
+      if (data.id == this.schedules[0].id) {
+        this.schedules[0].id = data.id;
+        this.schedules[0].status = data.status;
+      } else {
+        this.schedules.unshift(data);
+      }
+    };
   },
   watch: {
     "$route.params": {

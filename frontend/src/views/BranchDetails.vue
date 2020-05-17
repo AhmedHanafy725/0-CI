@@ -1,92 +1,89 @@
 <template>
   <!-- begin:: Content -->
-  <div>
+  <div class="kt-portlet kt-portlet--mobile">
     <Loading v-if="loading" />
-    <Notification v-if="notified" />
-    <div class="kt-portlet kt-portlet--mobile">
-      <div class="kt-portlet__head kt-portlet__head--lg">
-        <div class="kt-portlet__head-label">
-          <span class="kt-portlet__head-icon">
-            <i class="kt-font-brand flaticon2-line-chart"></i>
-          </span>
-          <h3 class="kt-portlet__head-title">{{ repoName }}/{{ branch }}</h3>
-        </div>
-        <div class="kt-header__topbar pr-0">
-          <button
-            type="button"
-            class="btn btn-primary btn-sm"
-            :disabled="disabled"
-            @click="restart()"
-          >
-            <i class="flaticon2-reload"></i> Restart build
-          </button>
-          <button
-            type="button"
-            class="kt-demo-icon mb-0"
-            @click="runConfig()"
-            data-toggle="modal"
-            :data-target="'#kt_modal_' + model"
-          >
-            <i class="flaticon2-settings"></i>
-          </button>
-        </div>
+    <div class="kt-portlet__head kt-portlet__head--lg">
+      <div class="kt-portlet__head-label">
+        <span class="kt-portlet__head-icon">
+          <i class="kt-font-brand flaticon2-line-chart"></i>
+        </span>
+        <h3 class="kt-portlet__head-title">{{ repoName }}/{{ branch }}</h3>
       </div>
-      <div class="kt-portlet__body">
-        <v-card>
-          <v-card-title>
-            <!-- title -->
-            <v-text-field
-              v-model="search"
-              append-icon="mdi-magnify"
-              label="Search"
-              single-line
-              hide-details
-            ></v-text-field>
-          </v-card-title>
-          <v-data-table :headers="headers" :items="details" :search="search">
-            <template v-slot:item.id="{ item }">
-              <router-link
-                :to="'/repos/' + orgName + '/' + repoName + '/' + branch + '/' + item.id"
-              >{{details.length - details.map(function(x) {return x.id; }).indexOf(item.id)}}</router-link>
-            </template>
+      <div class="kt-header__topbar pr-0">
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          :disabled="disabled"
+          @click="restart()"
+        >
+          <i class="flaticon2-reload"></i> Restart build
+        </button>
+        <button
+          type="button"
+          class="kt-demo-icon mb-0"
+          @click="runConfig()"
+          data-toggle="modal"
+          :data-target="'#kt_modal_' + model"
+        >
+          <i class="flaticon2-settings"></i>
+        </button>
+      </div>
+    </div>
+    <div class="kt-portlet__body">
+      <v-card>
+        <v-card-title>
+          <!-- title -->
+          <v-text-field
+            v-model="search"
+            append-icon="mdi-magnify"
+            label="Search"
+            single-line
+            hide-details
+          ></v-text-field>
+        </v-card-title>
+        <v-data-table :headers="headers" :items="details" :search="search">
+          <template v-slot:item.id="{ item }">
+            <router-link
+              :to="'/repos/' + orgName + '/' + repoName + '/' + branch + '/' + item.id"
+            >{{details.length - details.map(function(x) {return x.id; }).indexOf(item.id)}}</router-link>
+          </template>
 
-            <template v-slot:item.committer="{ item }">
-              <div class="kt-user-card-v2">
-                <div class="kt-user-card-v2__pic">
-                  <img
-                    :src="committerSrc(item.committer)"
-                    class="m-img-rounded kt-marginless"
-                    alt="photo"
-                  />
-                </div>
-                <div class="kt-user-card-v2__details">
-                  <a
-                    :href="committerUrl(item.committer)"
-                    class="kt-user-card-v2__email kt-link"
-                    target="_blank"
-                  >{{ item.committer }}</a>
-                </div>
+          <template v-slot:item.committer="{ item }">
+            <div class="kt-user-card-v2">
+              <div class="kt-user-card-v2__pic">
+                <img
+                  :src="committerSrc(item.committer)"
+                  class="m-img-rounded kt-marginless"
+                  alt="photo"
+                />
               </div>
-            </template>
+              <div class="kt-user-card-v2__details">
+                <a
+                  :href="committerUrl(item.committer)"
+                  class="kt-user-card-v2__email kt-link"
+                  target="_blank"
+                >{{ item.committer }}</a>
+              </div>
+            </div>
+          </template>
 
-            <template v-slot:item.commit="{ item }">
-              <a
-                :href="repoCommit(item.commit)"
-                class="kt-user-card-v2__email kt-link"
-                target="_blank"
-              >{{ commit(item.commit) }}</a>
-            </template>
+          <template v-slot:item.commit="{ item }">
+            <a
+              :href="repoCommit(item.commit)"
+              class="kt-user-card-v2__email kt-link"
+              target="_blank"
+            >{{ commit(item.commit) }}</a>
+          </template>
 
-            <template v-slot:item.status="{ item }">
-              <v-chip :color="getStatus(item.status)" dark>{{ item.status }}</v-chip>
-            </template>
+          <template v-slot:item.status="{ item }">
+            <v-chip :color="getStatus(item.status)" dark>{{ item.status }}</v-chip>
+          </template>
 
-            <template v-slot:item.timestamp="{ item }">
-              <span>{{ time(item.timestamp) }}</span>
-            </template>
-          </v-data-table>
-        </v-card>
-      </div>
+          <template v-slot:item.timestamp="{ item }">
+            <span>{{ time(item.timestamp) }}</span>
+          </template>
+        </v-data-table>
+      </v-card>
     </div>
     <!--begin::Modal-->
     <div
@@ -186,13 +183,14 @@
 <script>
 import Loading from "../components/Loading";
 import EventService from "../services/EventService";
-
+import { orgs } from "../mixins/orgs";
 export default {
   name: "BranchDetails",
   props: ["orgName", "repoName", "branch"],
   components: {
     Loading: Loading
   },
+  mixins: [orgs],
   data() {
     return {
       search: "",
@@ -205,7 +203,7 @@ export default {
         { text: "Time", value: "timestamp" }
       ],
       loading: true,
-      details: null,
+      details: [],
       newKeyModel: true,
       keys: null,
       fireInput: false,
@@ -214,11 +212,9 @@ export default {
       disabled: false,
       formLoading: true,
       VarsValidate: false,
-      msg: "No Variables Existed",
-      notified: false
+      msg: "No Variables Existed"
     };
   },
-
   methods: {
     clear() {
       this.details = [];
@@ -246,12 +242,6 @@ export default {
     commit(commit) {
       return commit.substring(0, 7);
     },
-    getStatus(status) {
-      if (status == "error") return "kt-bg-error";
-      else if (status == "failure") return "kt-bg-failure";
-      else if (status == "success") return "kt-bg-success";
-      else return "orange";
-    },
     restart() {
       if (this.$store.state.user !== null) {
         this.loading = true;
@@ -260,7 +250,6 @@ export default {
             if (response) {
               this.loading = false;
               this.disabled = true;
-              this.connect();
             }
           })
           .catch(error => {
@@ -332,18 +321,6 @@ export default {
           console.log("Error! Could not reach the API. " + error);
         });
     },
-
-    connect() {
-      this.socket = new WebSocket(
-        "ws://" +
-          window.location.hostname +
-          "/websocket/repos/" +
-          `${this.fullRepoName}/${this.branch}`
-      );
-      this.socket.onmessage = ({ data }) => {
-        this.details.push(data);
-      };
-    },
     time(ts) {
       var timestamp = moment.unix(ts);
       var now = new Date();
@@ -355,9 +332,20 @@ export default {
       return this.orgName + "/" + this.repoName;
     }
   },
+  mounted() {
+    this.$options.sockets.onmessage = msg => {
+      var data = JSON.parse(msg.data);
+
+      if (data.id == this.details[0].id) {
+        this.details[0].id = data.id;
+        this.details[0].status = data.status;
+      } else {
+        this.details.unshift(data);
+      }
+    };
+  },
   created() {
     this.fetchData();
-    this.connect();
   },
   watch: {
     "$route.params": {

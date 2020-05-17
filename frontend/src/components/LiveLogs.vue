@@ -23,22 +23,27 @@ export default {
   props: ["livelogs"],
   data() {
     return {
-      ansi: undefined
+      ansi: undefined,
+      content: ""
     };
   },
   computed: {
     html() {
       // Ensures we have some semblance of lines
-      return this.ansi.ansi_to_html(this.livelogs);
+      return this.ansi.ansi_to_html(this.content);
     }
   },
   beforeMount() {
     this.ansi = new AnsiUp();
   },
+  watch: {
+    livelogs(newValue) {
+      this.content += newValue;
+    }
+  },
   updated() {
     var el = document.getElementById("console");
     el.scrollTop = el.scrollHeight;
-    console.log(this.livelogs);
   }
 };
 </script>
@@ -59,5 +64,10 @@ code {
 
 .kt-bg-success {
   font-weight: bold;
+}
+
+.v-application code {
+  background-color: transparent;
+  color: #fff;
 }
 </style>

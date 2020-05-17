@@ -14,6 +14,7 @@
     "axios": "^0.19.2",
     "moment": "^2.25.3",
     "vue": "^2.5.2",
+    "vue-native-websocket": "^2.0.14",
     "vue-router": "^3.0.1",
     "vuetify": "^2.2.25",
     "vuex": "^3.4.0"

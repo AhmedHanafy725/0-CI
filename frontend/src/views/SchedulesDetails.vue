@@ -9,19 +9,22 @@
         </span>
         <h3 class="kt-portlet__head-title">{{ name }}</h3>
       </div>
+      <div class="kt-header__topbar pr-0">
+        <button type="button" @click="viewLogs()" class="btn btn-primary btn-sm mr-1">{{ result }}</button>
+      </div>
     </div>
     <div class="kt-portlet__body">
       <!-- live logs -->
-      <v-expansion-panels v-model="panel" v-if="livelogs > 0">
+      <v-expansion-panels v-model="panel" v-if="live && livelogs.length > 0">
         <Live-Logs :livelogs="livelogs" />
       </v-expansion-panels>
       <!-- logs -->
-      <v-expansion-panels>
+      <v-expansion-panels v-model="panel" v-if="!live">
         <logs v-for="log in logs" :key="log.id" :log="log"></logs>
       </v-expansion-panels>
 
       <!-- testcases -->
-      <v-expansion-panels>
+      <v-expansion-panels v-model="panel" v-if="!live">
         <test-suites v-for="testsuite in testsuites" :key="testsuite.id" :testsuite="testsuite"></test-suites>
       </v-expansion-panels>
     </div>
@@ -53,7 +56,9 @@ export default {
       logs: [],
       loading: true,
       panel: 0,
-      livelogs: []
+      livelogs: [],
+      result: "View logs",
+      live: false
     };
   },
   methods: {
@@ -66,6 +71,8 @@ export default {
               this.logs.push(job);
             } else if (job.type == "testsuite") {
               this.testsuites.push(job);
+            } else {
+              this.viewLogs();
             }
           });
         })
@@ -73,19 +80,25 @@ export default {
           console.log("Error! Could not reach the API. " + error);
         });
     },
+    viewLogs() {
+      this.live = !this.live;
+      if (this.live) {
+        this.result = "View Result";
+        this.connect();
+      } else {
+        this.result = "View Logs";
+      }
+    },
     connect() {
       this.socket = new WebSocket(
         "ws://" + window.location.hostname + `/websocket/logs/${this.id}`
       );
-      this.socket.onopen = () => {
-        this.socket.onmessage = ({ data }) => {
-          this.livelogs.push(data);
-        };
+      this.socket.onmessage = ({ data }) => {
+        this.livelogs = data;
       };
     }
   },
   created() {
-    this.connect();
     this.getDetails();
   }
 };
