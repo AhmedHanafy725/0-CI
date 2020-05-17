@@ -336,12 +336,14 @@ export default {
     this.$options.sockets.onmessage = msg => {
       var data = JSON.parse(msg.data);
 
-      if (data.id == this.details[0].id) {
-        this.details[0].id = data.id;
-        this.details[0].status = data.status;
-      } else {
-        this.details.unshift(data);
-      }
+      this.details.find((o, i) => {
+        if (o.id == data.id) {
+          this.details[i].id = data.id;
+          this.details[i].status = data.status;
+
+          return true;
+        }
+      });
     };
   },
   created() {

@@ -86,3 +86,7 @@ code,
 .kt-font-pending {
     color: #ff9800 !important;
 }
+
+.kt-widget20 .kt-widget20__content .kt-widget20__number {
+    font-size: 1.2rem;
+}
