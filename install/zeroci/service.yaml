@@ -8,10 +8,10 @@ spec:
   type: NodePort
   ports:
   - port: 443
-    NodePort: 30443
+    nodePort: 30443
     name: https
   - port: 80
-    NodePort: 30080
+    nodePort: 30080
     name: http
   selector:
     app: zeroci

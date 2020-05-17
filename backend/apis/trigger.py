@@ -24,7 +24,7 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
             "timestamp": timestamp,
             "commit": trigger_run.commit,
             "committer": trigger_run.committer,
-            "status": trigger_run.status,
+            "status": status,
             "repo": trigger_run.repo,
             "branch": trigger_run.branch,
             "id": id,
