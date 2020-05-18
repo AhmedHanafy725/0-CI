@@ -3,7 +3,7 @@
   <div id="kt_header_mobile" class="kt-header-mobile kt-header-mobile--fixed">
     <div class="kt-header-mobile__logo">
       <a :href="url">
-        <img alt="Logo" :src="logo" />
+        <img alt="Logo" :src="logo" width="100px" />
       </a>
     </div>
     <div class="kt-header-mobile__toolbar">
@@ -13,9 +13,9 @@
       >
         <span></span>
       </button>
-      <button class="kt-header-mobile__toggler" id="kt_header_mobile_toggler">
+      <!-- <button class="kt-header-mobile__toggler" id="kt_header_mobile_toggler">
         <span></span>
-      </button>
+      </button> -->
       <button class="kt-header-mobile__topbar-toggler" id="kt_header_mobile_topbar_toggler">
         <i class="flaticon-more"></i>
       </button>

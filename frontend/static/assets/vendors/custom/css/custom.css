@@ -75,7 +75,8 @@ code,
 .kt-footer .kt-footer__copyright,
 .btn-sm,
 .kt-nav .kt-nav__item>.kt-nav__link .kt-nav__link-text,
-.kt-widget20 .kt-widget20__content .kt-widget20__desc {
+.kt-widget20 .kt-widget20__content .kt-widget20__desc,
+.kt-notification .kt-notification__item .kt-notification__item-details .kt-notification__item-title {
     font-size: 0.813rem;
 }
 

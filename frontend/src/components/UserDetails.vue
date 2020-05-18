@@ -31,7 +31,7 @@
       </a>
 
       <div class="kt-notification__custom">
-        <a @click="logout()" class="btn btn-label-brand btn-sm btn-bold">Log Out</a>
+        <a @click="logout()" class="btn btn-label-brand btn-sm btn-bold">LogOut</a>
       </div>
     </div>
 
