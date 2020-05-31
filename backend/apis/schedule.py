@@ -98,7 +98,7 @@ def schedule_trigger():
 
         schedule_info = ScheduleInfo(name=schedule_name)
         script = {
-            "prerequisites": schedule_info.install,
+            "prerequisites": schedule_info.prerequisites,
             "install": schedule_info.install,
             "script": schedule_info.script,
         }

@@ -10,7 +10,7 @@ class ScheduleInfo(Base):
     install = (S)
     run_time = (S)
     script = (dict)
-    prerequisites = (S)
+    prerequisites = (dict)
     created_by = (S)
     """
     _schema = j.data.schema.get_from_text(_schema_text)
@@ -22,7 +22,7 @@ class ScheduleInfo(Base):
         else:
             self._model_obj = self._model.new()
             self._model_obj.name = kwargs["schedule_name"]
-            self._model_obj.install_script = kwargs["install"]
+            self._model_obj.install = kwargs["install"]
             self._model_obj.run_time = kwargs["run_time"]
             self._model_obj.script = {"script": []}
             self._model_obj.script["script"] = kwargs.get("script", [])
