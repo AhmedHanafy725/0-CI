@@ -40,14 +40,14 @@
             <span class="kt-menu__link-text">Dashboard</span>
           </a>
         </li>
-        <li class="kt-menu__section">
+        <li class="kt-menu__section" v-if="repos">
           <h4 class="kt-menu__section-text">Repos</h4>
           <i class="kt-menu__section-icon flaticon-more-v2"></i>
         </li>
 
         <Repos-Sec v-for="repo in repos" :key="repo.id" :repo="repo" />
 
-        <li class="kt-menu__section">
+        <li class="kt-menu__section" v-if="schedules">
           <h4 class="kt-menu__section-text">Schedules</h4>
           <i class="kt-menu__section-icon flaticon-more-v2"></i>
         </li>

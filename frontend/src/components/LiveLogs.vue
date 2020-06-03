@@ -10,7 +10,11 @@
       id="console"
       class="v-card v-card--flat v-sheet v-sheet--tile theme--dark"
     >
-      <pre><code v-html="html"></code></pre>
+      <pre>
+        <transition name="fade">
+          <code v-html="html"></code>
+        </transition>
+      </pre>
     </v-expansion-panel-content>
   </v-expansion-panel>
 </template>
@@ -35,6 +39,9 @@ export default {
   },
   beforeMount() {
     this.ansi = new AnsiUp();
+  },
+  mounted() {
+    this.content += this.livelogs;
   },
   watch: {
     livelogs(newValue) {
@@ -69,5 +76,13 @@ code {
 .v-application code {
   background-color: transparent;
   color: #fff;
+  transition: all ease-in-out;
+}
+
+.fade-enter-active {
+  transition: all ease-in-out;
+}
+.fade-leave-active {
+  transition: all ease-in-out;
 }
 </style>
