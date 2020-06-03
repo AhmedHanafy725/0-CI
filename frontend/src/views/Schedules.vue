@@ -249,7 +249,6 @@ export default {
     },
     restart() {
       if (this.$store.state.user !== null) {
-        this.loading = true;
         EventService.rebuildJob(this.name)
           .then(response => {
             if (response) {
@@ -258,14 +257,21 @@ export default {
             }
           })
           .catch(error => {
-            console.log("Error! Could not reach the API. " + error);
+            if (error.response.status == 401) {
+              toastr.error("Please contact Adminstrator");
+            } else {
+              console.log("Error! Could not reach the API. " + error);
+            }
           });
       } else {
         toastr.error("Please Login First!");
       }
     },
     runConfig() {
-      if (this.$store.state.user !== null) {
+      if (
+        this.$store.state.user == "admin" ||
+        this.$store.state.user == "user"
+      ) {
         this.fireInput = false;
         this.model = 4;
         EventService.runConfig(this.name)
@@ -285,6 +291,8 @@ export default {
           .catch(error => {
             console.log("Error! Could not reach the API. " + error);
           });
+      } else if (this.$store.state.permission === "") {
+        toastr.error("Please contact Adminstrator");
       } else {
         toastr.error("Please Login First!");
       }

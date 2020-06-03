@@ -91,3 +91,7 @@ code,
 .kt-widget20 .kt-widget20__content .kt-widget20__number {
     font-size: 1.2rem;
 }
+
+.toast-error {
+    background-color: #d32a2a !important;
+}

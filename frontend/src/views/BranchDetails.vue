@@ -244,7 +244,6 @@ export default {
     },
     restart() {
       if (this.$store.state.user !== null) {
-        this.loading = true;
         EventService.restartBuild(this.fullRepoName, this.branch)
           .then(response => {
             if (response) {
@@ -253,14 +252,21 @@ export default {
             }
           })
           .catch(error => {
-            console.log("Error! Could not reach the API. " + error);
+            if (error.response.status == 401) {
+              toastr.error("Please contact Adminstrator");
+            } else {
+              console.log("Error! Could not reach the API. " + error);
+            }
           });
       } else {
         toastr.error("Please Login First!");
       }
     },
     runConfig() {
-      if (this.$store.state.user !== null) {
+      if (
+        this.$store.state.user == "admin" ||
+        this.$store.state.user == "user"
+      ) {
         this.model = 4;
         this.fireInput = false;
         EventService.runConfig(this.orgName + "/" + this.repoName)
@@ -279,6 +285,8 @@ export default {
           .catch(error => {
             console.log("Error! Could not reach the API. " + error);
           });
+      } else if (this.$store.state.permission === "") {
+        toastr.error("Please contact Adminstrator");
       } else {
         toastr.error("Please Login First!");
       }
