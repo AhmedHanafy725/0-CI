@@ -4,6 +4,7 @@ from apis.base import app, check_configs, configs
 from bottle import abort, redirect, request, static_file
 from models.scheduler_run import SchedulerRun
 from models.trigger_run import TriggerRun
+from models.schedule_info import ScheduleInfo
 from packages.vcs.vcs import VCSFactory
 
 
@@ -13,8 +14,8 @@ def home():
     """Return repos and schedules which are running on the server.
     """
     result = {"repos": [], "schedules": []}
-    result["repos"] = TriggerRun.distinct("repo")
-    result["schedules"] = SchedulerRun.distinct("schedule_name")
+    result["repos"] = configs.repos
+    result["schedules"] = ScheduleInfo.distinct("name")
     result_json = json.dumps(result)
     return result_json
 
