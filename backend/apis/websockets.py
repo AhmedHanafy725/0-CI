@@ -20,16 +20,19 @@ def logs(id):
         if start > length:
             break
         if start == length:
-            sleep(0.1)
+            sleep(0.01)
         result_list = redis.lrange(id, start, length)
         if b"hamada ok" in result_list:
             result_list.remove(b"hamada ok")
             start = -1
         else:
             start += len(result_list)
+        results = ""
         for result in result_list:
+            results += result.decode()
+        if results:
             try:
-                wsock.send(result.decode())
+                wsock.send(results)
             except WebSocketError:
                 break
 
