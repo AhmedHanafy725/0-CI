@@ -62,7 +62,7 @@ def schedule():
                     func=actions.schedule_run,
                     args=[job["schedule_name"], job,],
                     id=job["schedule_name"],
-                    timeout=7200,
+                    timeout=-1,
                 )
             except:
                 return Response("Wrong time format should be like (0 * * * *)", 400)
