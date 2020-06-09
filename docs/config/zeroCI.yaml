@@ -1,0 +1,17 @@
+# For a repository named AhmedHanafy725/test_zeroci
+prerequisites:
+  imageName: ubuntu:18.04
+
+install: |
+  apt-get update; apt-get install -y python3.6 python3-pip
+  pip3 install pytest nose black
+
+script:
+  - name: Smiple Tests With Nosetest
+    cmd: |
+      cd /opt/code/vcs_repos/AhmedHanafy725/test_zeroci
+      nosetests-3.4 -v testcase.py --with-xunit --xunit-file=/test.xml --xunit-testsuite-name=Simple_nosetest
+  - name: Smiple Tests With Pytest
+    cmd: |
+      cd /opt/code/vcs_repos/AhmedHanafy725/test_zeroci
+      pytest -v testcase.py --junitxml=/test.xml -o junit_suite_name=Simple_pytest

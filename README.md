@@ -14,37 +14,35 @@ For installation and running ZeroCI, please check it [here](/docs/installation.m
 
 ## Version Control System Repository Under Test (RUT) configuration
 
-There are 3 main steps to hook the RUT and make it run against ZeroCI (Github will be token as example):
+There are 2 main steps to hook the RUT and make it run against ZeroCI (Github will be token as example):
 
-### 1- Configure RUT Webhook
-
-Go to the repository's setting to configure the webhook:
-
-- Add payload URL with providing the server ip and make sure it ends with `/git_trigger`.
-- Content type should be `application/json`.
-- Select when the webhook will trigger the server. (**Note:** `Just the push event` is the only supported option for now)
-![webhook](/docs/Images/webhook.png)
-
-### 2- Add zeroCI.yaml file to the RUT
+### 1- Add zeroCI.yaml file to the RUT
 
 - Add a file called `zeroCI.yaml` to the home of your repository.
   ![zeroci location](/docs/Images/repo_home.png)
-- This file contains the project's prerequisites, installation and test scripts:
-  - `prerequisites`: requirements needed to be installed before starting project installation.
-    (**Note:** `jsx` only supported)
+- This file contains the project's prerequisites, installation script and test script:
+  - `prerequisites`: Docker image name needed to be used for running the project on.
   - `install`: list of bash commands required to install the project.
   - `script`: list of bash commands needed to run the tests ([more details](#zeroci-script-configuration)).
 
   (**Note:** RUT location will be in `/opt/code/vcs_repos/<organization's name>/<repository's name>`)
+
+**Example**
+
+See simple [example](./docs/config/zeroCI.yaml)
+
 ![zeroci](/docs/Images/zeroci.png)
 
-### 3- Update ZeroCI configuration
+### 2- Update ZeroCI configuration
 
 - Go to [ZeroCI configuration](/docs/installation.md#configuration).
 - Full name of the repository should be added to repos field.
 - Environment variables can be added on RUT page by clicking on settings(gear shape).
 
   (**Note**: Only ZeroCI's admins and users can change this environment varibles)
+
+![repository setting](./docs/Images/repo_setting.png)
+![Environment variables](./docs/Images/environment_variable.png)
 
 ## Getting the results
 
@@ -78,7 +76,9 @@ Go to the repository's setting to configure the webhook:
 
 ### Stream logs
 
-Please go to the result while your test is running.
+Please go to the result while your test is running or press on view logs button after it finishes.
+
+![stream](./docs/Images/stream.png)
 
 ### Formatted result
 
@@ -100,7 +100,7 @@ This part is important for getting result in this [view](#result-details)
 `--xunit-file`: specify the output file name, in this case MUST be `/test.xml`.  
 `--xunit-testsuite-name`: name of testsuite that will appear in the result.
 
-**Example**:
+**Example**
 
 ```bash
 nosetests-3.4 -v testcase.py --with-xunit --xunit-file=/test.xml --xunit-testsuite-name=Simple_nosetest
@@ -113,7 +113,7 @@ For more details about the plugin [Xunit](https://nose.readthedocs.io/en/latest/
 `--junitxml`: to enable the plugin and specify the output file name, in this case MUST be `/test.xml`.
 `-o junit_suite_name`: name of testsuite that will appear in the result.
 
-**Example**:
+**Example**
 
 ```bash
 pytest -v testcase.py --junitxml=/test.xml -o junit_suite_name=Simple_pytest
@@ -129,11 +129,15 @@ Only ZeroCI's admins and users can take this actions.
 
 In repository's branch page, tests can be triggered from last commit of this branch by clicking on restart build button.
 
+![trigger](./docs/Images/trigger.png)
+
 ### Rebuild
 
 In result page, tests can be triggered from this commit by clicking on restart build button.
 
 (**Note**: By clicking the restart build button,  the current result will be deleted)
+
+![rebuild](./docs/Images/rebuild.png)
 
 ## Nightly tests
 
