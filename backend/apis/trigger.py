@@ -51,9 +51,7 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
             data["id"] = id
             redis.publish("zeroci_status", json.dumps(data))
     if id:
-        link = (
-            f"{configs.domain}/repos/{trigger_run.repo.replace('/', '%2F')}/{trigger_run.branch}/{str(trigger_run.id)}"
-        )
+        link = f"{configs.domain}/repos/{trigger_run.repo}/{trigger_run.branch}/{str(trigger_run.id)}"
         vcs_obj = VCSFactory().get_cvn(repo=trigger_run.repo)
         vcs_obj.status_send(status=status, link=link, commit=trigger_run.commit)
         job = q.enqueue_call(func=actions.build_and_test, args=(id,), result_ttl=5000, timeout=20000)

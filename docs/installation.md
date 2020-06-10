@@ -1,10 +1,10 @@
-# Installation and running
+# Installation and Configuration
 
-## Requirements
+## Installation
 
 - Create a [kubernetes cluster](https://sdk2.threefold.io/#/solution_kubernetes?id=kubernetes-cluster-deployment) .
 - Connect to the cluster using `ssh`.
-- Create a directories for bcdb and redis 
+- Create directories for BCDB and Redis.
   
   ```bash
   sudo mkdir -p /sandbox/{var,redis}
@@ -24,19 +24,18 @@
   kubectl apply -f ~/zeroci
   ```
 
-- Create a Telegram group chat.
-- Create Telegram bot and add it to this group chat.
+- Create a Telegram Channel.
+- Create a [Telegram bot](https://core.telegram.org/bots#3-how-do-i-create-a-bot) and add it to this Channel.
 
 ## Configuration
 
 Go to the domain that ZeroCI has been deployed on, you will be asked for login first, then please fill the following configurations:
 
-- **Domain**:  The domain that will point to your server.
-
-- **Telegram chat ID**: Should result messages will be sent on.
-- **Telegram bot token**: The bot token that has been created in requirement step.
-- **vcs host**: The domain or ip that the version control system is working on.
-- **vcs token**: Version control system access token for user.
+- **domain**:  The domain that will point to your server.
+- **bot_token**: Telegram bot token that will be used to send the result messages.
+- **chat_id**: Telegram Channel ID that the result messages will be sent on.
+- **vcs_host**: The domain or ip that the version control system is working on.
+- **vcs_token**: Version control system access token for user.
 - **repos**: List of repositories full name that will run on your zeroCI
 
 Also in this page, admins can add or remove admins or users.
