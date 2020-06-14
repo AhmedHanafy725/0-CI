@@ -29,6 +29,7 @@ def schedule():
                 "script": schedule_info.script,
                 "prerequisites": schedule_info.prerequisites,
                 "run_time": schedule_info.run_time,
+                "created_by": schedule_info.created_by,
             }
             return json.dumps(info)
 
@@ -37,18 +38,20 @@ def schedule():
 
     if request.headers.get("Content-Type") == "application/json":
         if request.method == "POST":
-            data = ["schedule_name", "run_time", "prerequisites", "install", "script"]
+            data = ["schedule_name", "run_time", "prerequisites", "install", "script", "bin_path"]
             job = {}
             for item in data:
                 value = request.json.get(item)
                 if not value:
+                    if item == "bin_path":
+                        continue
                     return Response(f"{item} should have a value", 400)
                 elif item is "script" and not isinstance(value, list):
                     return Response(f"{item} should be str or list", 400)
                 else:
                     job[item] = value
 
-            created_by = request.environ.get("beaker.session").get("username")
+            created_by = request.environ.get("beaker.session").get("username").strip(".3bot")
             job["created_by"] = created_by
 
             if job["schedule_name"] in ScheduleInfo.distinct("name"):
@@ -60,7 +63,7 @@ def schedule():
                 scheduler.cron(
                     cron_string=job["run_time"],
                     func=actions.schedule_run,
-                    args=[job["schedule_name"], job,],
+                    args=[job,],
                     id=job["schedule_name"],
                     timeout=-1,
                 )
@@ -97,12 +100,15 @@ def schedule_trigger():
             return Response(f"Schedule name {schedule_name} is not found", 400)
 
         schedule_info = ScheduleInfo(name=schedule_name)
-        script = {
+        job = {
+            "schedule_name": schedule_name,
             "prerequisites": schedule_info.prerequisites,
             "install": schedule_info.install,
             "script": schedule_info.script,
+            "triggered_by": request.environ.get("beaker.session").get("username").strip(".3bot"),
+            "bin_path": schedule_info.bin_path,
         }
-        job = q.enqueue_call(func=actions.schedule_run, args=(schedule_name, script,), result_ttl=5000, timeout=20000,)
+        job = q.enqueue_call(func=actions.schedule_run, args=(job,), result_ttl=5000, timeout=20000,)
         if job:
             return Response(job.get_id(), 200)
     return Response("Wrong data", 400)

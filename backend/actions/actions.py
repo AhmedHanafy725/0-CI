@@ -199,6 +199,11 @@ class Actions:
                             if response.status_code is not requests.codes.ok:
                                 msg = "Invalid docker image's name "
 
+            bin_path = script.get("binPath")
+            if bin_path:
+                if not isinstance(bin_path, str):
+                    msg = "binPath should be str"
+
         if msg:
             r.rpush(self.run_id, msg)
             r.rpush(self.run_id, "hamada ok")
@@ -210,6 +215,7 @@ class Actions:
         self.prerequisites = prerequisites
         self.install_script = install_script
         self.test_script = test_script
+        self.bin_path = bin_path
         return True
 
     def _set_clone_script(self):
@@ -234,6 +240,27 @@ class Actions:
             vcs_host=configs.vcs_host,
         )
 
+    def get_store_bin(self):
+        if self.bin_path:
+            model_obj = self.parent_model(id=self.run_id)
+            bin_name = self.bin_path.split(os.path.sep)[-1]
+            if isinstance(model_obj, TriggerRun):
+                release = model_obj.commit[:7]
+                local_path = os.path.join("/sandbox/var/bin/", model_obj.repo, model_obj.branch)
+            else:
+                release = str(datetime.fromtimestamp(model_obj.timestamp)).replace(" ", "_")[:16]
+                local_path = os.path.join("/sandbox/var/bin/", model_obj.schedule_name)
+
+            bin_release = f"{bin_name}_{release}"
+            bin_local_path = os.path.join(local_path, bin_release)
+            if not os.path.exists(local_path):
+                os.makedirs(local_path)
+
+            found = container.get_remote_file(remote_path=self.bin_path, local_path=bin_local_path)
+            if found:
+                model_obj.bin_release = bin_release
+                model_obj.save()
+
     def build_and_test(self, id, schedule_name=None, script=None):
         """Builds, runs tests, calculates status and gives report on telegram and your version control system.
         
@@ -256,10 +283,11 @@ class Actions:
                     if installed:
                         self.test_run()
                         self.cal_status()
+                        self.get_store_bin()
                     container.delete()
         reporter.report(id=self.run_id, parent_model=self.parent_model, schedule_name=schedule_name)
 
-    def schedule_run(self, schedule_name, script):
+    def schedule_run(self, job):
         """Builds, runs tests, calculates status and gives report on telegram.
 
         :param schedule_name: the name of the scheduled run.
@@ -267,11 +295,15 @@ class Actions:
         :param script: the script that should run your schedule.
         :type script: str
         """
-        data = {"status": "pending", "timestamp": datetime.now().timestamp(), "schedule_name": schedule_name}
+        if job.get("triggered_by"):
+            triggered_by = job["triggered_by"]
+        else:
+            triggered_by = job["created_by"]
+        data = {"status": "pending", "timestamp": datetime.now().timestamp(), "schedule_name": job["schedule_name"], "triggered_by": triggered_by, "bin_release": None}
         scheduler_run = SchedulerRun(**data)
         scheduler_run.save()
         id = str(scheduler_run.id)
         data["id"] = id
         r.publish("zeroci_status", json.dumps(data))
         self.parent_model = SchedulerRun
-        self.build_and_test(id=id, schedule_name=schedule_name, script=script)
+        self.build_and_test(id=id, schedule_name=job["schedule_name"], script=job)

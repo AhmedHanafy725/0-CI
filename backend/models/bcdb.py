@@ -36,7 +36,10 @@ class Base:
         for value in values:
             obj = {}
             for i, field in enumerate(fields):
-                obj[field] = value[i]
+                if field in ["bin_release", "triggered_by"] and value[i] == "no":
+                    obj[field] = None
+                else:
+                    obj[field] = value[i]
             obj["id"] = value[i + 1]
             results.append(obj)
         return results

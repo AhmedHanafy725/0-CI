@@ -26,7 +26,7 @@ class Utils:
     def random_string(self):
         return "s" + str(uuid4())[:10]
 
-    def write_file(self, text, file_path, append=False):
+    def write_file(self, text, file_path, append=False, binary=True):
         """Write result file.
 
         :param text: text will be written to result file.
@@ -39,6 +39,9 @@ class Utils:
             append_write = "a"  # append if already exists
         else:
             append_write = "w"  # make a new file if not
+
+        if binary:
+            append_write += "b"
 
         with open(file_path, append_write) as f:
             f.write(text)

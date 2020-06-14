@@ -9,6 +9,8 @@ class SchedulerRun(Base):
     timestamp** = (F)
     schedule_name** = (S)
     status** = (S)
+    bin_release** = no (S)
+    triggered_by** = no (S)
     result = (dict)
     """
     _schema = j.data.schema.get_from_text(_schema_text)
@@ -22,6 +24,7 @@ class SchedulerRun(Base):
             self._model_obj.timestamp = kwargs["timestamp"]
             self._model_obj.schedule_name = kwargs["schedule_name"]
             self._model_obj.status = kwargs.get("status", "pending")
+            self._model_obj.triggered_by = kwargs.get("triggered_by", "no")
             self._model_obj.result = {"result": []}
             self._model_obj.result["result"] = kwargs.get("result", [])
 
@@ -56,3 +59,19 @@ class SchedulerRun(Base):
     @schedule_name.setter
     def schedule_name(self, schedule_name):
         self._model_obj.schedule_name = schedule_name
+
+    @property
+    def bin_release(self):
+        return self._model_obj.bin_release
+
+    @bin_release.setter
+    def bin_release(self, bin_release):
+        self._model_obj.bin_release = bin_release
+
+    @property
+    def triggered_by(self):
+        return self._model_obj.triggered_by
+
+    @triggered_by.setter
+    def triggered_by(self, triggered_by):
+        self._model_obj.triggered_by = triggered_by

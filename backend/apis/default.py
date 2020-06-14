@@ -7,6 +7,10 @@ def static(filepath):
     return static_file(filepath, root="../dist/static")
 
 
+@app.route("/bin/<filepath:path>")
+def send_bin(filepath):
+    return static_file(filepath, root="/sandbox/var/bin")
+
 @app.route("/")
 @app.route("/<path:path>")
 @check_configs

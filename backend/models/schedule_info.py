@@ -11,6 +11,7 @@ class ScheduleInfo(Base):
     run_time = (S)
     script = (dict)
     prerequisites = (dict)
+    bin_path = (S)
     created_by = (S)
     """
     _schema = j.data.schema.get_from_text(_schema_text)
@@ -28,6 +29,7 @@ class ScheduleInfo(Base):
             self._model_obj.script["script"] = kwargs.get("script", [])
             self._model_obj.prerequisites = kwargs["prerequisites"]
             self._model_obj.created_by = kwargs["created_by"]
+            self._model_obj.bin_path = kwargs.get("bin_path")
 
     @property
     def name(self):
@@ -76,3 +78,11 @@ class ScheduleInfo(Base):
     @created_by.setter
     def created_by(self, created_by):
         self._model_obj.created_by = created_by
+
+    @property
+    def bin_path(self):
+        return self._model_obj.bin_path
+
+    @bin_path.setter
+    def bin_path(self, bin_path):
+        self._model_obj.bin_path = bin_path

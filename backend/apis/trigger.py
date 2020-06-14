@@ -19,7 +19,9 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
     status = "pending"
     timestamp = datetime.now().timestamp()
     if id:
+        # Triggered by the button.
         trigger_run = TriggerRun(id=id)
+        triggered_by = request.environ.get("beaker.session").get("username").strip(".3bot")
         data = {
             "timestamp": timestamp,
             "commit": trigger_run.commit,
@@ -27,15 +29,20 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
             "status": status,
             "repo": trigger_run.repo,
             "branch": trigger_run.branch,
+            "triggered_by": triggered_by,
+            "bin_release": None,
             "id": id,
         }
         trigger_run.timestamp = timestamp
         trigger_run.status = status
         trigger_run.result = []
+        trigger_run.triggered_by = triggered_by
+        triggered_by.bin_release = None
         trigger_run.save()
         redis.ltrim(id, -1, 0)
         redis.publish("zeroci_status", json.dumps(data))
     else:
+        # Triggered by vcs webhook.
         if repo in configs.repos:
             data = {
                 "timestamp": timestamp,
@@ -44,6 +51,8 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
                 "status": status,
                 "repo": repo,
                 "branch": branch,
+                "triggered_by": None,
+                "bin_release": None,
             }
             trigger_run = TriggerRun(**data)
             trigger_run.save()
