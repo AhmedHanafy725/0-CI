@@ -13,7 +13,7 @@ class TriggerRun(Base):
     committer** = (S)
     status** = (S)
     bin_release** = no (S)
-    triggered_by** = no (S)
+    triggered_by** = VCS Hook (S)
     result = (dict)
     """
     _schema = j.data.schema.get_from_text(_schema_text)

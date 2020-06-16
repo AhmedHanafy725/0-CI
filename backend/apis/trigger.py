@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import datetime
 
 from redis import Redis
@@ -15,11 +16,11 @@ actions = Actions()
 q = Queue(connection=redis)
 
 
-def trigger(repo="", branch="", commit="", committer="", id=None):
+def trigger(repo="", branch="", commit="", committer="", id=None, triggered=True):
     status = "pending"
     timestamp = datetime.now().timestamp()
     if id:
-        # Triggered by the button.
+        # Triggered from id.
         trigger_run = TriggerRun(id=id)
         triggered_by = request.environ.get("beaker.session").get("username").strip(".3bot")
         data = {
@@ -37,13 +38,20 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
         trigger_run.status = status
         trigger_run.result = []
         trigger_run.triggered_by = triggered_by
-        triggered_by.bin_release = None
+        if trigger_run.bin_release:
+            bin_path = os.path.join("/sandbox/var/bin/", trigger_run.repo, trigger_run.branch, trigger_run.bin_release)
+            if os.path.exists(bin_path):
+                os.remove(bin_path)
+        trigger_run.bin_release = None
         trigger_run.save()
         redis.ltrim(id, -1, 0)
         redis.publish("zeroci_status", json.dumps(data))
     else:
-        # Triggered by vcs webhook.
+        # Triggered from vcs webhook or rebuild using the button.
         if repo in configs.repos:
+            triggered_by = "VCS Hook"
+            if triggered:
+                triggered_by = request.environ.get("beaker.session").get("username").strip(".3bot")
             data = {
                 "timestamp": timestamp,
                 "commit": commit,
@@ -51,7 +59,7 @@ def trigger(repo="", branch="", commit="", committer="", id=None):
                 "status": status,
                 "repo": repo,
                 "branch": branch,
-                "triggered_by": None,
+                "triggered_by": triggered_by,
                 "bin_release": None,
             }
             trigger_run = TriggerRun(**data)
@@ -86,7 +94,7 @@ def git_trigger():
                 committer = request.json["pusher"]["login"]
             branch_exist = not commit.startswith("000000")
             if branch_exist:
-                job = trigger(repo=repo, branch=branch, commit=commit, committer=committer)
+                job = trigger(repo=repo, branch=branch, commit=commit, committer=committer, triggered=False)
                 if job:
                     return Response(job.get_id(), 200)
         return Response("Done", 200)

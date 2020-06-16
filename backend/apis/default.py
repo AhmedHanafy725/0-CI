@@ -9,7 +9,8 @@ def static(filepath):
 
 @app.route("/bin/<filepath:path>")
 def send_bin(filepath):
-    return static_file(filepath, root="/sandbox/var/bin")
+    return static_file(filepath, root="/sandbox/var/bin", download=filepath)
+
 
 @app.route("/")
 @app.route("/<path:path>")

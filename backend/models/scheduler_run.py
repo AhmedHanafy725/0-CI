@@ -10,7 +10,7 @@ class SchedulerRun(Base):
     schedule_name** = (S)
     status** = (S)
     bin_release** = no (S)
-    triggered_by** = no (S)
+    triggered_by** = ZeroCI Scheduler (S)
     result = (dict)
     """
     _schema = j.data.schema.get_from_text(_schema_text)

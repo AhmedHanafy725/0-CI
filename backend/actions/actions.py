@@ -2,6 +2,7 @@ import json
 import os
 import traceback
 from datetime import datetime
+from shutil import move
 
 import redis
 import requests
@@ -199,7 +200,7 @@ class Actions:
                             if response.status_code is not requests.codes.ok:
                                 msg = "Invalid docker image's name "
 
-            bin_path = script.get("binPath")
+            bin_path = script.get("bin_path")
             if bin_path:
                 if not isinstance(bin_path, str):
                     msg = "binPath should be str"
@@ -215,7 +216,7 @@ class Actions:
         self.prerequisites = prerequisites
         self.install_script = install_script
         self.test_script = test_script
-        self.bin_path = bin_path
+        self.bin_remote_path = bin_path
         return True
 
     def _set_clone_script(self):
@@ -240,10 +241,10 @@ class Actions:
             vcs_host=configs.vcs_host,
         )
 
-    def get_store_bin(self):
-        if self.bin_path:
+    def get_bin(self):
+        if self.bin_remote_path:
             model_obj = self.parent_model(id=self.run_id)
-            bin_name = self.bin_path.split(os.path.sep)[-1]
+            bin_name = self.bin_remote_path.split(os.path.sep)[-1]
             if isinstance(model_obj, TriggerRun):
                 release = model_obj.commit[:7]
                 local_path = os.path.join("/sandbox/var/bin/", model_obj.repo, model_obj.branch)
@@ -252,12 +253,22 @@ class Actions:
                 local_path = os.path.join("/sandbox/var/bin/", model_obj.schedule_name)
 
             bin_release = f"{bin_name}_{release}"
+            temp_path = "/sandbox/var/zeroci/bin"
+            if not os.path.exists(temp_path):
+                os.makedirs(temp_path)
+            cmd = f"cp {self.bin_remote_path} /zeroci/bin/{bin_release}"
+            container.execute_command(cmd=cmd, id="", verbose=False)
+
             bin_local_path = os.path.join(local_path, bin_release)
+            temp_bin_path = os.path.join(temp_path, bin_release)
+            if not os.path.exists(temp_bin_path):
+                return
+
             if not os.path.exists(local_path):
                 os.makedirs(local_path)
 
-            found = container.get_remote_file(remote_path=self.bin_path, local_path=bin_local_path)
-            if found:
+            move(temp_bin_path, bin_local_path)
+            if os.path.exists(bin_local_path):
                 model_obj.bin_release = bin_release
                 model_obj.save()
 
@@ -283,7 +294,7 @@ class Actions:
                     if installed:
                         self.test_run()
                         self.cal_status()
-                        self.get_store_bin()
+                        self.get_bin()
                     container.delete()
         reporter.report(id=self.run_id, parent_model=self.parent_model, schedule_name=schedule_name)
 
@@ -295,11 +306,14 @@ class Actions:
         :param script: the script that should run your schedule.
         :type script: str
         """
-        if job.get("triggered_by"):
-            triggered_by = job["triggered_by"]
-        else:
-            triggered_by = job["created_by"]
-        data = {"status": "pending", "timestamp": datetime.now().timestamp(), "schedule_name": job["schedule_name"], "triggered_by": triggered_by, "bin_release": None}
+        triggered_by = job.get("triggered_by", "ZeroCI Scheduler")
+        data = {
+            "status": "pending",
+            "timestamp": datetime.now().timestamp(),
+            "schedule_name": job["schedule_name"],
+            "triggered_by": triggered_by,
+            "bin_release": None,
+        }
         scheduler_run = SchedulerRun(**data)
         scheduler_run.save()
         id = str(scheduler_run.id)

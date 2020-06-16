@@ -27,12 +27,12 @@ class Reporter:
         telegram = Telegram()
         model_obj = parent_model(id=id)
         bin_release = model_obj.bin_release if model_obj.bin_release is not "no" else None
-        triggered_by = model_obj.triggered_by if model_obj.triggered_by is not "no" else None
+        triggered_by = model_obj.triggered_by
         msg = self.report_msg(status=model_obj.status, schedule_name=schedule_name)
         if not schedule_name:
             url = f"/repos/{model_obj.repo}/{model_obj.branch}/{model_obj.id}"
             link = urljoin(configs.domain, url)
-            if bin_release:
+            if bin_release != "no":
                 bin_url = f"/bin/{model_obj.repo}/{model_obj.branch}/{bin_release}"
                 bin_link = urljoin(configs.domain, bin_url)
             else:
@@ -65,7 +65,7 @@ class Reporter:
             unspaced_schedule = model_obj.schedule_name.replace(" ", "%20")
             url = f"/schedules/{unspaced_schedule}/{model_obj.id}"
             link = urljoin(configs.domain, url)
-            if bin_release:
+            if bin_release != "no":
                 bin_url = f"/bin/{unspaced_schedule}/{bin_release}"
                 bin_link = urljoin(configs.domain, bin_url)
             else:

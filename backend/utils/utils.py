@@ -26,7 +26,7 @@ class Utils:
     def random_string(self):
         return "s" + str(uuid4())[:10]
 
-    def write_file(self, text, file_path, append=False, binary=True):
+    def write_file(self, text, file_path, append=False, binary=False):
         """Write result file.
 
         :param text: text will be written to result file.

@@ -36,7 +36,7 @@ class Base:
         for value in values:
             obj = {}
             for i, field in enumerate(fields):
-                if field in ["bin_release", "triggered_by"] and value[i] == "no":
+                if field == "bin_release" and value[i] == "no":
                     obj[field] = None
                 else:
                     obj[field] = value[i]
