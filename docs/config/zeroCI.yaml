@@ -1,6 +1,7 @@
 # For a repository named AhmedHanafy725/test_zeroci
 prerequisites:
-  imageName: ubuntu:18.04
+  image_name: ubuntu:18.04
+  shell_bin: /bin/sh
 
 install: |
   apt-get update; apt-get install -y python3.6 python3-pip

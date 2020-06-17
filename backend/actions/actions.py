@@ -2,13 +2,15 @@ import json
 import os
 import traceback
 from datetime import datetime
-from shutil import move
+from shutil import move, rmtree
+from urllib.parse import urljoin
 
 import redis
 import requests
 import yaml
 
 from deployment.container import Container
+from git import Repo
 from kubernetes.client import V1EnvVar
 from models.initial_config import InitialConfig
 from models.run_config import RunConfig
@@ -29,7 +31,6 @@ class Actions:
     prerequisites = None
     install_script = None
     test_script = None
-    clone_script = None
     parent_model = None
     run_id = None
 
@@ -66,12 +67,11 @@ class Actions:
         """
         model_obj = self.parent_model(id=self.run_id)
         env = self._get_run_env()
-        deployed = container.deploy(env=env, prerequisites=self.prerequisites)
+        repo_paths = self.clone_repo()
+        deployed = container.deploy(env=env, prerequisites=self.prerequisites, repo_paths=repo_paths)
         installed = False
         if deployed:
-            response = container.install_app(
-                id=self.run_id, install_script=self.install_script, clone_script=self.clone_script
-            )
+            response = container.execute_command(cmd=self.install_script, id=self.run_id)
             if response.returncode:
                 name = "Installation"
                 result = response.stdout
@@ -184,12 +184,12 @@ class Actions:
                 if not isinstance(prerequisites, dict):
                     msg = "prerequisites should be dict"
                 else:
-                    image_name = script["prerequisites"].get("imageName")
+                    image_name = script["prerequisites"].get("image_name")
                     if not image_name:
-                        msg = "prerequisites should contain imageName and shouldn't be empty"
+                        msg = "prerequisites should contain image_name and shouldn't be empty"
                     else:
                         if not isinstance(image_name, str):
-                            msg = "imageName should be str"
+                            msg = "image_name should be str"
                         else:
                             if ":" in image_name:
                                 repository, tag = image_name.split(":")
@@ -199,11 +199,16 @@ class Actions:
                             response = requests.get(f"https://index.docker.io/v1/repositories/{repository}/tags/{tag}")
                             if response.status_code is not requests.codes.ok:
                                 msg = "Invalid docker image's name "
+                    
+                    shell_bin = script["prerequisites"].get("shell_bin")
+                    if shell_bin:
+                        if not isinstance(shell_bin, str):
+                            msg = "shell_bin should be str"
 
             bin_path = script.get("bin_path")
             if bin_path:
                 if not isinstance(bin_path, str):
-                    msg = "binPath should be str"
+                    msg = "bin_path should be str"
 
         if msg:
             r.rpush(self.run_id, msg)
@@ -217,30 +222,31 @@ class Actions:
         self.install_script = install_script
         self.test_script = test_script
         self.bin_remote_path = bin_path
+        if shell_bin:
+            container.shell_bin = shell_bin
         return True
 
-    def _set_clone_script(self):
-        """Read zeroCI yaml script from the repo home directory and divide it to prerequisites and (install and test) scripts.
+    def clone_repo(self):
+        """Clone repo.
         """
         configs = InitialConfig()
         model_obj = self.parent_model(id=self.run_id)
-        org_repo_name = model_obj.repo.split("/")[0]
-        self.clone_script = """apt-get update
-        apt-get install -y git
-        mkdir -p {repos_dir}/{org_repo_name}
-        cd {repos_dir}/{org_repo_name}
-        git clone {vcs_host}/{repo}.git --branch {branch}
-        cd {repos_dir}/{repo}
-        git reset --hard {commit}
-        """.format(
-            repos_dir=self._REPOS_DIR,
-            repo=model_obj.repo,
-            branch=model_obj.branch,
-            commit=model_obj.commit,
-            org_repo_name=org_repo_name,
-            vcs_host=configs.vcs_host,
-        )
+        repo_remote_path = os.path.join(self._REPOS_DIR, model_obj.repo)
+        repo_local_path = f"/sandbox/var/repos/{self.run_id}"
+        if not os.path.exists(repo_local_path):
+            os.makedirs(repo_local_path)
+        
+        clone_url = urljoin(configs.vcs_host, f"{model_obj.repo}.git")
+        repo = Repo.clone_from(url=clone_url, to_path=repo_local_path, branch=model_obj.branch)
+        repo.head.reset(model_obj.commit)
+        repo.head.reset("--hard")
+        repo_paths = {"local": repo_local_path, "remote": repo_remote_path}
+        return repo_paths
 
+    def _delete_code(self):
+        repo_local_path = f"/sandbox/var/repos/{self.run_id}"
+        rmtree(repo_local_path)
+        
     def get_bin(self):
         if self.bin_remote_path:
             model_obj = self.parent_model(id=self.run_id)
@@ -283,7 +289,6 @@ class Actions:
         self.run_id = id
         if not schedule_name:
             self.parent_model = TriggerRun
-            self._set_clone_script()
             script = self._load_yaml()
 
         if script:
@@ -296,6 +301,7 @@ class Actions:
                         self.cal_status()
                         self.get_bin()
                     container.delete()
+                    self._delete_code()
         reporter.report(id=self.run_id, parent_model=self.parent_model, schedule_name=schedule_name)
 
     def schedule_run(self, job):

@@ -21,9 +21,12 @@ There are 2 main steps to hook the RUT and make it run against ZeroCI (Github wi
 - Add a file called `zeroCI.yaml` to the home of your repository.
   ![zeroci location](/docs/Images/repo_home.png)
 - This file contains the project's prerequisites, installation script and test script:
-  - `prerequisites`: Docker image name needed to be used for running the project on.
+  - `prerequisites`:
+    - `image_name`: Docker image name needed to be used for running the project on.
+    - `shell_bin`: shell bin path to be used to run commands on container. (default: `/bin/bash`)
   - `install`: list of bash commands required to install the project.
   - `script`: list of bash commands needed to run the tests ([more details](#zeroci-script-configuration)).
+  - `bin_path`: In case that the installation script or test script will generate a binary and need this binary to be in zeroci dashboard.
 
   (**Note:** RUT location will be in `/opt/code/vcs_repos/<organization's name>/<repository's name>`)
 
@@ -70,7 +73,8 @@ See simple [example](./docs/config/zeroCI.yaml)
 - If you want to get a message with the build status on telegram chat, please provide the telegram required info in [ZeroCI configuration](/docs/installation.md#configuration).
 
   ![telegram done](/docs/Images/telegram_done.png)
-- Please press the `Result` button for viewing [result details](#result-details).
+- Please press the `Result` button for viewing [result details](#result-details) and `Bin` for downloading the binary generated if the location of the bin specified in [zeroci.yaml](#1--add-zerociyaml-file-to-the-rut).
+- The name beside `fire emoji` 🔥 for the one who triggers the build (name will be `VCS hook` in case of version control system's hook and `ZeroCI Scheduler` in case of zeroci schedule the job in its time)
 
 ## Result details
 

@@ -25,7 +25,7 @@ class Complete_Executuion:
 class Container(Utils):
     def __init__(self):
         super().__init__()
-        self.node = None
+        self.shell_bin = "/bin/bash"
 
     def redis_push(self, id, content, verbose=True):
         if verbose:
@@ -39,6 +39,10 @@ class Container(Utils):
         :type cmd: str
         :return: subprocess object containing (returncode, stdout)
         """
+        if self.shell_bin in ["/bin/bash", "/bin/sh"]:
+            command = [self.shell_bin, "-ce", cmd]
+        else:
+            command = [self.shell_bin, cmd]
         out = ""
         rc = None
         try:
@@ -46,7 +50,7 @@ class Container(Utils):
                 self.client.connect_get_namespaced_pod_exec,
                 name=self.name,
                 namespace=self.namespace,
-                command=["/bin/bash", "-ce", cmd],
+                command=command,
                 stderr=True,
                 stdin=True,
                 stdout=True,
@@ -98,29 +102,49 @@ class Container(Utils):
             return True
         return False
 
-    def create_pod(self, env, prerequisites):
-        host_path = {"path": "/sandbox/var/zeroci"}
-        mount_path = "/zeroci"
-        vol_name = "bin-path"
-        vol_mount = [client.V1VolumeMount(mount_path=mount_path, name=vol_name)]
-        vol = [client.V1Volume(name=vol_name, host_path=host_path)]
+    def get_zeroci_node(self):
+        pods = self.client.list_namespaced_pod(self.namespace)
+        for pod in pods.items:
+            if "zeroci" in pod.metadata.name:
+                return pod.spec.node_name
+
+    def create_pod(self, env, prerequisites, repo_paths):
+        # zeroci vol
+        zeroci_host_path = {"path": "/sandbox/var/zeroci"}
+        zeroci_mount_path = "/zeroci"
+        zeroci_vol_name = "zeroci-path"
+        zeroci_vol = client.V1Volume(name=zeroci_vol_name, host_path=zeroci_host_path)
+        zeroci_vol_mount = client.V1VolumeMount(mount_path=zeroci_mount_path, name=zeroci_vol_name)
+        # repo vol
+        repo_host_path = {"path": repo_paths["local"]}
+        repo_mount_path = repo_paths["remote"]
+        repo_vol_name = "repo-path"
+        repo_vol = client.V1Volume(name=repo_vol_name, host_path=repo_host_path)
+        repo_vol_mount = client.V1VolumeMount(mount_path=repo_mount_path, name=repo_vol_name)
+
+        vol_mounts = [zeroci_vol_mount, repo_vol_mount]
+        vols = [zeroci_vol, repo_vol]
         ports = client.V1ContainerPort(container_port=22)
         env.append(client.V1EnvVar(name="DEBIAN_FRONTEND", value="noninteractive"))
-        commands = ["/bin/bash", "-ce", "env | grep _ >> /etc/environment && sleep 3600"]
+        if self.shell_bin in ["/bin/bash", "/bin/sh"]:
+            commands = [self.shell_bin, "-ce", "env | grep _ >> /etc/environment && sleep 3600"]
+        else:
+            commands = [self.shell_bin, "env | grep _ >> /etc/environment && sleep 3600"]
         container = client.V1Container(
             name=self.name,
-            image=prerequisites["imageName"],
+            image=prerequisites["image_name"],
             command=commands,
             env=env,
             ports=[ports],
-            volume_mounts=vol_mount,
+            volume_mounts=vol_mounts,
         )
-        spec = client.V1PodSpec(volumes=vol, containers=[container], hostname=self.name, restart_policy="Never")
+        zeroci_node = self.get_zeroci_node()
+        spec = client.V1PodSpec(volumes=vols, containers=[container], hostname=self.name, restart_policy="Never", node_name=zeroci_node)
         meta = client.V1ObjectMeta(name=self.name, namespace=self.namespace, labels={"app": self.name})
         pod = client.V1Pod(api_version="v1", kind="Pod", metadata=meta, spec=spec)
         self.client.create_namespaced_pod(body=pod, namespace=self.namespace)
 
-    def deploy(self, env, prerequisites):
+    def deploy(self, env, prerequisites, repo_paths):
         """Deploy a container on kubernetes cluster.
 
         :param prerequisites: list of prerequisites needed.
@@ -133,7 +157,7 @@ class Container(Utils):
         self.namespace = "default"
         for _ in range(RETRIES):
             try:
-                self.create_pod(env=env, prerequisites=prerequisites)
+                self.create_pod(env=env, prerequisites=prerequisites, repo_paths=repo_paths)
                 self.wait_for_container()
                 break
             except:
@@ -158,24 +182,6 @@ class Container(Utils):
             self.client.delete_namespaced_pod(name=self.name, namespace=self.namespace)
         except:
             pass
-
-    def install_app(self, id, install_script, clone_script=None):
-        """Install application to be tested.
-
-        :param id: DB's id of this run details.
-        :type id: str
-        :param install_script: bash script to install script
-        :type install_script: str
-        :param env: environment variables needed in the installation.
-        :type env: dict
-        """
-        if clone_script:
-            response = self.execute_command(cmd=clone_script, id="", verbose=False)
-
-        if not clone_script or clone_script and not response.returncode:
-            response = self.execute_command(cmd=install_script, id=id)
-
-        return response
 
     def run_test(self, run_cmd, id):
         """Run test command and get the result as xml file if the running command is following junit otherwise result will be log.
