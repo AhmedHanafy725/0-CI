@@ -20,13 +20,13 @@ There are 2 main steps to hook the RUT and make it run against ZeroCI (Github wi
 
 - Add a file called `zeroCI.yaml` to the home of your repository.
   ![zeroci location](/docs/Images/repo_home.png)
-- This file contains the project's prerequisites, installation script and test script:
+- This file contains the project's jobs (serial jobs with maximum 3 jobs) and every job should contain:
   - `prerequisites`:
     - `image_name`: Docker image name needed to be used for running the project on.
-    - `shell_bin`: shell bin path to be used to run commands on container. (default: `/bin/bash`)
+    - `shell_bin`: shell bin path to be used to run commands on container. (default: `/bin/sh`)
   - `install`: list of bash commands required to install the project.
   - `script`: list of bash commands needed to run the tests ([more details](#zeroci-script-configuration)).
-  - `bin_path`: In case that the installation script or test script will generate a binary and need this binary to be in zeroci dashboard.
+  - `bin_path`: In case that the installation script or test script will generate a binary and need this binary to be in zeroci dashboard. This field can be in the first job only and if it is found in the second job, it will be ignored. Also the bin generated in first job will be found in the rest jobs in `/opt/bin`.
 
   (**Note:** RUT location will be in `/opt/code/vcs_repos/<organization's name>/<repository's name>`)
 
@@ -34,13 +34,13 @@ There are 2 main steps to hook the RUT and make it run against ZeroCI (Github wi
 
 See simple [example](./docs/config/zeroCI.yaml)
 
-![zeroci](/docs/Images/zeroci.png)
+
 
 ### 2- Update ZeroCI configuration
 
 - Go to [ZeroCI configuration](/docs/installation.md#configuration).
 - Full name of the repository should be added to repos field.
-- Environment variables can be added on RUT page by clicking on settings(gear shape).
+- Environment variables can be added on RUT page by clicking on settings (⚙️).
 
   (**Note**: Only ZeroCI's admins and users can change this environment varibles)
 

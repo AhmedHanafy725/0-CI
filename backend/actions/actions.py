@@ -2,7 +2,7 @@ import json
 import os
 import traceback
 from datetime import datetime
-from shutil import move, rmtree
+from shutil import rmtree, copyfile
 from urllib.parse import urljoin
 
 import redis
@@ -19,6 +19,7 @@ from models.trigger_run import TriggerRun
 from packages.vcs.vcs import VCSFactory
 from utils.reporter import Reporter
 from utils.utils import Utils
+from actions.yaml_validation import Validator
 
 container = Container()
 reporter = Reporter()
@@ -26,20 +27,17 @@ utils = Utils()
 r = redis.Redis()
 
 
-class Actions:
+class Actions(Validator):
     _REPOS_DIR = "/opt/code/vcs_repos"
-    prerequisites = None
-    install_script = None
-    test_script = None
     parent_model = None
     run_id = None
 
-    def test_run(self):
+    def test_run(self, job):
         """Runs tests and store the result in DB.
         """
         model_obj = self.parent_model(id=self.run_id)
         status = "success"
-        for i, line in enumerate(self.test_script):
+        for line in job["script"]:
             status = "success"
             response, file_path = container.run_test(id=self.run_id, run_cmd=line["cmd"])
             result = response.stdout
@@ -54,39 +52,37 @@ class Actions:
                     pass
                 os.remove(file_path)
 
-            model_obj.result.append({"type": type, "status": status, "name": line["name"], "content": result})
+            name = "{job_name}: {test_name}".format(job_name=job["name"], test_name=line["name"])
+            model_obj.result.append({"type": type, "status": status, "name": name, "content": result})
             model_obj.save()
-            if i + 1 == len(self.test_script):
-                r.rpush(self.run_id, "hamada ok")
             if response.returncode in [137, 124]:
-                r.rpush(self.run_id, "hamada ok")
-                break
+                return False
+        return True
 
-    def build(self):
+    def build(self, job, repo_paths, job_number):
         """Create VM with the required prerequisties and run installation steps to get it ready for running tests.
         """
         model_obj = self.parent_model(id=self.run_id)
         env = self._get_run_env()
-        repo_paths = self.clone_repo()
-        deployed = container.deploy(env=env, prerequisites=self.prerequisites, repo_paths=repo_paths)
+        deployed = container.deploy(env=env, prerequisites=job["prerequisites"], repo_paths=repo_paths)
         installed = False
         if deployed:
-            response = container.execute_command(cmd=self.install_script, id=self.run_id)
+            if job_number != 0:
+                self._set_bin()
+            response = container.execute_command(cmd=job["install"], id=self.run_id)
             if response.returncode:
-                name = "Installation"
+                name = "{job_name}: Installation".format(job_name=job["name"])
                 result = response.stdout
             else:
                 installed = True
         else:
-            name = "Deploy"
+            name = "{job_name}: Deploy".format(job_name=job["name"])
             result = "Couldn't deploy a container"
             r.rpush(self.run_id, result)
 
         if not deployed or not installed:
-            r.rpush(self.run_id, "hamada ok")
             model_obj.result.append({"type": "log", "status": "error", "name": name, "content": result})
             model_obj.save()
-            self.cal_status()
 
         return deployed, installed
 
@@ -135,96 +131,9 @@ class Actions:
             msg = "zeroCI.yaml is not found on the repository's home"
 
         r.rpush(self.run_id, msg)
-        r.rpush(self.run_id, "hamada ok")
         model_obj.result.append({"type": "log", "status": "error", "name": "Yaml File", "content": msg})
         model_obj.save()
-        self.cal_status()
         return False
-
-    def _validate_yaml(self, script):
-        model_obj = self.parent_model(id=self.run_id)
-        msg = ""
-
-        if not msg:
-            test_script = script.get("script")
-            if not test_script:
-                msg = "script should be in yaml file and shouldn't be empty"
-            else:
-                if not isinstance(test_script, list):
-                    msg = "script should be list"
-                else:
-                    for item in test_script:
-                        if not isinstance(item, dict):
-                            msg = "Every element in script should be dict"
-                        else:
-                            name = item.get("name")
-                            if not name:
-                                msg = "Every element in script should conttain a name"
-                            else:
-                                if not isinstance(name, str):
-                                    msg = "Eveey name in script should be str"
-                            cmd = item.get("cmd")
-                            if not cmd:
-                                msg = "Every element in script should conttain a cmd"
-                            else:
-                                if not isinstance(cmd, str):
-                                    msg = "Eveey cmd in script should be str"
-
-            install_script = script.get("install")
-            if not install_script:
-                msg = "install should be in yaml file and shouldn't be empty"
-            else:
-                if not isinstance(install_script, str):
-                    msg = "install should be str"
-
-            prerequisites = script.get("prerequisites")
-            if not prerequisites:
-                msg = "prerequisites should be in yaml file and shouldn't be empty"
-            else:
-                if not isinstance(prerequisites, dict):
-                    msg = "prerequisites should be dict"
-                else:
-                    image_name = script["prerequisites"].get("image_name")
-                    if not image_name:
-                        msg = "prerequisites should contain image_name and shouldn't be empty"
-                    else:
-                        if not isinstance(image_name, str):
-                            msg = "image_name should be str"
-                        else:
-                            if ":" in image_name:
-                                repository, tag = image_name.split(":")
-                            else:
-                                repository = image_name
-                                tag = "latest"
-                            response = requests.get(f"https://index.docker.io/v1/repositories/{repository}/tags/{tag}")
-                            if response.status_code is not requests.codes.ok:
-                                msg = "Invalid docker image's name "
-                    
-                    shell_bin = script["prerequisites"].get("shell_bin")
-                    if shell_bin:
-                        if not isinstance(shell_bin, str):
-                            msg = "shell_bin should be str"
-
-            bin_path = script.get("bin_path")
-            if bin_path:
-                if not isinstance(bin_path, str):
-                    msg = "bin_path should be str"
-
-        if msg:
-            r.rpush(self.run_id, msg)
-            r.rpush(self.run_id, "hamada ok")
-            model_obj.result.append({"type": "log", "status": "error", "name": "Yaml File", "content": msg})
-            model_obj.save()
-            self.cal_status()
-            return False
-
-        self.prerequisites = prerequisites
-        self.install_script = install_script
-        self.test_script = test_script
-        self.bin_remote_path = bin_path
-        if shell_bin:
-            container.shell_bin = shell_bin
-        return True
 
     def clone_repo(self):
         """Clone repo.
@@ -235,7 +144,7 @@ class Actions:
         repo_local_path = f"/sandbox/var/repos/{self.run_id}"
         if not os.path.exists(repo_local_path):
             os.makedirs(repo_local_path)
-        
+
         clone_url = urljoin(configs.vcs_host, f"{model_obj.repo}.git")
         repo = Repo.clone_from(url=clone_url, to_path=repo_local_path, branch=model_obj.branch)
         repo.head.reset(model_obj.commit)
@@ -246,37 +155,56 @@ class Actions:
     def _delete_code(self):
         repo_local_path = f"/sandbox/var/repos/{self.run_id}"
         rmtree(repo_local_path)
-        
-    def get_bin(self):
-        if self.bin_remote_path:
-            model_obj = self.parent_model(id=self.run_id)
-            bin_name = self.bin_remote_path.split(os.path.sep)[-1]
-            if isinstance(model_obj, TriggerRun):
-                release = model_obj.commit[:7]
-                local_path = os.path.join("/sandbox/var/bin/", model_obj.repo, model_obj.branch)
-            else:
-                release = str(datetime.fromtimestamp(model_obj.timestamp)).replace(" ", "_")[:16]
-                local_path = os.path.join("/sandbox/var/bin/", model_obj.schedule_name)
 
-            bin_release = f"{bin_name}_{release}"
+        model_obj = self.parent_model(id=self.run_id)
+        if model_obj.bin_release:
             temp_path = "/sandbox/var/zeroci/bin"
-            if not os.path.exists(temp_path):
-                os.makedirs(temp_path)
-            cmd = f"cp {self.bin_remote_path} /zeroci/bin/{bin_release}"
-            container.execute_command(cmd=cmd, id="", verbose=False)
+            temp_bin_path = os.path.join(temp_path, model_obj.bin_release)
+            os.remove(temp_bin_path)
 
-            bin_local_path = os.path.join(local_path, bin_release)
-            temp_bin_path = os.path.join(temp_path, bin_release)
+    def _prepare_bin_dirs(self, bin_remote_path):
+        model_obj = self.parent_model(id=self.run_id)
+        bin_name = bin_remote_path.split(os.path.sep)[-1]
+        if isinstance(model_obj, TriggerRun):
+            release = model_obj.commit[:7]
+            local_path = os.path.join("/sandbox/var/bin/", model_obj.repo, model_obj.branch)
+        else:
+            release = str(datetime.fromtimestamp(model_obj.timestamp)).replace(" ", "_")[:16]
+            local_path = os.path.join("/sandbox/var/bin/", model_obj.schedule_name)
+
+        bin_release = f"{bin_name}_{release}"
+        bin_local_path = os.path.join(local_path, bin_release)
+        if not os.path.exists(local_path):
+            os.makedirs(local_path)
+
+        temp_path = "/sandbox/var/zeroci/bin"
+        temp_bin_path = os.path.join(temp_path, bin_release)
+        if not os.path.exists(temp_path):
+            os.makedirs(temp_path)
+
+        return bin_local_path, temp_bin_path
+
+    def _get_bin(self, bin_remote_path, job_number):
+        if bin_remote_path and job_number == 0:
+            model_obj = self.parent_model(id=self.run_id)
+            bin_local_path, temp_bin_path = self._prepare_bin_dirs(bin_remote_path)
+            bin_release = bin_local_path.split(os.path.sep)[-1]
+            cmd = f"cp {bin_remote_path} /zeroci/bin/{bin_release}"
+            container.execute_command(cmd=cmd, id="", verbose=False)
             if not os.path.exists(temp_bin_path):
                 return
 
-            if not os.path.exists(local_path):
-                os.makedirs(local_path)
-
-            move(temp_bin_path, bin_local_path)
+            copyfile(temp_bin_path, bin_local_path)
             if os.path.exists(bin_local_path):
                 model_obj.bin_release = bin_release
                 model_obj.save()
+
+    def _set_bin(self):
+        model_obj = self.parent_model(id=self.run_id)
+        if model_obj.bin_release:
+            bin = model_obj.bin_release.split("_")[0]
+            cmd = f"mkdir /opt/bin/; cp /zeroci/bin/{model_obj.bin_release} /opt/bin/{bin}"
+            container.execute_command(cmd=cmd, id="", verbose=False)
 
     def build_and_test(self, id, schedule_name=None, script=None):
         """Builds, runs tests, calculates status and gives report on telegram and your version control system.
@@ -290,18 +218,33 @@ class Actions:
         if not schedule_name:
             self.parent_model = TriggerRun
             script = self._load_yaml()
-
         if script:
-            valid = self._validate_yaml(script)
+            valid = self.validate_yaml(run_id=self.run_id, parent_model=self.parent_model, script=script)
             if valid:
-                deployed, installed = self.build()
-                if deployed:
-                    if installed:
-                        self.test_run()
-                        self.cal_status()
-                        self.get_bin()
-                    container.delete()
-                    self._delete_code()
+                repo_paths = self.clone_repo()
+                worked = deployed = installed = True
+                for i, job in enumerate(script["jobs"]):
+                    if not (worked and deployed and installed):
+                        break
+                    log = """
+                    ******************************************************
+                    Starting {job_name} job
+                    ******************************************************
+                    """.format(
+                        job_name=job["name"]
+                    ).replace(
+                        "  ", ""
+                    )
+                    r.rpush(self.run_id, log)
+                    deployed, installed = self.build(job=job, repo_paths=repo_paths, job_number=i)
+                    if deployed:
+                        if installed:
+                            worked = self.test_run(job=job)
+                            self._get_bin(bin_remote_path=job.get("bin_path"), job_number=i)
+                        container.delete()
+                self._delete_code()
+        r.rpush(self.run_id, "hamada ok")
+        self.cal_status()
         reporter.report(id=self.run_id, parent_model=self.parent_model, schedule_name=schedule_name)
 
     def schedule_run(self, job):

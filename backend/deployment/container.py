@@ -25,7 +25,7 @@ class Complete_Executuion:
 class Container(Utils):
     def __init__(self):
         super().__init__()
-        self.shell_bin = "/bin/bash"
+        self.shell_bin = "/bin/sh"
 
     def redis_push(self, id, content, verbose=True):
         if verbose:
@@ -59,7 +59,7 @@ class Container(Utils):
             )
         except:
             out += "Couldn't run on the testing container, container become unreachable"
-            self.redis_push(id, out)
+            self.redis_push(id, out, verbose=verbose)
             rc = 137
             return Complete_Executuion(rc, out)
 
@@ -69,18 +69,18 @@ class Container(Utils):
                 content = response.read_stdout(timeout=600)
             except:
                 msg = "\nConnectionError: Couldn't execute cmd on the runner"
-                self.redis_push(id, msg)
+                self.redis_push(id, msg, verbose=verbose)
                 out += msg
                 rc = 124
                 break
             end = time.time()
             time_taken = end - start
             if content:
-                self.redis_push(id, content)
+                self.redis_push(id, content, verbose=verbose)
                 out += content
             elif time_taken > 590:
                 msg = "\nTimeout exceeded 10 mins with no output"
-                self.redis_push(id, msg)
+                self.redis_push(id, msg, verbose=verbose)
                 out += msg
                 rc = 124
                 response.close()
@@ -90,7 +90,7 @@ class Container(Utils):
             rc = response.returncode
         if rc == 137:
             msg = "Runner expired (job takes more than 1 hour)"
-            self.redis_push(id, msg)
+            self.redis_push(id, msg, verbose=verbose)
             out += msg
 
         return Complete_Executuion(rc, out)
@@ -139,7 +139,9 @@ class Container(Utils):
             volume_mounts=vol_mounts,
         )
         zeroci_node = self.get_zeroci_node()
-        spec = client.V1PodSpec(volumes=vols, containers=[container], hostname=self.name, restart_policy="Never", node_name=zeroci_node)
+        spec = client.V1PodSpec(
+            volumes=vols, containers=[container], hostname=self.name, restart_policy="Never", node_name=zeroci_node
+        )
         meta = client.V1ObjectMeta(name=self.name, namespace=self.namespace, labels={"app": self.name})
         pod = client.V1Pod(api_version="v1", kind="Pod", metadata=meta, spec=spec)
         self.client.create_namespaced_pod(body=pod, namespace=self.namespace)
@@ -155,6 +157,8 @@ class Container(Utils):
         self.client = client.CoreV1Api()
         self.name = self.random_string()
         self.namespace = "default"
+        if prerequisites.get("shell_bin"):
+            self.shell_bin = prerequisites["shell_bin"]
         for _ in range(RETRIES):
             try:
                 self.create_pod(env=env, prerequisites=prerequisites, repo_paths=repo_paths)
