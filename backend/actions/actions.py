@@ -157,7 +157,7 @@ class Actions(Validator):
         rmtree(repo_local_path)
 
         model_obj = self.parent_model(id=self.run_id)
-        if model_obj.bin_release:
+        if model_obj.bin_release != "no":
             temp_path = "/sandbox/var/zeroci/bin"
             temp_bin_path = os.path.join(temp_path, model_obj.bin_release)
             os.remove(temp_bin_path)
@@ -201,7 +201,7 @@ class Actions(Validator):
 
     def _set_bin(self):
         model_obj = self.parent_model(id=self.run_id)
-        if model_obj.bin_release:
+        if model_obj.bin_release != "no":
             bin = model_obj.bin_release.split("_")[0]
             cmd = f"mkdir /opt/bin/; cp /zeroci/bin/{model_obj.bin_release} /opt/bin/{bin}"
             container.execute_command(cmd=cmd, id="", verbose=False)
