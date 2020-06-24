@@ -12,6 +12,17 @@ class InitialConfigModel(Document):
     vcs_host = fields.String()
     vcs_token = fields.String()
 
+    @property
+    def vcs_type(self):
+        return self._get_vcs_type(self.vcs_host)
+
+    def _get_vcs_type(self, vcs_host):
+        if "github" in vcs_host:
+            vcs_type = "github"
+        else:
+            vcs_type = "gitea"
+        return vcs_type
+
 
 class InitialConfig(ModelFactory):
     _model = StoredFactory(InitialConfigModel)

@@ -56,10 +56,7 @@ class ModelFactory:
                 objects.append(cls._model.find(name))
 
         if order_by:
-            objects.sort(key=lambda x: getattr(x, order_by))
-
-        if not asc:
-            objects.sort(reverse=True)
+            objects.sort(key=lambda x: getattr(x, order_by), reverse=not asc)
 
         results = []
         for obj in objects:

@@ -23,7 +23,8 @@ PRIV_KEY = nacl.signing.SigningKey.generate()
 def login():
     provider = request.query.get("provider")
     session = request.environ.get("beaker.session")
-    next_url = request.query.get("next_url", session.get("next_url"))
+    next_url = request.query.get("next_url", "/")
+
     public_key = PRIV_KEY.verify_key
     if provider and provider == "3bot":
         state = utils.random_string()
@@ -91,7 +92,7 @@ def threebot_callback():
     ciphertext = base64.b64decode(data["data"]["ciphertext"])
 
     try:
-        box = Box(PRIV_KEY.to_curve25519_private_key(), pub_key.to_curve25519_public_key())
+        box = Box(PRIV_KEY.to_curve25519_private_key(), user_pub_key.to_curve25519_public_key())
         decrypted = box.decrypt(ciphertext, nonce)
     except nacl.exceptions.CryptoError:
         return abort(400, "Error decrypting data")

@@ -24,7 +24,7 @@ class Utils:
         return CompletedProcess(process.args, returncode=retruncode, stdout=stdout, stderr=stderr)
 
     def random_string(self):
-        return "s" + str(uuid4())[:10]
+        return "s" + str(uuid4())[:10].replace("-", "")
 
     def write_file(self, text, file_path, append=False, binary=False):
         """Write result file.
