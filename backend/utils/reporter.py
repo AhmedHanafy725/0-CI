@@ -25,7 +25,7 @@ class Reporter:
         """
         configs = InitialConfig()
         telegram = Telegram()
-        model_obj = parent_model(id=id)
+        model_obj = parent_model.get(id=id)
         bin_release = model_obj.bin_release if model_obj.bin_release is not "no" else None
         triggered_by = model_obj.triggered_by
         msg = self.report_msg(status=model_obj.status, schedule_name=schedule_name)

@@ -15,7 +15,7 @@ from kubernetes.client import V1EnvVar
 from models.initial_config import InitialConfig
 from models.run_config import RunConfig
 from models.scheduler_run import SchedulerRun
-from models.trigger_run import TriggerRun
+from models.trigger_run import TriggerRun, TriggerModel
 from packages.vcs.vcs import VCSFactory
 from utils.reporter import Reporter
 from utils.utils import Utils
@@ -35,7 +35,7 @@ class Actions(Validator):
     def test_run(self, job):
         """Runs tests and store the result in DB.
         """
-        model_obj = self.parent_model(id=self.run_id)
+        model_obj = self.parent_model.get(id=self.run_id)
         status = "success"
         for line in job["script"]:
             status = "success"
@@ -62,7 +62,7 @@ class Actions(Validator):
     def build(self, job, repo_paths, job_number):
         """Create VM with the required prerequisties and run installation steps to get it ready for running tests.
         """
-        model_obj = self.parent_model(id=self.run_id)
+        model_obj = self.parent_model.get(id=self.run_id)
         env = self._get_run_env()
         deployed = container.deploy(env=env, prerequisites=job["prerequisites"], repo_paths=repo_paths)
         installed = False
@@ -89,7 +89,7 @@ class Actions(Validator):
     def cal_status(self):
         """Calculate the status of the whole tests result has been stored on the BD's id.
         """
-        model_obj = self.parent_model(id=self.run_id)
+        model_obj = self.parent_model.get(id=self.run_id)
         status = "success"
         for result in model_obj.result:
             if result["status"] != "success":
@@ -100,17 +100,12 @@ class Actions(Validator):
     def _get_run_env(self):
         """Get run environment variables.
         """
-        model_obj = self.parent_model(id=self.run_id)
-        if isinstance(model_obj, TriggerRun):
+        model_obj = self.parent_model.get(id=self.run_id)
+        if isinstance(model_obj, TriggerModel):
             name = model_obj.repo
         else:
             name = model_obj.schedule_name
-        run_config = RunConfig.find(name=name)
-        if run_config and len(run_config) == 1:
-            run_config = run_config[0]
-        else:
-            run_config = RunConfig(name=name)
-
+        run_config = RunConfig(name=name)
         run_env = run_config.env
         env = []
         for key in run_env.keys():
@@ -119,7 +114,7 @@ class Actions(Validator):
         return env
 
     def _load_yaml(self):
-        model_obj = self.parent_model(id=self.run_id)
+        model_obj = self.parent_model.get(id=self.run_id)
         vcs_obj = VCSFactory().get_cvn(repo=model_obj.repo)
         script = vcs_obj.get_content(ref=model_obj.commit, file_path="zeroCI.yaml")
         if script:
@@ -139,7 +134,7 @@ class Actions(Validator):
         """Clone repo.
         """
         configs = InitialConfig()
-        model_obj = self.parent_model(id=self.run_id)
+        model_obj = self.parent_model.get(id=self.run_id)
         repo_remote_path = os.path.join(self._REPOS_DIR, model_obj.repo)
         repo_local_path = f"/sandbox/var/repos/{self.run_id}"
         if not os.path.exists(repo_local_path):
@@ -156,16 +151,16 @@ class Actions(Validator):
         repo_local_path = f"/sandbox/var/repos/{self.run_id}"
         rmtree(repo_local_path)
 
-        model_obj = self.parent_model(id=self.run_id)
+        model_obj = self.parent_model.get(id=self.run_id)
         if model_obj.bin_release != "no":
             temp_path = "/sandbox/var/zeroci/bin"
             temp_bin_path = os.path.join(temp_path, model_obj.bin_release)
             os.remove(temp_bin_path)
 
     def _prepare_bin_dirs(self, bin_remote_path):
-        model_obj = self.parent_model(id=self.run_id)
+        model_obj = self.parent_model.get(id=self.run_id)
         bin_name = bin_remote_path.split(os.path.sep)[-1]
-        if isinstance(model_obj, TriggerRun):
+        if isinstance(model_obj, TriggerModel):
             release = model_obj.commit[:7]
             local_path = os.path.join("/sandbox/var/bin/", model_obj.repo, model_obj.branch)
         else:
@@ -186,7 +181,7 @@ class Actions(Validator):
 
     def _get_bin(self, bin_remote_path, job_number):
         if bin_remote_path and job_number == 0:
-            model_obj = self.parent_model(id=self.run_id)
+            model_obj = self.parent_model.get(id=self.run_id)
             bin_local_path, temp_bin_path = self._prepare_bin_dirs(bin_remote_path)
             bin_release = bin_local_path.split(os.path.sep)[-1]
             cmd = f"cp {bin_remote_path} /zeroci/bin/{bin_release}"
@@ -200,7 +195,7 @@ class Actions(Validator):
                 model_obj.save()
 
     def _set_bin(self):
-        model_obj = self.parent_model(id=self.run_id)
+        model_obj = self.parent_model.get(id=self.run_id)
         if model_obj.bin_release != "no":
             bin = model_obj.bin_release.split("_")[0]
             cmd = f"mkdir /opt/bin/; cp /zeroci/bin/{model_obj.bin_release} /opt/bin/{bin}"

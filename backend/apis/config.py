@@ -170,11 +170,7 @@ def apply_config():
 @user
 @check_configs
 def run_config(name):
-    run_config = RunConfig.find(name=name)
-    if run_config and len(run_config) == 1:
-        run_config = run_config[0]
-    else:
-        run_config = RunConfig(name=name)
+    run_config = RunConfig(name=name)
     if request.method == "POST":
         key = request.json["key"]
         value = request.json["value"]

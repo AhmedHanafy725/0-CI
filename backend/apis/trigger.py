@@ -21,7 +21,7 @@ def trigger(repo="", branch="", commit="", committer="", id=None, triggered=True
     timestamp = datetime.now().timestamp()
     if id:
         # Triggered from id.
-        trigger_run = TriggerRun(id=id)
+        trigger_run = TriggerRun.get(id=id)
         triggered_by = request.environ.get("beaker.session").get("username").strip(".3bot")
         data = {
             "timestamp": timestamp,
@@ -111,9 +111,8 @@ def run_trigger():
     if request.headers.get("Content-Type") == "application/json":
         id = request.json.get("id")
         if id:
-            where = f'id="{id}" and status="pending"'
-            run = TriggerRun.get_objects(fields=["status"], where=where)
-            if run:
+            run = TriggerRun.get(id=id)
+            if run.status == "pending":
                 return Response(
                     f"There is a running job for this id {id}, please try again after this run finishes", 503
                 )
@@ -125,8 +124,8 @@ def run_trigger():
         vcs_obj = VCSFactory().get_cvn(repo=repo)
         last_commit = vcs_obj.get_last_commit(branch=branch)
         committer = vcs_obj.get_committer(commit=last_commit)
-        where = f'repo="{repo}" and branch="{branch}" and [commit]="{last_commit}" and status="pending"'
-        run = TriggerRun.get_objects(fields=["status"], where=where)
+        where = {"repo": repo, "branch": branch, "commit": last_commit, "status": "pending"}
+        run = TriggerRun.get_objects(fields=["status"], **where)
         if run:
             return Response(
                 f"There is a running job from this commit {last_commit}, please try again after this run finishes", 503

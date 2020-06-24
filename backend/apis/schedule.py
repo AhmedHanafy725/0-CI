@@ -22,7 +22,7 @@ def schedule():
     if request.method == "GET":
         schedule_name = request.query.get("schedule_name")
         if schedule_name:
-            schedule_info = ScheduleInfo(name=schedule_name)
+            schedule_info = ScheduleInfo.get_by_name(name=schedule_name)
             info = {
                 "schedule_name": schedule_name,
                 "install": schedule_info.install,
@@ -33,7 +33,7 @@ def schedule():
             }
             return json.dumps(info)
 
-        schedules_names = ScheduleInfo.distinct("name")
+        schedules_names = ScheduleInfo.list_all()
         return json.dumps(schedules_names)
 
     if request.headers.get("Content-Type") == "application/json":
@@ -54,7 +54,7 @@ def schedule():
             created_by = request.environ.get("beaker.session").get("username").strip(".3bot")
             job["created_by"] = created_by
 
-            if job["schedule_name"] in ScheduleInfo.distinct("name"):
+            if job["schedule_name"] in ScheduleInfo.list_all():
                 return Response(f"Schedule name {job['schedule_name']} is already used", 400)
 
             schedule_info = ScheduleInfo(**job)
@@ -72,7 +72,7 @@ def schedule():
             return Response("Added", 201)
         else:
             schedule_name = request.json.get("schedule_name")
-            schedule_info = ScheduleInfo(name=schedule_name)
+            schedule_info = ScheduleInfo.get_by_name(name=schedule_name)
             schedule_info.delete()
             scheduler.cancel(schedule_name)
             return Response("Removed", 200)
@@ -89,17 +89,17 @@ def schedule_trigger():
     if request.headers.get("Content-Type") == "application/json":
         schedule_name = request.json.get("schedule_name")
 
-        where = f'schedule_name="{schedule_name}"'
-        runs = SchedulerRun.get_objects(fields=["status"], where=where, order_by="timestamp", asc=False)
+        where = {"schedule_name": schedule_name}
+        runs = SchedulerRun.get_objects(fields=["status"], order_by="timestamp", asc=False, **where)
         if runs and runs[0]["status"] == "pending":
             return Response(
                 f"There is a running job from this schedule {schedule_name}, please try again after this run finishes",
                 503,
             )
-        if schedule_name not in ScheduleInfo.distinct("name"):
+        if schedule_name not in ScheduleInfo.list_all():
             return Response(f"Schedule name {schedule_name} is not found", 400)
 
-        schedule_info = ScheduleInfo(name=schedule_name)
+        schedule_info = ScheduleInfo.get_by_name(name=schedule_name)
         job = {
             "schedule_name": schedule_name,
             "prerequisites": schedule_info.prerequisites,

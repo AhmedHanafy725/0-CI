@@ -89,7 +89,7 @@ class Validator:
         return msg
 
     def _report(self, run_id, parent_model, msg):
-        model_obj = parent_model(id=run_id)
+        model_obj = parent_model.get(id=run_id)
         redis.rpush(run_id, msg)
         model_obj.result.append({"type": "log", "status": "error", "name": "Yaml File", "content": msg})
         model_obj.save()
