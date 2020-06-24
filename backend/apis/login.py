@@ -1,39 +1,126 @@
+import base64
 import json
+from urllib.parse import urlencode
 
-from apis.base import PROVIDERS, app, bot_app, oauth_app, configs
+import nacl
+import requests
+from nacl.public import Box
+from nacl.signing import VerifyKey
+
+from apis.base import app, configs
 from bottle import abort, redirect, request
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+from utils.utils import Utils
 
-env = Environment(loader=FileSystemLoader("../dist"), autoescape=select_autoescape(["html", "xml"]))
+CALLBACK_URL = "/auth/3bot_callback"
+REDIRECT_URL = "https://login.threefold.me"
+
+
+utils = Utils()
+PRIV_KEY = nacl.signing.SigningKey.generate()
 
 
 @app.route("/auth/login")
 def login():
     provider = request.query.get("provider")
-
-    if provider:
-        if provider == "3bot":
-            next_url = request.query.get("next_url")
-            if next_url:
-                bot_app.session["next_url"] = next_url
-            return bot_app.login(request.headers["HOST"], "/auth/3bot_callback")
-
-        redirect_url = f"https://{request.headers['HOST']}/auth/oauth_callback"
-        return oauth_app.login(provider, redirect_url=redirect_url)
-
-    return env.get_template("login.html").render(providers=PROVIDERS)
+    session = request.environ.get("beaker.session")
+    next_url = request.query.get("next_url", session.get("next_url"))
+    public_key = PRIV_KEY.verify_key
+    if provider and provider == "3bot":
+        state = utils.random_string()
+        session["next_url"] = next_url
+        session["state"] = state
+        app_id = request.get_header("host")
+        params = {
+            "state": state,
+            "appid": app_id,
+            "scope": json.dumps({"user": True, "email": True}),
+            "redirecturl": CALLBACK_URL,
+            "publickey": public_key.to_curve25519_public_key().encode(encoder=nacl.encoding.Base64Encoder).decode(),
+        }
+        params = urlencode(params)
+        return redirect(f"{REDIRECT_URL}?{params}", code=302)
 
 
 @app.route("/auth/3bot_callback")
 def threebot_callback():
-    bot_app.callback()
+    session = request.environ.get("beaker.session")
+    data = request.query.get("signedAttempt")
 
+    if not data:
+        return abort(400, "signedAttempt parameter is missing")
 
-@app.route("/auth/oauth_callback")
-def oauth_callback():
-    user_info = oauth_app.callback()
-    oauth_app.session["email"] = user_info["email"]
-    return redirect(oauth_app.next_url)
+    data = json.loads(data)
+
+    if "signedAttempt" not in data:
+        return abort(400, "signedAttempt value is missing")
+
+    username = data["doubleName"]
+
+    if not username:
+        return abort(400, "DoubleName is missing")
+
+    res = requests.get(f"https://login.threefold.me/api/users/{username}", {"Content-Type": "application/json"})
+    if res.status_code != 200:
+        return abort(400, "Error getting user pub key")
+    pub_key = res.json()["publicKey"]
+
+    user_pub_key = VerifyKey(base64.b64decode(pub_key))
+
+    # verify data
+    signedData = data["signedAttempt"]
+
+    verifiedData = user_pub_key.verify(base64.b64decode(signedData)).decode()
+
+    data = json.loads(verifiedData)
+
+    if "doubleName" not in data:
+        return abort(400, "Decrypted data does not contain (doubleName)")
+
+    if "signedState" not in data:
+        return abort(400, "Decrypted data does not contain (state)")
+
+    if data["doubleName"] != username:
+        return abort(400, "username mismatch!")
+
+    # verify state
+    state = data["signedState"]
+    if state != session["state"]:
+        return abort(400, "Invalid state. not matching one in user session")
+
+    nonce = base64.b64decode(data["data"]["nonce"])
+    ciphertext = base64.b64decode(data["data"]["ciphertext"])
+
+    try:
+        box = Box(PRIV_KEY.to_curve25519_private_key(), pub_key.to_curve25519_public_key())
+        decrypted = box.decrypt(ciphertext, nonce)
+    except nacl.exceptions.CryptoError:
+        return abort(400, "Error decrypting data")
+
+    try:
+        result = json.loads(decrypted)
+    except json.JSONDecodeError:
+        return abort(400, "3bot login returned faulty data")
+
+    if "email" not in result:
+        return abort(400, "Email is not present in data")
+
+    email = result["email"]["email"]
+
+    sei = result["email"]["sei"]
+    res = requests.post(
+        "https://openkyc.live/verification/verify-sei",
+        headers={"Content-Type": "application/json"},
+        json={"signedEmailIdentifier": sei},
+    )
+
+    if res.status_code != 200:
+        return abort(400, "Email is not verified")
+
+    session["username"] = username
+    session["email"] = email
+    session["authorized"] = True
+    session["signedAttempt"] = signedData
+    return redirect(session.get("next_url", "/"))
 
 
 @app.route("/auth/logout")

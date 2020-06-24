@@ -1,13 +1,23 @@
 from bottle import Bottle, Response, abort, redirect, request, response
-from Jumpscale import j
 from models.initial_config import InitialConfig
+from functools import wraps
 
 app = Bottle()
 configs = InitialConfig()
-client = j.clients.oauth_proxy.get("zeroci")
-oauth_app = j.tools.oauth_proxy.get(app, client, "/auth/login")
-bot_app = j.tools.threebotlogin_proxy.get(app, "/auth/login")
-PROVIDERS = list(client.providers_list())
+
+LOGIN_URL = "/auth/login"
+
+
+def login_required(func):
+    @wraps(func)
+    def decorator(*args, **kwargs):
+        session = request.environ.get("beaker.session")
+        if not session.get("authorized", False):
+            session["next_url"] = request.url
+            return redirect(LOGIN_URL)
+        return func(*args, **kwargs)
+
+    return decorator
 
 
 def check_configs(func):
@@ -20,7 +30,7 @@ def check_configs(func):
 
 
 def user(func):
-    @oauth_app.login_required
+    @login_required
     def wrapper(*args, **kwargs):
         username = request.environ.get("beaker.session").get("username")
         if not (username in configs.users or (configs.admins and (username in configs.admins))):
@@ -31,7 +41,7 @@ def user(func):
 
 
 def admin(func):
-    @oauth_app.login_required
+    @login_required
     def wrapper(*args, **kwargs):
         username = request.environ.get("beaker.session").get("username")
         if configs.admins and (not username in configs.admins):
