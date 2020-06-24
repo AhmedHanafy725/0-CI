@@ -88,8 +88,7 @@ class Validator:
 
         return msg
 
-    def _report(self, run_id, parent_model, msg):
-        model_obj = parent_model.get(id=run_id)
+    def _report(self, run_id, model_obj, msg):
         redis.rpush(run_id, msg)
         model_obj.result.append({"type": "log", "status": "error", "name": "Yaml File", "content": msg})
         model_obj.save()
@@ -119,7 +118,7 @@ class Validator:
         msg = self._validate_prerequisites(prerequisites)
         return msg
 
-    def validate_yaml(self, run_id, parent_model, script):
+    def validate_yaml(self, run_id, model_obj, script):
         jobs = script.get("jobs")
         if not jobs:
             msg = "jobs should be in yaml and shouldn't be empty"
@@ -135,6 +134,6 @@ class Validator:
                         if msg:
                             break
         if msg:
-            self._report(run_id=run_id, parent_model=parent_model, msg=msg)
+            self._report(run_id=run_id, model_obj=model_obj, msg=msg)
             return False
         return True

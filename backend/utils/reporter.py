@@ -13,11 +13,11 @@ FAILURE = "failure"
 
 
 class Reporter:
-    def report(self, id, parent_model, schedule_name=None):
+    def report(self, run_id, model_obj, schedule_name=None):
         """Report the result to the commit status and Telegram chat.
 
-        :param id: DB's id of this run details.
-        :type id: str
+        :param run_id: DB's run_id of this run details.
+        :type run_id: str
         :param parent_model: the class that the passed id is belonging to.
         :type parent_model: class
         :param schedule_name: it will have a value if the run is scheduled.
@@ -25,7 +25,6 @@ class Reporter:
         """
         configs = InitialConfig()
         telegram = Telegram()
-        model_obj = parent_model.get(id=id)
         bin_release = model_obj.bin_release if model_obj.bin_release is not "no" else None
         triggered_by = model_obj.triggered_by
         msg = self.report_msg(status=model_obj.status, schedule_name=schedule_name)
@@ -46,7 +45,7 @@ class Reporter:
                 "branch": model_obj.branch,
                 "bin_release": bin_release,
                 "triggered_by": triggered_by,
-                "id": id,
+                "id": run_id,
             }
             r.publish("zeroci_status", json.dumps(data))
             vcs_obj = VCSFactory().get_cvn(repo=model_obj.repo)
@@ -76,7 +75,7 @@ class Reporter:
                 "schedule_name": schedule_name,
                 "bin_release": bin_release,
                 "triggered_by": triggered_by,
-                "id": id,
+                "id": run_id,
             }
             r.publish("zeroci_status", json.dumps(data))
             telegram.send_msg(msg=msg, link=link, bin_link=bin_link, triggered_by=triggered_by)
