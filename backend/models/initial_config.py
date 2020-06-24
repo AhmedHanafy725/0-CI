@@ -12,6 +12,7 @@ class InitialConfigModel(Document):
     vcs_host = fields.String()
     vcs_token = fields.String()
 
+
 class InitialConfig(ModelFactory):
     _model = StoredFactory(InitialConfigModel)
 

@@ -9,10 +9,11 @@ class ScheduleModel(Document):
     triggered_by = fields.String(default="ZeroCI Scheduler")
     result = fields.List(field=fields.Typed(dict))
 
+
 class SchedulerRun(ModelFactory):
     _model = StoredFactory(ScheduleModel)
 
     def __new__(self, **kwargs):
-        name = "model" + str(int(kwargs["timestamp"]* 10**6))
+        name = "model" + str(int(kwargs["timestamp"] * 10 ** 6))
         kwargs["timestamp"] = int(kwargs["timestamp"])
         return self._model.new(name=name, **kwargs)

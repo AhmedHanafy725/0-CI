@@ -9,6 +9,7 @@ class ScheduleInfoModel(Document):
     bin_path = fields.String()
     created_by = fields.String(required=True)
 
+
 class ScheduleInfo(ModelFactory):
     _model = StoredFactory(ScheduleInfoModel)
 

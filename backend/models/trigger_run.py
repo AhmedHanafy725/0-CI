@@ -12,10 +12,11 @@ class TriggerModel(Document):
     triggered_by = fields.String(default="VCS Hook")
     result = fields.List(field=fields.Typed(dict))
 
+
 class TriggerRun(ModelFactory):
     _model = StoredFactory(TriggerModel)
 
     def __new__(self, **kwargs):
-        name = "model" + str(int(kwargs["timestamp"]* 10**6))
+        name = "model" + str(int(kwargs["timestamp"] * 10 ** 6))
         kwargs["timestamp"] = int(kwargs["timestamp"])
         return self._model.new(name=name, **kwargs)

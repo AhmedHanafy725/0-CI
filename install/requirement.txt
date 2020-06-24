@@ -6,3 +6,6 @@ redis
 python-telegram-bot
 kubernetes
 git+https://github.com/dblueai/giteapy.git
+gevent-websocket
+PyGithub
+Beaker

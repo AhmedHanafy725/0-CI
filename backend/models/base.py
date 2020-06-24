@@ -1,11 +1,11 @@
-from jumpscale.core.base import Base, fields, StoredFactory 
+from jumpscale.core.base import Base, fields, StoredFactory
 
 
 class Document(Base):
     @property
     def id(self):
         return self.instance_name.strip("model")
-    
+
     @property
     def name(self):
         return self.instance_name
@@ -36,17 +36,17 @@ class ModelFactory:
             objects_names = cls._model.list_all()
             for name in objects_names:
                 objects.append(cls._model.find(name))
-        
+
         distinct_list = []
         for obj in objects:
             value = getattr(obj, field)
             if value not in distinct_list:
                 distinct_list.append(value)
-        
+
         return list(set(distinct_list))
 
     @classmethod
-    def get_objects(cls, fields,  order_by=None, asc=True, **kwargs):
+    def get_objects(cls, fields, order_by=None, asc=True, **kwargs):
         if kwargs:
             objects = cls._model.find_many(**kwargs)
         else:
@@ -57,7 +57,7 @@ class ModelFactory:
 
         if order_by:
             objects.sort(key=lambda x: getattr(x, order_by))
-        
+
         if not asc:
             objects.sort(reverse=True)
 
