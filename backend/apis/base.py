@@ -5,7 +5,7 @@ from functools import wraps
 app = Bottle()
 configs = InitialConfig()
 
-LOGIN_URL = "/auth/login"
+LOGIN_URL = "/auth/login?provider=3bot"
 
 
 def login_required(func):
