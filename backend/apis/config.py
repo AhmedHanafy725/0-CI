@@ -86,9 +86,15 @@ def repos_config():
         username = request.query.get("username")
         org_name = request.query.get("org_name")
         if username:
-            repos = vcs_obj.get_user_repos(username)
+            try:
+                repos = vcs_obj.get_user_repos(username)
+            except:
+                return Response("The token provided is invalid", 400)
         elif org_name:
-            repos = vcs_obj.get_org_repos(org_name)
+            try:
+                repos = vcs_obj.get_org_repos(org_name)
+            except:
+                return Response("The token provided is invalid", 400)
         else:
             repos = configs.repos
         return json.dumps(repos)
