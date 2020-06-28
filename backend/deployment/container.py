@@ -130,6 +130,10 @@ class Container(Utils):
             commands = [self.shell_bin, "-ce", "env | grep _ >> /etc/environment && sleep 3600"]
         else:
             commands = [self.shell_bin, "env | grep _ >> /etc/environment && sleep 3600"]
+
+        limits = {"memory": "200Mi"}
+        requests = {"memory": "150Mi"}
+        resources = client.V1ResourceRequirements(limits=limits, requests=requests)
         container = client.V1Container(
             name=self.name,
             image=prerequisites["image_name"],
@@ -137,6 +141,7 @@ class Container(Utils):
             env=env,
             ports=[ports],
             volume_mounts=vol_mounts,
+            resources=resources,
         )
         zeroci_node = self.get_zeroci_node()
         spec = client.V1PodSpec(

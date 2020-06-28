@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 
 from github import Github as GH
 from github import UnknownObjectException
+from github.GithubException import GithubException
 
 import giteapy
 from models.initial_config import InitialConfig
@@ -218,7 +219,7 @@ class Github(VCSInterface):
         hook_config = {"url": self.HOOK_URL, "content_type": "json"}
         try:
             repo.create_hook(name="web", config=hook_config, events=["push"], active=True)
-        except UnknownObjectException as e:
+        except (UnknownObjectException, GithubException) as e:
             if e.status == 404:
                 return False
         return True
