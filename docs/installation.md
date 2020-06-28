@@ -15,7 +15,7 @@
   ```bash
   mkdir ~/zeroci
   cd ~/zeroci
-  for s in authorization deployment service; do wget https://raw.githubusercontent.com/threefoldtech/zeroCI/development/install/zeroci/$s.yaml; done
+  for s in authorization deployment service; do curl https://raw.githubusercontent.com/threefoldtech/zeroCI/development/install/zeroci/$s.yaml --output $s.yaml; done
   ```
 
 - Apply the installation yaml files.

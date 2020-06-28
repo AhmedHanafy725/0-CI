@@ -1,4 +1,4 @@
-from bottle import Bottle, Response, abort, redirect, request, response
+from bottle import Bottle, abort, redirect, request, response
 from Jumpscale import j
 from models.initial_config import InitialConfig
 

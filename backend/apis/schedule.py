@@ -6,7 +6,7 @@ from rq_scheduler import Scheduler
 
 from actions.actions import Actions
 from apis.base import app, check_configs, user
-from bottle import Response, abort, redirect, request
+from bottle import HTTPResponse, abort, redirect, request
 from models.schedule_info import ScheduleInfo
 from models.scheduler_run import SchedulerRun
 
@@ -45,9 +45,9 @@ def schedule():
                 if not value:
                     if item == "bin_path":
                         continue
-                    return Response(f"{item} should have a value", 400)
+                    return HTTPResponse(f"{item} should have a value", 400)
                 elif item is "script" and not isinstance(value, list):
-                    return Response(f"{item} should be str or list", 400)
+                    return HTTPResponse(f"{item} should be str or list", 400)
                 else:
                     job[item] = value
 
@@ -55,7 +55,7 @@ def schedule():
             job["created_by"] = created_by
 
             if job["schedule_name"] in ScheduleInfo.distinct("name"):
-                return Response(f"Schedule name {job['schedule_name']} is already used", 400)
+                return HTTPResponse(f"Schedule name {job['schedule_name']} is already used", 400)
 
             schedule_info = ScheduleInfo(**job)
             schedule_info.save()
@@ -68,14 +68,14 @@ def schedule():
                     timeout=-1,
                 )
             except:
-                return Response("Wrong time format should be like (0 * * * *)", 400)
-            return Response("Added", 201)
+                return HTTPResponse("Wrong time format should be like (0 * * * *)", 400)
+            return HTTPResponse("Added", 201)
         else:
             schedule_name = request.json.get("schedule_name")
             schedule_info = ScheduleInfo(name=schedule_name)
             schedule_info.delete()
             scheduler.cancel(schedule_name)
-            return Response("Removed", 200)
+            return HTTPResponse("Removed", 200)
     return abort(400)
 
 
@@ -92,12 +92,12 @@ def schedule_trigger():
         where = f'schedule_name="{schedule_name}"'
         runs = SchedulerRun.get_objects(fields=["status"], where=where, order_by="timestamp", asc=False)
         if runs and runs[0]["status"] == "pending":
-            return Response(
+            return HTTPResponse(
                 f"There is a running job from this schedule {schedule_name}, please try again after this run finishes",
                 503,
             )
         if schedule_name not in ScheduleInfo.distinct("name"):
-            return Response(f"Schedule name {schedule_name} is not found", 400)
+            return HTTPResponse(f"Schedule name {schedule_name} is not found", 400)
 
         schedule_info = ScheduleInfo(name=schedule_name)
         job = {
@@ -110,5 +110,5 @@ def schedule_trigger():
         }
         job = q.enqueue_call(func=actions.schedule_run, args=(job,), result_ttl=5000, timeout=20000,)
         if job:
-            return Response(job.get_id(), 200)
-    return Response("Wrong data", 400)
+            return HTTPResponse(job.get_id(), 200)
+    return HTTPResponse("Wrong data", 400)
