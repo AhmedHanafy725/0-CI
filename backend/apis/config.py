@@ -109,7 +109,7 @@ def repos_config():
             for repo in added_repos:
                 created = vcs_obj.create_hook(repo)
                 if not created:
-                    return Response(f"Make sure your token has full access for hooks on this repo {repo}", 401)
+                    return Response(f"Make sure your token has full access for hooks on this repo {repo} and this repo is not archived", 401)
 
             removed_repos = set(configs.repos) - set(repos)
             for repo in removed_repos:
