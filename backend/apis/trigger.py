@@ -34,7 +34,7 @@ def trigger(repo="", branch="", commit="", committer="", id=None, triggered=True
             "bin_release": None,
             "id": id,
         }
-        trigger_run.timestamp = timestamp
+        trigger_run.timestamp = int(timestamp)
         trigger_run.status = status
         trigger_run.result = []
         trigger_run.triggered_by = triggered_by

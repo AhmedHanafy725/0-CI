@@ -245,7 +245,7 @@ class Actions(Validator):
         triggered_by = job.get("triggered_by", "ZeroCI Scheduler")
         data = {
             "status": "pending",
-            "timestamp": datetime.now().timestamp(),
+            "timestamp": int(datetime.now().timestamp()),
             "schedule_name": job["schedule_name"],
             "triggered_by": triggered_by,
             "bin_release": None,
