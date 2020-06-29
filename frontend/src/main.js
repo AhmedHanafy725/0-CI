@@ -54,7 +54,7 @@ Vue.component('Default-Layout', Default)
 Vue.component('Config-Layout', Config)
 Vue.use(Vuelidate)
 
-Vue.use(VueNativeSock, `ws://${window.location.hostname}/websocket/status`, {
+Vue.use(VueNativeSock, `wss://${window.location.hostname}/websocket/status`, {
     reconnection: true, // (Boolean) whether to reconnect automatically (false)
     reconnectionAttempts: 5, // (Number) number of reconnection attempts before giving up (Infinity),
     reconnectionDelay: 3000, // (Number) how long to initially wait before attempting a new (1000)
