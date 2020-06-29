@@ -1,4 +1,4 @@
-from apis.base import app, check_configs
+from apis.base import app, check_configs, admin
 from bottle import static_file
 
 
@@ -11,6 +11,11 @@ def static(filepath):
 def send_bin(filepath):
     return static_file(filepath, root="/sandbox/var/bin", download=filepath)
 
+
+@app.route("/initial_config")
+@admin
+def config():
+    return static_file("index.html", root="../dist")
 
 @app.route("/")
 @app.route("/<path:path>")

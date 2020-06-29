@@ -219,9 +219,8 @@ class Github(VCSInterface):
         hook_config = {"url": self.HOOK_URL, "content_type": "json"}
         try:
             repo.create_hook(name="web", config=hook_config, events=["push"], active=True)
-        except (UnknownObjectException, GithubException) as e:
-            if e.status == 404:
-                return False
+        except (UnknownObjectException, GithubException):
+            return False
         return True
 
     def list_hooks(self, repo):
@@ -229,9 +228,8 @@ class Github(VCSInterface):
         hooks = repo.get_hooks()
         try:
             hooks = self._get_property_in_objs_list(objs=hooks)
-        except UnknownObjectException as e:
-            if e.status == 404:
-                return False
+        except (UnknownObjectException, GithubException):
+            return False
         return hooks
 
     def delete_hook(self, repo):
