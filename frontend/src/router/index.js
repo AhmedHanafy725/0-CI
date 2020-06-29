@@ -20,9 +20,7 @@ const router = new Router({
             component: InitialConfig,
             meta: { layout: "Config" },
             beforeEnter(to, from, next) {
-                if (store.state.permission == 'admin') {
-                    next()
-                } else if (store.state.user == null) {
+                if (store.state.user == null) {
                     next('/')
                 }
             }
