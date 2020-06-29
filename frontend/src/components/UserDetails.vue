@@ -11,7 +11,9 @@
         <img class="kt-hidden" alt="Pic" src="/static/assets/media/users/300_25.jpg" />
 
         <!--use below badge element instead the user avatar to display username's first letter(remove kt-hidden class to display it) -->
-        <span class="kt-badge kt-badge--lg kt-badge--rounded kt-badge--bold kt-font-success">{{ userLogo }}</span>
+        <span
+          class="kt-badge kt-badge--lg kt-badge--rounded kt-badge--bold kt-font-success"
+        >{{ userLogo }}</span>
       </div>
       <div class="kt-user-card__name">{{ formatUser }}</div>
     </div>
@@ -25,7 +27,9 @@
           <i class="flaticon2-calendar-3 kt-font-success"></i>
         </div>
         <div class="kt-notification__item-details">
-          <div class="kt-notification__item-title kt-font-bold">Configuration</div>
+          <div class="kt-notification__item-title kt-font-bold">
+            <router-link to="/initial_config" class="kt-menu__link">Configuration</router-link>
+          </div>
           <!-- <div class="kt-notification__item-time">Account settings and more</div> -->
         </div>
       </a>

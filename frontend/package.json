@@ -16,6 +16,8 @@
     "vue": "^2.5.2",
     "vue-native-websocket": "^2.0.14",
     "vue-router": "^3.0.1",
+    "vuelidate": "^0.7.5",
+    "vuelidate-error-extractor": "^2.4.1",
     "vuetify": "^2.2.25",
     "vuex": "^3.4.0"
   },

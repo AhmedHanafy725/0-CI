@@ -29,19 +29,6 @@ export default {
     dashboardData() {
         return apiClient.get('/')
     },
-    getConfig() {
-        return apiClient.get('/initial_config')
-    },
-    initial_config(bot_token, chat_id, vcs_host, vcs_token, domain, repos) {
-        return apiClient.post('/initial_config', {
-            domain: domain,
-            chat_id: chat_id,
-            bot_token: bot_token,
-            vcs_host: vcs_host,
-            vcs_token: vcs_token,
-            repos: repos
-        })
-    },
     getBranches(repoName) {
         return apiClient.get('/repos/' + repoName)
     },
@@ -79,5 +66,41 @@ export default {
     },
     logout() {
         return authClient.get('/auth/logout')
+    },
+
+    // Config APIs
+    getVcs() {
+        return apiClient.get('/vcs_config')
+    },
+    postVCS(domain, vcs_host, vcs_token) {
+        return apiClient.post('/vcs_config', { domain: domain, vcs_host: vcs_host, vcs_token: vcs_token })
+    },
+    getCurrentRepos() {
+        return apiClient.get('/repos_config')
+    },
+    getReposWzUsername(username) {
+        return apiClient.get(`/repos_config?username=${username}`)
+    },
+    getRepos(orgs) {
+        const PromiseArr = [];
+        for (let i = 0; i < orgs.length; i++) {
+            var url = `/repos_config?org_name=${orgs[i]}`;
+            PromiseArr.push(
+                apiClient.get(url).then(result => new Promise(resolve => resolve(result.data)))
+            );
+        }
+        return Promise.all(PromiseArr)
+    },
+    sendRepos(selectedRepos) {
+        return apiClient.post('/repos_config', { repos: selectedRepos })
+    },
+    getTelegram() {
+        return apiClient.get('/telegram_config')
+    },
+    setTelegramConfig(id, token) {
+        return apiClient.post('/telegram_config', { chat_id: id, bot_token: token })
+    },
+    applyConfig() {
+        return apiClient.post('/apply_config')
     }
 }

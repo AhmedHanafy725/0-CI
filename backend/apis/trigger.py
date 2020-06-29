@@ -7,7 +7,7 @@ from rq import Queue
 
 from actions.actions import Actions
 from apis.base import app, check_configs, configs, user
-from bottle import Response, redirect, request
+from bottle import HTTPResponse, redirect, request
 from models.trigger_run import TriggerRun
 from packages.vcs.vcs import VCSFactory
 
@@ -96,9 +96,9 @@ def git_trigger():
             if branch_exist:
                 job = trigger(repo=repo, branch=branch, commit=commit, committer=committer, triggered=False)
                 if job:
-                    return Response(job.get_id(), 200)
-        return Response("Done", 200)
-    return Response("Wrong content type", 400)
+                    return HTTPResponse(job.get_id(), 200)
+        return HTTPResponse("Done", 200)
+    return HTTPResponse("Wrong content type", 400)
 
 
 @app.route("/api/run_trigger", method=["POST", "GET"])
@@ -113,11 +113,11 @@ def run_trigger():
         if id:
             run = TriggerRun.get(id=id)
             if run.status == "pending":
-                return Response(
+                return HTTPResponse(
                     f"There is a running job for this id {id}, please try again after this run finishes", 503
                 )
             job = trigger(id=id)
-            return Response(job.get_id(), 200)
+            return HTTPResponse(job.get_id(), 200)
 
         repo = request.json.get("repo")
         branch = request.json.get("branch")
@@ -127,13 +127,13 @@ def run_trigger():
         where = {"repo": repo, "branch": branch, "commit": last_commit, "status": "pending"}
         run = TriggerRun.get_objects(fields=["status"], **where)
         if run:
-            return Response(
+            return HTTPResponse(
                 f"There is a running job from this commit {last_commit}, please try again after this run finishes", 503
             )
         if last_commit:
             job = trigger(repo=repo, branch=branch, commit=last_commit, committer=committer)
         else:
-            return Response(f"Couldn't get last commit from this branch {branch}, please try again", 503)
+            return HTTPResponse(f"Couldn't get last commit from this branch {branch}, please try again", 503)
         if job:
-            return Response(job.get_id(), 200)
-        return Response("Wrong data", 400)
+            return HTTPResponse(job.get_id(), 200)
+        return HTTPResponse("Wrong data", 400)

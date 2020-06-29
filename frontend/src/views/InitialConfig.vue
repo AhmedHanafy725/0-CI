@@ -1,464 +1,428 @@
 <template>
-  <!-- begin:: Page -->
-  <div class="kt-grid kt-grid--ver kt-grid--root">
-    <div
-      class="kt-grid kt-grid--hor kt-grid--root kt-login kt-login--v4 kt-login--signin"
-      id="kt_login"
-    >
-      <Loading v-if="loading" />
-      <div
-        class="kt-grid__item kt-grid__item--fluid kt-grid kt-grid--hor"
-        style="background-image: url(/static/media/bg/bg-2.jpg);height: 100vh;"
-      >
-        <div class="kt-grid__item kt-grid__item--fluid kt-login__wrapper">
-          <div class="kt-login__container">
-            <div class="kt-login__logo">
-              <a href="#">
-                <img src="/static/media/logos/logo-light.png" />
-              </a>
-            </div>
-            <div class="kt-login__signin">
-              <div class="kt-login__head">
-                <h3 class="kt-login__title">Configuration</h3>
-              </div>
-              <form
-                class="kt-form kt-form--fit kt-form--label-right"
-                @submit.prevent="sendConfig()"
-              >
-                <div class="kt-portlet__body">
-                  <div class="form-group row">
-                    <label class="col-lg-4 col-form-label">Telegram bot token:</label>
-                    <div class="col-lg-8">
-                      <input
-                        type="text"
-                        class="form-control"
-                        placeholder="Enter telegram bot token"
-                        v-model="bot_token"
-                        required
-                      />
-                    </div>
-                    <label class="col-lg-4 col-form-label">Telegram chat id:</label>
-                    <div class="col-lg-8">
-                      <input
-                        type="text"
-                        class="form-control"
-                        placeholder="Enter Telegram chat id"
-                        v-model="chat_id"
-                        required
-                      />
-                    </div>
-                    <label class="col-lg-4 col-form-label">VCS (version control system) host:</label>
-                    <div class="col-lg-8">
-                      <input
-                        type="text"
-                        class="form-control"
-                        placeholder="Enter your VCS host"
-                        v-model="vcs_host"
-                        required
-                      />
-                    </div>
-                    <label class="col-lg-4 col-form-label">VCS token:</label>
-                    <div class="col-lg-8">
-                      <input
-                        type="text"
-                        class="form-control"
-                        placeholder="Enter your VCS token"
-                        v-model="vcs_token"
-                        required
-                      />
-                    </div>
-                    <label class="col-lg-4 col-form-label">Domain:</label>
-                    <div class="col-lg-8">
-                      <input
-                        type="text"
-                        class="form-control"
-                        placeholder="Enter your Domain"
-                        v-model="domain"
-                        required
-                      />
-                    </div>
-                    <label class="col-lg-4 col-form-label">Repo list:</label>
-                    <div class="col-lg-8">
-                      <textarea
-                        class="form-control"
-                        id="exampleTextarea"
-                        rows="4"
-                        placeholder="Enter your Repos seperated by ,"
-                        v-model="repos"
-                        required
-                      ></textarea>
-                    </div>
-                  </div>
-                </div>
-                <div class="kt-portlet__foot kt-portlet__foot--fit-x">
-                  <div class="kt-login__actions">
-                    <button class="btn btn-brand btn-pill kt-login__btn-primary">Apply</button>
-                  </div>
-                </div>
-              </form>
-            </div>
+  <div class="container">
+    <h1 class="text-center text-light">ZeroCi Configuration</h1>
+
+    <v-stepper v-model="currentStep" vertical dark non-linear>
+      <v-stepper-step
+        :editable="importStep >= 1"
+        edit-icon="$vuetify.icons.complete"
+        :complete="importStep > 1"
+        step="1"
+      >Version Control System</v-stepper-step>
+
+      <v-stepper-content step="1">
+        <form ref="form" @submit.prevent="vcsSubmit" lazy-validation>
+          <div class="my-1" :class="{ 'form-group--error': $v.domain.$error }">
+            <label class="text-white">Domain:</label>
+            <input
+              v-model.trim="$v.domain.$model"
+              class="form-control"
+              placeholder="Domain"
+              required
+            />
+            <div class="error--text mb-2" v-if="!$v.domain.required">Domain is required</div>
+            <p class="error--text mb-2" v-if="!$v.domain.url">Invalid Domain.</p>
           </div>
-        </div>
-      </div>
-    </div>
+
+          <div class="my-1" :class="{ 'form-group--error': $v.vcs_host.$error }">
+            <label class="text-white">Version Control System Host:</label>
+            <input
+              v-model.trim="$v.vcs_host.$model"
+              class="form-control"
+              placeholder="VCS Host"
+              required
+            />
+            <div class="error--text mb-2" v-if="!$v.vcs_host.required">VCS Host is required</div>
+            <p
+              class="error--text mb-2"
+              v-if="!$v.vcs_host.url"
+            >Version Control System Host must contain http or https.</p>
+          </div>
+
+          <div class="my-1" :class="{ 'form-group--error': $v.vcs_token.$error }">
+            <label class="text-white">Version Control System Token:</label>
+
+            <input
+              type="password"
+              v-model.trim="$v.vcs_token.$model"
+              class="form-control"
+              placeholder="VCS Token"
+              required
+            />
+            <div
+              class="error--text mb-2"
+              v-if="!$v.vcs_token.required"
+            >Version Control System Token is required</div>
+          </div>
+
+          <button
+            class="btn btn-primary btn-sm my-3"
+            type="submit"
+            :disabled="submitStatus === 'PENDING'"
+          >Next Step</button>
+          <button type="button" class="btn btn-secondary btn-sm" disabled>Back</button>
+
+          <p class="typo__p success--text d-inline" v-if="submitStatus === 'OK'">{{submitMsg}}</p>
+          <p class="typo__p error--text d-inline" v-if="submitStatus === 'ERROR'">{{submitMsg}}</p>
+          <p class="typo__p warning--text d-inline" v-if="submitStatus === 'PENDING'">Sending...</p>
+        </form>
+      </v-stepper-content>
+
+      <v-stepper-step
+        :editable="importStep >= 2"
+        edit-icon="$vuetify.icons.complete"
+        :complete="importStep > 2"
+        step="2"
+        class="text-white"
+      >Repositories</v-stepper-step>
+
+      <v-stepper-content step="2">
+        <form ref="form1" class="my-5" @submit.prevent="repoConfig" lazy-validation>
+          <div class="my-1">
+            <label class="text-white">Username:</label>
+            <input
+              v-model.trim="$v.username.$model"
+              @blur="getReposWzUser"
+              class="form-control"
+              placeholder="Username"
+            />
+          </div>
+
+          <div class="my-1">
+            <label class="text-white">Organizations:</label>
+            <input
+              v-model.trim="$v.orgs.$model"
+              @blur="getRepos"
+              class="form-control"
+              placeholder="Organizations"
+            />
+          </div>
+          <v-combobox
+            :class="{ 'form-group--error': $v.selectedRepos.$error }"
+            v-model="selectedRepos"
+            :items="allItems"
+            label="Select Repos:"
+            multiple
+            chips
+            :loading="loading"
+            :disabled="selectedRepos > 0"
+          ></v-combobox>
+          <div class="error--text mb-2" v-if="!$v.selectedRepos.required">Repositories is required</div>
+
+          <button
+            class="btn btn-primary btn-sm my-3"
+            type="submit"
+            :disabled="submitStatus === 'PENDING'"
+          >Next Step</button>
+          <button type="button" class="btn btn-secondary btn-sm" @click="currentStep = 1">Back</button>
+
+          <p class="typo__p success--text d-inline" v-if="submitStatus === 'OK'">{{submitMsg}}</p>
+          <p class="typo__p error--text d-inline" v-if="submitStatus === 'ERROR'">{{submitMsg}}</p>
+          <p class="typo__p warning--text d-inline" v-if="submitStatus === 'PENDING'">Sending...</p>
+        </form>
+      </v-stepper-content>
+
+      <v-stepper-step
+        :editable="importStep >= 3"
+        edit-icon="$vuetify.icons.complete"
+        :complete="importStep > 3"
+        step="3"
+        class="text-white"
+      >Telegram</v-stepper-step>
+
+      <v-stepper-content step="3">
+        <form ref="form2" class="my-5" @submit.prevent="telegramConfig" lazy-validation>
+          <div class="my-1" :class="{ 'form-group--error': $v.chat_id.$error }">
+            <label class="text-white">Group Telegram ID:</label>
+            <input
+              v-model.trim="$v.chat_id.$model"
+              class="form-control"
+              placeholder="@Telegram ID"
+              required
+            />
+            <div class="error--text mb-2" v-if="!$v.chat_id.required">Group Telegram ID is required</div>
+          </div>
+
+          <div class="my-1" :class="{ 'form-group--error': $v.bot_token.$error }">
+            <label class="text-white">Telegram Token:</label>
+            <input
+              type="password"
+              v-model.trim="$v.bot_token.$model"
+              class="form-control"
+              placeholder="Telegram Token"
+              required
+            />
+            <div class="error--text mb-2" v-if="!$v.bot_token.required">Telegram Token is required</div>
+          </div>
+          <button
+            class="btn btn-primary btn-sm my-3"
+            type="submit"
+            :disabled="submitStatus === 'PENDING'"
+          >Next Step</button>
+          <button type="button" class="btn btn-secondary btn-sm" @click="currentStep = 2">Back</button>
+          <p class="typo__p success--text d-inline" v-if="submitStatus === 'OK'">{{submitMsg}}</p>
+          <p class="typo__p error--text d-inline" v-if="submitStatus === 'ERROR'">{{submitMsg}}</p>
+          <p class="typo__p warning--text d-inline" v-if="submitStatus === 'PENDING'">Sending...</p>
+        </form>
+      </v-stepper-content>
+
+      <v-stepper-step
+        :editable="importStep >= 4"
+        edit-icon="$vuetify.icons.complete"
+        :complete="importStep > 4"
+        step="4"
+        class="text-white"
+      >Apply</v-stepper-step>
+
+      <v-stepper-content step="4">
+        <button class="btn btn-primary btn-sm my-3" @click="applyConfig()">Apply</button>
+        <button type="button" class="btn btn-secondary btn-sm" @click="currentStep = 3">Back</button>
+      </v-stepper-content>
+    </v-stepper>
   </div>
-
-  <!-- end:: Page -->
-
-  <!-- end:: Content -->
 </template>
 
 <script>
-import Loading from "../components/Loading";
 import EventService from "../services/EventService";
+import { required, url } from "vuelidate/lib/validators";
+
 export default {
   name: "InitialConfig",
-  components: {
-    Loading
-  },
   data() {
     return {
-      loading: true,
+      valid: true,
+      domain: "",
       bot_token: "",
       chat_id: "",
       vcs_host: "",
       vcs_token: "",
-      domain: "",
-      repos: ""
+      username: "",
+      orgs: "",
+      disabled: true,
+      loading: false,
+      currentStep: 1,
+      importStep: 1,
+      submitStatus: null,
+      submitMsg: "",
+      selectedRepos: [],
+      items: [],
+      userRepos: [],
+      orgRepos: []
     };
   },
+  validations: {
+    domain: {
+      required,
+      url
+    },
+    vcs_host: {
+      required,
+      url
+    },
+    vcs_token: {
+      required
+    },
+    username: {
+      required
+    },
+    orgs: {
+      required
+    },
+    repos: {
+      required
+    },
+    selectedRepos: {
+      required
+    },
+    chat_id: {
+      required
+    },
+    bot_token: {
+      required
+    }
+  },
   methods: {
-    getConfig() {
-      EventService.getConfig()
+    getVCS() {
+      EventService.getVcs()
         .then(response => {
-          this.loading = false;
-          this.bot_token = response.data.bot_token;
-          this.chat_id = response.data.chat_id;
+          this.domain = response.data.domain;
           this.vcs_host = response.data.vcs_host;
           this.vcs_token = response.data.vcs_token;
-          this.domain = response.data.domain;
-          this.repos = response.data.repos;
         })
         .catch(error => {
           console.log("Error! Could not reach the API. " + error);
         });
     },
-    sendConfig() {
-      EventService.initial_config(
-        this.bot_token,
-        this.chat_id,
-        this.vcs_host,
-        this.vcs_token,
-        this.domain,
-        this.repos.split(",")
-      ).catch(error => {
-        if (error.response.status == 500) {
-          this.$router.push("/");
-        } else {
+    vcsSubmit() {
+      this.submitStatus = "PENDING";
+      EventService.postVCS(this.domain, this.vcs_host, this.vcs_token)
+        .then(response => {
+          this.submitStatus = "OK";
+          this.submitMsg = response.data;
+          setTimeout(() => {
+            this.currentStep = 2;
+            this.importStep = Math.max(this.importStep, 2);
+            this.submitMsg = null;
+          }, 1000);
+        })
+        .catch(error => {
+          this.submitStatus = "ERROR";
+          this.submitMsg = error.response.data;
           console.log("Error! Could not reach the API. " + error);
-        }
-      });
+        });
+    },
+    currentRepos() {
+      EventService.getCurrentRepos()
+        .then(response => {
+          this.selectedRepos = response.data;
+        })
+        .catch(error => {
+          console.log("Error! Could not reach the API. " + error);
+        });
+    },
+    getReposWzUser() {
+      this.loading = true;
+      EventService.getReposWzUsername(this.username)
+        .then(response => {
+          this.loading = false;
+          if (isArray(response.data)) {
+            this.disabled = false;
+            this.userRepos = response.data;
+          } else {
+            this.submitStatus = "ERROR";
+            this.submitMsg = response.data;
+          }
+        })
+        .catch(error => {
+          console.log("Error! Could not reach the API. " + error);
+        });
+    },
+    getRepos() {
+      this.loading = true;
+      EventService.getRepos(this.newOrgs)
+        .then(response => {
+          this.loading = false;
+          if (isArray(response)) {
+            this.disabled = false;
+            this.orgRepos = [].concat.apply([], response);
+          } else {
+            this.submitStatus = "ERROR";
+            this.submitMsg = response.data;
+          }
+        })
+        .catch(error => {
+          console.log("Error! Could not reach the API. " + error);
+        });
+    },
+    repoConfig() {
+      this.submitStatus = "PENDING";
+      EventService.sendRepos(this.selectedRepos)
+        .then(response => {
+          this.submitStatus = "OK";
+          this.submitMsg = response.data;
+          setTimeout(() => {
+            this.currentStep = 3;
+            this.importStep = Math.max(this.importStep, 3);
+            this.submitMsg = null;
+          }, 1000);
+        })
+        .catch(error => {
+          this.submitStatus = "ERROR";
+          this.submitMsg = error.response.data;
+          console.log("Error! Could not reach the API. " + error);
+        });
+    },
+    getTelegramConfig() {
+      EventService.getTelegram()
+        .then(response => {
+          this.chat_id = response.data.chat_id;
+          this.bot_token = response.data.bot_token;
+        })
+        .catch(error => {
+          console.log("Error! Could not reach the API. " + error);
+        });
+    },
+    telegramConfig() {
+      EventService.setTelegramConfig(this.chat_id, this.bot_token)
+        .then(response => {
+          this.submitStatus = "OK";
+          this.submitMsg = response.data;
+          setTimeout(() => {
+            this.currentStep = 4;
+            this.importStep = Math.max(this.importStep, 4);
+            this.submitMsg = null;
+          }, 1000);
+        })
+        .catch(error => {
+          this.submitStatus = "ERROR";
+          this.submitMsg = error.response.data;
+          console.log("Error! Could not reach the API. " + error);
+        });
+    },
+    applyConfig() {
+      EventService.applyConfig()
+        .then(response => {
+          this.$router.push("/");
+        })
+        .catch(error => {
+          this.submitStatus = "ERROR";
+          this.submitMsg = error.response.data;
+          console.log("Error! Could not reach the API. " + error);
+        });
+    }
+  },
+  computed: {
+    newOrgs() {
+      return this.orgs.split(/[ ,]+/);
+    },
+    allItems() {
+      this.items = this.userRepos.concat(this.orgRepos);
+      return this.items;
     }
   },
   created() {
-    this.getConfig();
+    this.getVCS();
+    this.currentRepos();
+    this.getTelegramConfig();
   }
 };
 </script>
 
 <style scoped>
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-form
-  .form-control {
-  height: auto !important;
+.v-stepper {
+  box-shadow: none;
 }
-.col-form-label {
-  color: #fff;
+.theme--dark.v-stepper {
+  background: rgba(27, 17, 44, 0.25);
 }
-.form-group label {
-  margin-top: 1rem;
-}
-.kt-login.kt-login--v4 {
-  background-size: cover;
-  background-repeat: no-repeat;
-}
-.kt-login.kt-login--v4 .kt-login__wrapper {
-  padding: 6% 2rem 1rem 2rem;
-  margin: 0 auto 2rem auto;
-  overflow: hidden;
-}
-.kt-login.kt-login--v4 .kt-login__wrapper .kt-login__container {
-  width: 600px;
-  margin: 0 auto;
-}
-.kt-login.kt-login--v4 .kt-login__wrapper .kt-login__container .kt-login__logo {
-  text-align: center;
-  margin: 0 auto 4rem auto;
-}
-.kt-login.kt-login--v4 .kt-login__wrapper .kt-login__container .kt-login__head {
-  margin-top: 1rem;
+
+h1 {
+  margin-top: 3rem;
   margin-bottom: 3rem;
 }
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-login__head
-  .kt-login__title {
-  text-align: center;
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: #6c7293;
+.v-stepper__step__step .primary {
+  background-color: #2e40d4 !important;
+  border-color: #2e40d4 !important;
 }
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-login__head
-  .kt-login__desc {
-  margin-top: 1.5rem;
-  text-align: center;
-  font-size: 1.1rem;
-  font-weight: 400;
-  color: #a7abc3;
-}
-.kt-login.kt-login--v4 .kt-login__wrapper .kt-login__container .kt-form {
-  margin: 0 auto;
-}
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-form
-  .input-group {
-  padding: 0;
-  margin: 0 auto;
-}
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-form
-  .form-control {
+
+.config .form-control {
   height: 46px;
   border: none;
   padding-left: 1.5rem;
   padding-right: 1.5rem;
-  /* border-radius: 46px; */
-  /* margin-top: 1.5rem; */
+  border-radius: 46px;
+  margin-top: 0.5rem;
   background: rgba(255, 255, 255, 0.015);
   color: #a7abc3;
 }
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-form
-  .form-control::-moz-placeholder {
-  color: #6c7293;
-  opacity: 1;
-}
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-form
-  .form-control:-ms-input-placeholder {
-  color: #6c7293;
-}
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-form
-  .form-control::-webkit-input-placeholder {
-  color: #6c7293;
-}
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-form
-  .form-control.is-valid
-  + .valid-feedback,
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-form
-  .form-control.is-invalid
-  + .invalid-feedback {
-  font-weight: 500;
-  font-size: 0.9rem;
-  padding-left: 1.6rem;
-}
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-form
-  .kt-login__extra {
-  margin-top: 30px;
-  margin-bottom: 15px;
-  color: #a7abc3;
-  font-size: 1rem;
-  padding: 0 1.5rem;
-}
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-form
-  .kt-login__extra
-  .kt-checkbox {
-  font-size: 1rem;
-}
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-form
-  .kt-login__extra
-  .kt-login__link {
-  font-size: 1rem;
-  color: #a7abc3;
-  -webkit-transition: color 0.3s ease;
-  transition: color 0.3s ease;
-}
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-form
-  .kt-login__extra
-  .kt-login__link:hover {
-  color: #5d78ff;
-  -webkit-transition: color 0.3s ease;
-  transition: color 0.3s ease;
-}
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-form
-  .kt-login__actions {
-  text-align: center;
-  margin-top: 7%;
-}
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-form
-  .kt-login__actions
-  .kt-login__btn-secondary,
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-form
-  .kt-login__actions
-  .kt-login__btn-primary {
-  height: 50px;
-  padding-left: 2.5rem;
-  padding-right: 2.5rem;
-}
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-login__account {
-  text-align: center;
-  margin-top: 2rem;
-}
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-login__account
-  .kt-login__account-msg {
+
+.theme--dark.v-application {
   font-size: 1rem;
   font-weight: 400;
-  color: #a7abc3;
-}
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-login__account
-  .kt-login__account-link {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #6c7293;
-  -webkit-transition: color 0.3s ease;
-  transition: color 0.3s ease;
-}
-.kt-login.kt-login--v4
-  .kt-login__wrapper
-  .kt-login__container
-  .kt-login__account
-  .kt-login__account-link:hover {
-  color: #5d78ff;
-  -webkit-transition: color 0.3s ease;
-  transition: color 0.3s ease;
+  color: #a7abc3 !important;
 }
 
-.kt-login.kt-login--v4.kt-login--signin .kt-login__signup {
-  display: none;
-}
-
-.kt-login.kt-login--v4.kt-login--signin .kt-login__signin {
-  display: block;
-}
-
-.kt-login.kt-login--v4.kt-login--signin .kt-login__forgot {
-  display: none;
-}
-
-.kt-login.kt-login--v4.kt-login--signup .kt-login__signup {
-  display: block;
-}
-
-.kt-login.kt-login--v4.kt-login--signup .kt-login__signin {
-  display: none;
-}
-
-.kt-login.kt-login--v4.kt-login--signup .kt-login__forgot {
-  display: none;
-}
-
-.kt-login.kt-login--v4.kt-login--signup .kt-login__account {
-  display: none;
-}
-
-.kt-login.kt-login--v4.kt-login--forgot .kt-login__signup {
-  display: none;
-}
-
-.kt-login.kt-login--v4.kt-login--forgot .kt-login__signin {
-  display: none;
-}
-
-.kt-login.kt-login--v4.kt-login--forgot .kt-login__forgot {
-  display: block;
-}
-
-@media (max-width: 1024px) {
-  .kt-login.kt-login--v4 .kt-login__wrapper {
-    padding-top: 5rem;
-    width: 100%;
-  }
-  .kt-login.kt-login--v4 .kt-login__wrapper .kt-login__container {
-    margin: 0 auto;
-  }
-  .kt-login.kt-login--v4
-    .kt-login__wrapper
-    .kt-login__container
-    .kt-login__account {
-    margin-top: 1rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .kt-login.kt-login--v4 .kt-login__wrapper {
-    width: 100%;
-  }
-  .kt-login.kt-login--v4 .kt-login__wrapper .kt-login__container {
-    width: 100%;
-    margin: 0 auto;
-  }
-  .kt-login.kt-login--v4 .kt-login__wrapper .kt-login__container .kt-form {
-    width: 100%;
-    margin: 0 auto;
-  }
-  .kt-login.kt-login--v4
-    .kt-login__wrapper
-    .kt-login__container
-    .kt-login__account {
-    margin-top: 1rem;
-  }
+label {
+  margin-top: 0.5rem;
 }
 </style>

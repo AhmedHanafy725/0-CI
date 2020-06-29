@@ -6,7 +6,7 @@ from telegram import Bot
 from telegram.error import BadRequest, InvalidToken, Unauthorized
 
 from apis.base import admin, app, check_configs, configs, user
-from bottle import Response, abort, request
+from bottle import HTTPResponse, abort, request
 from models.run_config import RunConfig
 from packages.vcs.vcs import VCSFactory
 
@@ -27,9 +27,9 @@ def validate_telegam():
         for conf in confs:
             value = request.json.get(conf)
             if not value:
-                return Response(f"{conf} should have a value", 400)
+                return HTTPResponse(f"{conf} should have a value", 400)
             elif not isinstance(value, str):
-                return Response(f"{conf} should be str", 400)
+                return HTTPResponse(f"{conf} should be str", 400)
             else:
                 setattr(configs, conf, value)
 
@@ -40,10 +40,10 @@ def validate_telegam():
         except (InvalidToken, BadRequest, Unauthorized) as error:
             if error.message == "Unauthorized":
                 error.message += ": Invalid Token"
-            return Response(error.message, 400)
+            return HTTPResponse(error.message, 400)
 
         configs.save()
-        return Response("Configured", 200)
+        return HTTPResponse("Configured", 200)
 
 
 @app.route("/api/vcs_config", method=["GET", "POST"])
@@ -62,9 +62,9 @@ def vcs_config():
         for conf in confs:
             value = request.json.get(conf)
             if not value:
-                return Response(f"{conf} should have a value", 400)
+                return HTTPResponse(f"{conf} should have a value", 400)
             elif not isinstance(value, str):
-                return Response(f"{conf} should be str", 400)
+                return HTTPResponse(f"{conf} should be str", 400)
             else:
                 setattr(configs, conf, value)
 
@@ -72,10 +72,10 @@ def vcs_config():
         try:
             requests.get(request.json["vcs_host"])
         except Exception:
-            return Response(f"Your version control system is not reachable", 400)
+            return HTTPResponse(f"Your version control system is not reachable", 400)
 
         configs.save()
-        return Response("Configured", 200)
+        return HTTPResponse("Configured", 200)
 
 
 @app.route("/api/repos_config", method=["GET", "POST"])
@@ -89,37 +89,37 @@ def repos_config():
             try:
                 repos = vcs_obj.get_user_repos(username)
             except:
-                return Response("The token provided is invalid", 400)
+                return HTTPResponse("The token provided is invalid", 400)
         elif org_name:
             try:
                 repos = vcs_obj.get_org_repos(org_name)
             except:
-                return Response("The token provided is invalid", 400)
+                return HTTPResponse("The token provided is invalid", 400)
         else:
             repos = configs.repos
         return json.dumps(repos)
     if request.headers.get("Content-Type") == "application/json":
         repos = request.json.get("repos")
         if not repos:
-            return Response(f"repos should have a value", 400)
+            return HTTPResponse(f"repos should have a value", 400)
         elif not isinstance(repos, list):
-            return Response("repos should be list", 400)
+            return HTTPResponse("repos should be list", 400)
         else:
             added_repos = set(repos) - set(configs.repos)
             for repo in added_repos:
                 created = vcs_obj.create_hook(repo)
                 if not created:
-                    return Response(f"Make sure your token has full access for hooks on this repo {repo} and this repo is not archived", 401)
+                    return HTTPResponse(f"Make sure your token has full access for hooks on this repo {repo} and this repo is not archived", 401)
 
             removed_repos = set(configs.repos) - set(repos)
             for repo in removed_repos:
                 deleted = vcs_obj.delete_hook(repo)
                 if not deleted:
-                    return Response(f"Couldn't delete the hook of this repo {repo}", 401)
+                    return HTTPResponse(f"Couldn't delete the hook of this repo {repo}", 401)
 
             configs.repos = repos
             configs.save()
-            return Response("Added", 201)
+            return HTTPResponse("Added", 201)
 
 
 @app.route("/api/users", method=["GET", "POST", "DELETE"])
@@ -138,20 +138,20 @@ def users():
         if user:
             configs.users.append(user)
             configs.save()
-            return Response("Added", 200)
+            return HTTPResponse("Added", 200)
         if admin:
             configs.admins.append(admin)
             configs.save()
-            return Response("Added", 200)
+            return HTTPResponse("Added", 200)
     if request.method == "DELETE":
         if user and user in configs.users:
             configs.users.remove(user)
             configs.save()
-            return Response("Deleted", 200)
+            return HTTPResponse("Deleted", 200)
         if admin and admin in configs.admins:
             configs.admins.remove(admin)
             configs.save()
-            return Response("Deleted", 200)
+            return HTTPResponse("Deleted", 200)
     return abort(400)
 
 
@@ -159,17 +159,17 @@ def users():
 @admin
 def apply_config():
     if not (configs.domain or configs.vcs_host or configs.vcs_token):
-        return Response("Version Control System is not configured")
+        return HTTPResponse("Version Control System is not configured")
     elif not (configs.bot_token or configs.chat_id):
-        return Response("Telegram is not configured")
+        return HTTPResponse("Telegram is not configured")
     elif not configs.repos:
-        return Response("There is no repository at least you should have one")
+        return HTTPResponse("There is no repository at least you should have one")
     else:
         if not configs.admins:
             admin = request.environ.get("beaker.session").get("username")
             configs.admins.append(admin)
         configs.configured = True
-        return Response("Configured", 200)
+        return HTTPResponse("Configured", 200)
 
 
 @app.route("/api/run_config/<name:path>", method=["GET", "POST", "DELETE"])
@@ -182,12 +182,12 @@ def run_config(name):
         value = request.json["value"]
         run_config.env[key] = value
         run_config.save()
-        return Response("Added", 201)
+        return HTTPResponse("Added", 201)
     elif request.method == "DELETE":
         key = request.json["key"]
         run_config.env.pop(key)
         run_config.save()
-        return Response("Deleted", 201)
+        return HTTPResponse("Deleted", 201)
     else:
         env = json.dumps(run_config.env)
         return env

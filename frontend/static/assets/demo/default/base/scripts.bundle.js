@@ -112,7 +112,7 @@ this.Element && function(ElementPrototype) {
     });
 })([Element.prototype, Document.prototype, DocumentFragment.prototype]);
 
-// Global variables 
+// Global variables
 window.KTUtilElementDataStore = {};
 window.KTUtilElementDataStoreID = 0;
 window.KTUtilDelegatedEventHandlers = {};
@@ -123,15 +123,15 @@ var KTUtil = function() {
 
     /** @type {object} breakpoints The device width breakpoints **/
     var breakpoints = {
-        sm: 544, // Small screen / phone           
-        md: 768, // Medium screen / tablet            
-        lg: 1024, // Large screen / desktop        
+        sm: 544, // Small screen / phone
+        md: 768, // Medium screen / tablet
+        lg: 1024, // Large screen / desktop
         xl: 1200 // Extra large screen / wide desktop
     };
 
     /**
-     * Handle window resize event with some 
-     * delay to attach event handlers upon resize complete 
+     * Handle window resize event with some
+     * delay to attach event handlers upon resize complete
      */
     var _windowResizeHandler = function() {
         var _runResizeHandlers = function() {
@@ -202,8 +202,8 @@ var KTUtil = function() {
             } else {
                 // for IE and other old browsers
                 // causes deprecation warning on modern browsers
-                var evt = window.document.createEvent('UIEvents'); 
-                evt.initUIEvent('resize', true, false, window, 0); 
+                var evt = window.document.createEvent('UIEvents');
+                evt.initUIEvent('resize', true, false, window, 0);
                 window.dispatchEvent(evt);
             }
         },
@@ -211,7 +211,7 @@ var KTUtil = function() {
         /**
          * Get GET parameter value from URL.
          * @param {string} paramName Parameter name.
-         * @returns {string}  
+         * @returns {string}
          */
         getURLParam: function(paramName) {
             var searchString = window.location.search.substring(1),
@@ -229,7 +229,7 @@ var KTUtil = function() {
 
         /**
          * Checks whether current device is mobile touch.
-         * @returns {boolean}  
+         * @returns {boolean}
          */
         isMobileDevice: function() {
             return (this.getViewPort().width < this.getBreakpoint('lg') ? true : false);
@@ -237,7 +237,7 @@ var KTUtil = function() {
 
         /**
          * Checks whether current device is desktop.
-         * @returns {boolean}  
+         * @returns {boolean}
          */
         isDesktopDevice: function() {
             return KTUtil.isMobileDevice() ? false : true;
@@ -246,7 +246,7 @@ var KTUtil = function() {
         /**
          * Gets browser window viewport size. Ref:
          * http://andylangton.co.uk/articles/javascript/get-viewport-size-javascript/
-         * @returns {object}  
+         * @returns {object}
          */
         getViewPort: function() {
             var e = window,
@@ -266,7 +266,7 @@ var KTUtil = function() {
          * Checks whether given device mode is currently activated.
          * @param {string} mode Responsive mode name(e.g: desktop,
          *     desktop-and-tablet, tablet, tablet-and-mobile, mobile)
-         * @returns {boolean}  
+         * @returns {boolean}
          */
         isInResponsiveRange: function(mode) {
             var breakpoint = this.getViewPort().width;
@@ -293,7 +293,7 @@ var KTUtil = function() {
         /**
          * Generates unique ID for give prefix.
          * @param {string} prefix Prefix for generated ID
-         * @returns {boolean}  
+         * @returns {boolean}
          */
         getUniqueID: function(prefix) {
             return prefix + Math.floor(Math.random() * (new Date()).getTime());
@@ -302,7 +302,7 @@ var KTUtil = function() {
         /**
          * Gets window width for give breakpoint mode.
          * @param {string} mode Responsive mode name(e.g: xl, lg, md, sm)
-         * @returns {number}  
+         * @returns {number}
          */
         getBreakpoint: function(mode) {
             return breakpoints[mode];
@@ -312,7 +312,7 @@ var KTUtil = function() {
          * Checks whether object has property matchs given key path.
          * @param {object} obj Object contains values paired with given key path
          * @param {string} keys Keys path seperated with dots
-         * @returns {object}  
+         * @returns {object}
          */
         isset: function(obj, keys) {
             var stone;
@@ -346,7 +346,7 @@ var KTUtil = function() {
         /**
          * Gets highest z-index of the given element parents
          * @param {object} el jQuery element object
-         * @returns {number}  
+         * @returns {number}
          */
         getHighestZindex: function(el) {
             var elem = KTUtil.get(el),
@@ -379,7 +379,7 @@ var KTUtil = function() {
         /**
          * Checks whether the element has any parent with fixed positionfreg
          * @param {object} el jQuery element object
-         * @returns {boolean}  
+         * @returns {boolean}
          */
         hasFixedPositionedParent: function(el) {
             while (el && el !== document) {
@@ -419,7 +419,7 @@ var KTUtil = function() {
 
         /**
          * Checks whether Angular library is included
-         * @returns {boolean}  
+         * @returns {boolean}
          */
         isAngularVersion: function() {
             return window.Zone !== undefined ? true : false;
@@ -450,7 +450,7 @@ var KTUtil = function() {
             return out;
         },
 
-        // extend:  $.extend({}, objA, objB); 
+        // extend:  $.extend({}, objA, objB);
         extend: function(out) {
             out = out || {};
 
@@ -499,7 +499,7 @@ var KTUtil = function() {
 
         getByTag: function(query) {
             var el;
-            
+
             if (el = document.getElementsByTagName(query)) {
                 return el[0];
             } else {
@@ -509,7 +509,7 @@ var KTUtil = function() {
 
         getByClass: function(query) {
             var el;
-            
+
             if (el = document.getElementsByClassName(query)) {
                 return el[0];
             } else {
@@ -521,7 +521,7 @@ var KTUtil = function() {
          * Checks whether the element has given classes
          * @param {object} el jQuery element object
          * @param {string} Classes string
-         * @returns {boolean}  
+         * @returns {boolean}
          */
         hasClasses: function(el, classes) {
             if (!el) {
@@ -568,7 +568,7 @@ var KTUtil = function() {
         },
 
         removeClass: function(el, className) {
-          if (!el || typeof className === 'undefined') {
+            if (!el || typeof className === 'undefined') {
                 return;
             }
 
@@ -618,24 +618,24 @@ var KTUtil = function() {
                 // If this switch statement can't map an eventName to an eventClass,
                 // the event firing is going to fail.
                 switch (eventName) {
-                case "click": // Dispatching of 'click' appears to not work correctly in Safari. Use 'mousedown' or 'mouseup' instead.
-                case "mouseenter":
-                case "mouseleave":
-                case "mousedown":
-                case "mouseup":
-                    eventClass = "MouseEvents";
-                    break;
+                    case "click": // Dispatching of 'click' appears to not work correctly in Safari. Use 'mousedown' or 'mouseup' instead.
+                    case "mouseenter":
+                    case "mouseleave":
+                    case "mousedown":
+                    case "mouseup":
+                        eventClass = "MouseEvents";
+                        break;
 
-                case "focus":
-                case "change":
-                case "blur":
-                case "select":
-                    eventClass = "HTMLEvents";
-                    break;
+                    case "focus":
+                    case "change":
+                    case "blur":
+                    case "select":
+                        eventClass = "HTMLEvents";
+                        break;
 
-                default:
-                    throw "fireEvent: Couldn't find an event class for event '" + eventName + "'.";
-                    break;
+                    default:
+                        throw "fireEvent: Couldn't find an event class for event '" + eventName + "'.";
+                        break;
                 }
                 var event = doc.createEvent(eventClass);
 
@@ -653,11 +653,12 @@ var KTUtil = function() {
             }
         },
 
-        index: function( elm ){ 
+        index: function(elm) {
             elm = KTUtil.get(elm);
-            var c = elm.parentNode.children, i = 0;
-            for(; i < c.length; i++ )
-                if( c[i] == elm ) return i;
+            var c = elm.parentNode.children,
+                i = 0;
+            for (; i < c.length; i++)
+                if (c[i] == elm) return i;
         },
 
         trim: function(string) {
@@ -684,14 +685,14 @@ var KTUtil = function() {
             parent = KTUtil.get(parent);
             if (parent) {
                 return parent.querySelector(query);
-            }            
+            }
         },
 
         findAll: function(parent, query) {
             parent = KTUtil.get(parent);
             if (parent) {
                 return parent.querySelectorAll(query);
-            } 
+            }
         },
 
         insertAfter: function(el, referenceNode) {
@@ -784,7 +785,7 @@ var KTUtil = function() {
                         return;
                     }
 
-                    if (element.customDataTag === undefined) { 
+                    if (element.customDataTag === undefined) {
                         return null;
                     }
 
@@ -795,8 +796,8 @@ var KTUtil = function() {
                     if (element === undefined) {
                         return false;
                     }
-                    
-                    if (element.customDataTag === undefined) { 
+
+                    if (element.customDataTag === undefined) {
                         return false;
                     }
 
@@ -830,7 +831,7 @@ var KTUtil = function() {
             var rect, win;
             elem = KTUtil.get(elem);
 
-            if ( !elem ) {
+            if (!elem) {
                 return;
             }
 
@@ -839,7 +840,7 @@ var KTUtil = function() {
             // Running getBoundingClientRect on a
             // disconnected node in IE throws an error
 
-            if ( !elem.getClientRects().length ) {
+            if (!elem.getClientRects().length) {
                 return { top: 0, left: 0 };
             }
 
@@ -956,7 +957,7 @@ var KTUtil = function() {
         actualCss: function(el, prop, cache) {
             el = KTUtil.get(el);
             var css = '';
-            
+
             if (el instanceof HTMLElement === false) {
                 return;
             }
@@ -1072,7 +1073,7 @@ var KTUtil = function() {
                 calcPaddingBottom = parseInt(KTUtil.data(el).get('slide-padding-bottom'));
             }
 
-            if (dir == 'up') { // up          
+            if (dir == 'up') { // up
                 el.style.cssText = 'display: block; overflow: hidden;';
 
                 if (calcPaddingTop) {
@@ -1197,9 +1198,9 @@ var KTUtil = function() {
             el.addEventListener(type, function callee(e) {
                 // remove event
                 if (e.target && e.target.removeEventListener) {
-                    e.target.removeEventListener(e.type, callee);                    
+                    e.target.removeEventListener(e.type, callee);
                 }
-                
+
                 // call handler
                 return callback(e);
             });
@@ -1408,7 +1409,7 @@ var KTUtil = function() {
 
         // Scroller
         scrollInit: function(element, options) {
-            if(!element) return;
+            if (!element) return;
             // Define init function
             function init() {
                 var ps;
@@ -1434,7 +1435,7 @@ var KTUtil = function() {
 
                         ps.destroy();
                         ps = KTUtil.data(element).remove('ps');
-                    } else if (height > 0){
+                    } else if (height > 0) {
                         KTUtil.css(element, 'overflow', 'auto');
                         KTUtil.css(element, 'height', height + 'px');
                     }
@@ -1458,7 +1459,7 @@ var KTUtil = function() {
                         swipeEasing: true,
                         wheelPropagation: false,
                         minScrollbarLength: 40,
-                        maxScrollbarLength: 300, 
+                        maxScrollbarLength: 300,
                         suppressScrollX: KTUtil.attr(element, 'data-scroll-x') != 'true' ? true : false
                     });
 
@@ -1509,7 +1510,7 @@ var KTUtil = function() {
             if (KTUtil.get(el)) {
                 return KTUtil.get(el).innerHTML;
             }
-        } 
+        }
     }
 }();
 
@@ -1519,7 +1520,7 @@ KTUtil.ready(function() {
 });
 
 // CSS3 Transitions only after page load(.kt-page-loading class added to body tag and remove with JS on page load)
-window.onload = function() {    
+window.onload = function() {
     KTUtil.removeClass(KTUtil.get('body'), 'kt-page--loading');
 }
 "use strict";
@@ -1830,3790 +1831,3735 @@ $(document).ready(function() {
 'use strict';
 (function($) {
 
-	var pluginName = 'KTDatatable';
-	var pfx = 'kt-';
-	var util = KTUtil;
-	var app = KTApp;
+    var pluginName = 'KTDatatable';
+    var pfx = 'kt-';
+    var util = KTUtil;
+    var app = KTApp;
 
-	if (typeof util === 'undefined') throw new Error('Util class is required and must be included before ' + pluginName);
+    if (typeof util === 'undefined') throw new Error('Util class is required and must be included before ' + pluginName);
 
-	// plugin setup
-	$.fn[pluginName] = function(options) {
-		if ($(this).length === 0) {
-			console.log('No ' + pluginName + ' element exist.');
-			return;
-		}
-
-		// global variables
-		var datatable = this;
-
-		// debug enabled?
-		// 1) state will be cleared on each refresh
-		// 2) enable some logs
-		// 3) etc.
-		datatable.debug = false;
-
-		datatable.API = {
-			record: null,
-			value: null,
-			params: null,
-		};
-
-		var Plugin = {
-			/********************
-			 ** PRIVATE METHODS
-			 ********************/
-			isInit: false,
-			cellOffset: 110,
-			iconOffset: 15,
-			stateId: 'meta',
-			ajaxParams: {},
-			pagingObject: {},
-
-			init: function(options) {
-				var isHtmlTable = false;
-				// data source option empty is normal table
-				if (options.data.source === null) {
-					Plugin.extractTable();
-					isHtmlTable = true;
-				}
-
-				Plugin.setupBaseDOM.call();
-				Plugin.setupDOM(datatable.table);
-				// Plugin.spinnerCallback(true);
-
-				// set custom query from options
-				Plugin.setDataSourceQuery(Plugin.getOption('data.source.read.params.query'));
-
-				// on event after layout had done setup, show datatable
-				$(datatable).on(pfx + 'datatable--on-layout-updated', Plugin.afterRender);
-
-				if (datatable.debug) Plugin.stateRemove(Plugin.stateId);
-
-				// initialize extensions
-				$.each(Plugin.getOption('extensions'), function(extName, extOptions) {
-					if (typeof $.fn[pluginName][extName] === 'function')
-						new $.fn[pluginName][extName](datatable, extOptions);
-				});
-
-				// get data
-				if (options.data.type === 'remote' || options.data.type === 'local') {
-					if (options.data.saveState === false
-						|| options.data.saveState.cookie === false
-						&& options.data.saveState.webstorage === false) {
-						Plugin.stateRemove(Plugin.stateId);
-					}
-					// get data for local datatable and local table
-					if (options.data.type === 'local' && typeof options.data.source === 'object') {
-						datatable.dataSet = datatable.originalDataSet = Plugin.dataMapCallback(options.data.source);
-					}
-					Plugin.dataRender();
-				}
-
-        // if html table, remove and setup a new header
-        if (isHtmlTable) {
-          $(datatable.tableHead).find('tr').remove();
-          $(datatable.tableFoot).find('tr').remove();
+    // plugin setup
+    $.fn[pluginName] = function(options) {
+        if ($(this).length === 0) {
+            console.log('No ' + pluginName + ' element exist.');
+            return;
         }
 
-        Plugin.setHeadTitle();
-        if (Plugin.getOption('layout.footer')) {
-          Plugin.setHeadTitle(datatable.tableFoot);
+        // global variables
+        var datatable = this;
+
+        // debug enabled?
+        // 1) state will be cleared on each refresh
+        // 2) enable some logs
+        // 3) etc.
+        datatable.debug = false;
+
+        datatable.API = {
+            record: null,
+            value: null,
+            params: null,
+        };
+
+        var Plugin = {
+            /********************
+             ** PRIVATE METHODS
+             ********************/
+            isInit: false,
+            cellOffset: 110,
+            iconOffset: 15,
+            stateId: 'meta',
+            ajaxParams: {},
+            pagingObject: {},
+
+            init: function(options) {
+                var isHtmlTable = false;
+                // data source option empty is normal table
+                if (options.data.source === null) {
+                    Plugin.extractTable();
+                    isHtmlTable = true;
+                }
+
+                Plugin.setupBaseDOM.call();
+                Plugin.setupDOM(datatable.table);
+                // Plugin.spinnerCallback(true);
+
+                // set custom query from options
+                Plugin.setDataSourceQuery(Plugin.getOption('data.source.read.params.query'));
+
+                // on event after layout had done setup, show datatable
+                $(datatable).on(pfx + 'datatable--on-layout-updated', Plugin.afterRender);
+
+                if (datatable.debug) Plugin.stateRemove(Plugin.stateId);
+
+                // initialize extensions
+                $.each(Plugin.getOption('extensions'), function(extName, extOptions) {
+                    if (typeof $.fn[pluginName][extName] === 'function')
+                        new $.fn[pluginName][extName](datatable, extOptions);
+                });
+
+                // get data
+                if (options.data.type === 'remote' || options.data.type === 'local') {
+                    if (options.data.saveState === false ||
+                        options.data.saveState.cookie === false &&
+                        options.data.saveState.webstorage === false) {
+                        Plugin.stateRemove(Plugin.stateId);
+                    }
+                    // get data for local datatable and local table
+                    if (options.data.type === 'local' && typeof options.data.source === 'object') {
+                        datatable.dataSet = datatable.originalDataSet = Plugin.dataMapCallback(options.data.source);
+                    }
+                    Plugin.dataRender();
+                }
+
+                // if html table, remove and setup a new header
+                if (isHtmlTable) {
+                    $(datatable.tableHead).find('tr').remove();
+                    $(datatable.tableFoot).find('tr').remove();
+                }
+
+                Plugin.setHeadTitle();
+                if (Plugin.getOption('layout.footer')) {
+                    Plugin.setHeadTitle(datatable.tableFoot);
+                }
+
+                // hide header
+                if (typeof options.layout.header !== 'undefined' &&
+                    options.layout.header === false) {
+                    $(datatable.table).find('thead').remove();
+                }
+
+                // hide footer
+                if (typeof options.layout.footer !== 'undefined' &&
+                    options.layout.footer === false) {
+                    $(datatable.table).find('tfoot').remove();
+                }
+
+                // for normal and local data type, run layoutUpdate
+                if (options.data.type === null ||
+                    options.data.type === 'local') {
+                    Plugin.setupCellField.call();
+                    Plugin.setupTemplateCell.call();
+
+                    // setup nested datatable, if option enabled
+                    Plugin.setupSubDatatable.call();
+
+                    // setup extra system column properties
+                    Plugin.setupSystemColumn.call();
+                    Plugin.redraw();
+                }
+
+                var width;
+                var initialWidth = false;
+                $(window).resize(function() {
+                    // get initial width
+                    if (!initialWidth) {
+                        width = $(this).width();
+                        initialWidth = true;
+                    }
+                    // issue: URL Bar Resizing on mobile, https://developers.google.com/web/updates/2016/12/url-bar-resizing
+                    // trigger datatable resize on width change only
+                    if ($(this).width() !== width) {
+                        width = $(this).width();
+                        Plugin.fullRender();
+                    }
+                });
+
+                $(datatable).height('');
+
+                $(Plugin.getOption('search.input')).on('keyup', function(e) {
+                    if (Plugin.getOption('search.onEnter') && e.which !== 13) return;
+                    Plugin.search($(this).val());
+                });
+
+                return datatable;
+            },
+
+            /**
+             * Extract static HTML table content into datasource
+             */
+            extractTable: function() {
+                var columns = [];
+                var headers = $(datatable).find('tr:first-child th').get().map(function(cell, i) {
+                    var field = $(cell).data('field');
+                    if (typeof field === 'undefined') {
+                        field = $(cell).text().trim();
+                    }
+                    var column = { field: field, title: field };
+                    for (var ii in options.columns) {
+                        if (options.columns[ii].field === field) {
+                            column = $.extend(true, {}, options.columns[ii], column);
+                        }
+                    }
+                    columns.push(column);
+                    return field;
+                });
+                // auto create columns config
+                options.columns = columns;
+
+                var rowProp = [];
+                var source = [];
+
+                $(datatable).find('tr').each(function() {
+                    if ($(this).find('td').length) {
+                        rowProp.push($(this).prop('attributes'));
+                    }
+                    var td = {};
+                    $(this).find('td').each(function(i, cell) {
+                        td[headers[i]] = cell.innerHTML.trim();
+                    });
+                    if (!util.isEmpty(td)) {
+                        source.push(td);
+                    }
+                });
+
+                options.data.attr.rowProps = rowProp;
+                options.data.source = source;
+            },
+
+            /**
+             * One time layout update on init
+             */
+            layoutUpdate: function() {
+                // setup nested datatable, if option enabled
+                Plugin.setupSubDatatable.call();
+
+                // setup extra system column properties
+                Plugin.setupSystemColumn.call();
+
+                // setup cell hover event
+                Plugin.setupHover.call();
+
+                if (typeof options.detail === 'undefined'
+                    // temporary disable lock column in subtable
+                    &&
+                    Plugin.getDepth() === 1) {
+                    // lock columns handler
+                    Plugin.lockTable.call();
+                }
+
+                Plugin.columnHide.call();
+
+                Plugin.resetScroll();
+
+                // check if not is a locked column
+                if (!Plugin.isLocked()) {
+                    Plugin.redraw.call();
+                    // check if its not a subtable and has autoHide option enabled
+                    if (!Plugin.isSubtable() && Plugin.getOption('rows.autoHide') === true) {
+                        Plugin.autoHide();
+                    }
+                    // reset row
+                    $(datatable.table).find('.' + pfx + 'datatable__row').css('height', '');
+                }
+
+                Plugin.rowEvenOdd.call();
+
+                Plugin.sorting.call();
+
+                Plugin.scrollbar.call();
+
+                if (!Plugin.isInit) {
+                    // run once dropdown inside datatable
+                    Plugin.dropdownFix();
+                    $(datatable).trigger(pfx + 'datatable--on-init', { table: $(datatable.wrap).attr('id'), options: options });
+                    Plugin.isInit = true;
+                }
+
+                $(datatable).trigger(pfx + 'datatable--on-layout-updated', { table: $(datatable.wrap).attr('id') });
+            },
+
+            lockTable: function() {
+                var lock = {
+                    lockEnabled: false,
+                    init: function() {
+                        // check if table should be locked columns
+                        lock.lockEnabled = Plugin.lockEnabledColumns();
+                        if (lock.lockEnabled.left.length === 0 &&
+                            lock.lockEnabled.right.length === 0) {
+                            return;
+                        }
+                        lock.enable();
+                    },
+                    enable: function() {
+                        var enableLock = function(tablePart) {
+                            // check if already has lock column
+                            if ($(tablePart).find('.' + pfx + 'datatable__lock').length > 0) {
+                                Plugin.log('Locked container already exist in: ', tablePart);
+                                return;
+                            }
+                            // check if no rows exists
+                            if ($(tablePart).find('.' + pfx + 'datatable__row').length === 0) {
+                                Plugin.log('No row exist in: ', tablePart);
+                                return;
+                            }
+
+                            // locked div container
+                            var lockLeft = $('<div/>').addClass(pfx + 'datatable__lock ' + pfx + 'datatable__lock--left');
+                            var lockScroll = $('<div/>').addClass(pfx + 'datatable__lock ' + pfx + 'datatable__lock--scroll');
+                            var lockRight = $('<div/>').addClass(pfx + 'datatable__lock ' + pfx + 'datatable__lock--right');
+
+                            $(tablePart).find('.' + pfx + 'datatable__row').each(function() {
+                                // create new row for lock columns and pass the data
+                                var rowLeft = $('<tr/>').addClass(pfx + 'datatable__row').data('obj', $(this).data('obj')).appendTo(lockLeft);
+                                var rowScroll = $('<tr/>').addClass(pfx + 'datatable__row').data('obj', $(this).data('obj')).appendTo(lockScroll);
+                                var rowRight = $('<tr/>').addClass(pfx + 'datatable__row').data('obj', $(this).data('obj')).appendTo(lockRight);
+                                $(this).find('.' + pfx + 'datatable__cell').each(function() {
+                                    var locked = $(this).data('locked');
+                                    if (typeof locked !== 'undefined') {
+                                        if (typeof locked.left !== 'undefined' || locked === true) {
+                                            // default locked to left
+                                            $(this).appendTo(rowLeft);
+                                        }
+                                        if (typeof locked.right !== 'undefined') {
+                                            $(this).appendTo(rowRight);
+                                        }
+                                    } else {
+                                        $(this).appendTo(rowScroll);
+                                    }
+                                });
+                                // remove old row
+                                $(this).remove();
+                            });
+
+                            if (lock.lockEnabled.left.length > 0) {
+                                $(datatable.wrap).addClass(pfx + 'datatable--lock');
+                                $(lockLeft).appendTo(tablePart);
+                            }
+                            if (lock.lockEnabled.left.length > 0 || lock.lockEnabled.right.length > 0) {
+                                $(lockScroll).appendTo(tablePart);
+                            }
+                            if (lock.lockEnabled.right.length > 0) {
+                                $(datatable.wrap).addClass(pfx + 'datatable--lock');
+                                $(lockRight).appendTo(tablePart);
+                            }
+                        };
+
+                        $(datatable.table).find('thead,tbody,tfoot').each(function() {
+                            var tablePart = this;
+                            if ($(this).find('.' + pfx + 'datatable__lock').length === 0) {
+                                $(this).ready(function() {
+                                    enableLock(tablePart);
+                                });
+                            }
+                        });
+                    },
+                };
+                lock.init();
+                return lock;
+            },
+
+            /**
+             * Render everything for resize
+             */
+            fullRender: function() {
+                $(datatable.tableHead).empty();
+                Plugin.setHeadTitle();
+                if (Plugin.getOption('layout.footer')) {
+                    $(datatable.tableFoot).empty();
+                    Plugin.setHeadTitle(datatable.tableFoot);
+                }
+
+                Plugin.spinnerCallback(true);
+                $(datatable.wrap).removeClass(pfx + 'datatable--loaded');
+
+                Plugin.insertData();
+            },
+
+            lockEnabledColumns: function() {
+                var screen = $(window).width();
+                var columns = options.columns;
+                var enabled = { left: [], right: [] };
+                $.each(columns, function(i, column) {
+                    if (typeof column.locked !== 'undefined') {
+                        if (typeof column.locked.left !== 'undefined') {
+                            if (util.getBreakpoint(column.locked.left) <= screen) {
+                                enabled['left'].push(column.locked.left);
+                            }
+                        }
+                        if (typeof column.locked.right !== 'undefined') {
+                            if (util.getBreakpoint(column.locked.right) <= screen) {
+                                enabled['right'].push(column.locked.right);
+                            }
+                        }
+                    }
+                });
+                return enabled;
+            },
+
+            /**
+             * After render event, called by
+             * '+pfx+'-datatable--on-layout-updated
+             * @param e
+             * @param args
+             */
+            afterRender: function(e, args) {
+                $(datatable).ready(function() {
+                    // redraw locked columns table
+                    if (Plugin.isLocked()) {
+                        Plugin.redraw();
+                    }
+
+                    $(datatable.tableBody).css('visibility', '');
+                    $(datatable.wrap).addClass(pfx + 'datatable--loaded');
+
+                    Plugin.spinnerCallback(false);
+                });
+            },
+
+            dropdownFix: function() {
+                var dropdownMenu;
+                $('body').on('show.bs.dropdown', '.' + pfx + 'datatable .' + pfx + 'datatable__body', function(e) {
+                    dropdownMenu = $(e.target).find('.dropdown-menu');
+                    $('body').append(dropdownMenu.detach());
+                    dropdownMenu.css('display', 'block');
+                    dropdownMenu.position({
+                        'my': 'right top',
+                        'at': 'right bottom',
+                        'of': $(e.relatedTarget),
+                    });
+                    // if datatable is inside modal
+                    if (datatable.closest('.modal').length) {
+                        // increase dropdown z-index
+                        dropdownMenu.css('z-index', '2000');
+                    }
+                }).on('hide.bs.dropdown', '.' + pfx + 'datatable .' + pfx + 'datatable__body', function(e) {
+                    $(e.target).append(dropdownMenu.detach());
+                    dropdownMenu.hide();
+                });
+            },
+
+            hoverTimer: 0,
+            isScrolling: false,
+            setupHover: function() {
+                $(window).scroll(function(e) {
+                    // stop hover when scrolling
+                    clearTimeout(Plugin.hoverTimer);
+                    Plugin.isScrolling = true;
+                });
+
+                $(datatable.tableBody).find('.' + pfx + 'datatable__cell').off('mouseenter', 'mouseleave').on('mouseenter', function() {
+                    // reset scroll timer to hover class
+                    Plugin.hoverTimer = setTimeout(function() {
+                        Plugin.isScrolling = false;
+                    }, 200);
+                    if (Plugin.isScrolling) return;
+
+                    // normal table
+                    var row = $(this).closest('.' + pfx + 'datatable__row').addClass(pfx + 'datatable__row--hover');
+                    var index = $(row).index() + 1;
+
+                    // lock table
+                    $(row).closest('.' + pfx + 'datatable__lock').parent().find('.' + pfx + 'datatable__row:nth-child(' + index + ')').addClass(pfx + 'datatable__row--hover');
+                }).on('mouseleave', function() {
+                    // normal table
+                    var row = $(this).closest('.' + pfx + 'datatable__row').removeClass(pfx + 'datatable__row--hover');
+                    var index = $(row).index() + 1;
+
+                    // look table
+                    $(row).closest('.' + pfx + 'datatable__lock').parent().find('.' + pfx + 'datatable__row:nth-child(' + index + ')').removeClass(pfx + 'datatable__row--hover');
+                });
+            },
+
+            /**
+             * Adjust width of locked table containers by resize handler
+             * @returns {number}
+             */
+            adjustLockContainer: function() {
+                if (!Plugin.isLocked()) return 0;
+
+                // refer to head dimension
+                var containerWidth = $(datatable.tableHead).width();
+                var lockLeft = $(datatable.tableHead).find('.' + pfx + 'datatable__lock--left').width();
+                var lockRight = $(datatable.tableHead).find('.' + pfx + 'datatable__lock--right').width();
+
+                if (typeof lockLeft === 'undefined') lockLeft = 0;
+                if (typeof lockRight === 'undefined') lockRight = 0;
+
+                var lockScroll = Math.floor(containerWidth - lockLeft - lockRight);
+                $(datatable.table).find('.' + pfx + 'datatable__lock--scroll').css('width', lockScroll);
+
+                return lockScroll;
+            },
+
+            /**
+             * todo; not in use
+             */
+            dragResize: function() {
+                var pressed = false;
+                var start = undefined;
+                var startX, startWidth;
+                $(datatable.tableHead).find('.' + pfx + 'datatable__cell').mousedown(function(e) {
+                    start = $(this);
+                    pressed = true;
+                    startX = e.pageX;
+                    startWidth = $(this).width();
+                    $(start).addClass(pfx + 'datatable__cell--resizing');
+
+                }).mousemove(function(e) {
+                    if (pressed) {
+                        var i = $(start).index();
+                        var tableBody = $(datatable.tableBody);
+                        var ifLocked = $(start).closest('.' + pfx + 'datatable__lock');
+
+                        if (ifLocked) {
+                            var lockedIndex = $(ifLocked).index();
+                            tableBody = $(datatable.tableBody).find('.' + pfx + 'datatable__lock').eq(lockedIndex);
+                        }
+
+                        $(tableBody).find('.' + pfx + 'datatable__row').each(function(tri, tr) {
+                            $(tr).find('.' + pfx + 'datatable__cell').eq(i).width(startWidth + (e.pageX - startX)).children().width(startWidth + (e.pageX - startX));
+                        });
+
+                        $(start).children().css('width', startWidth + (e.pageX - startX));
+                    }
+
+                }).mouseup(function() {
+                    $(start).removeClass(pfx + 'datatable__cell--resizing');
+                    pressed = false;
+                });
+
+                $(document).mouseup(function() {
+                    $(start).removeClass(pfx + 'datatable__cell--resizing');
+                    pressed = false;
+                });
+            },
+
+            /**
+             * To prepare placeholder for table before content is loading
+             */
+            initHeight: function() {
+                if (options.layout.height && options.layout.scroll) {
+                    var theadHeight = $(datatable.tableHead).find('.' + pfx + 'datatable__row').outerHeight();
+                    var tfootHeight = $(datatable.tableFoot).find('.' + pfx + 'datatable__row').outerHeight();
+                    var bodyHeight = options.layout.height;
+                    if (theadHeight > 0) {
+                        bodyHeight -= theadHeight;
+                    }
+                    if (tfootHeight > 0) {
+                        bodyHeight -= tfootHeight;
+                    }
+
+                    // scrollbar offset
+                    bodyHeight -= 2;
+
+                    $(datatable.tableBody).css('max-height', bodyHeight);
+
+                    // set scrollable area fixed height
+                    $(datatable.tableBody).find('.' + pfx + 'datatable__lock--scroll').css('height', bodyHeight);
+                }
+            },
+
+            /**
+             * Setup base DOM (table, thead, tbody, tfoot) and create if not
+             * exist.
+             */
+            setupBaseDOM: function() {
+                // keep original state before datatable initialize
+                datatable.initialDatatable = $(datatable).clone();
+
+                // main element
+                if ($(datatable).prop('tagName') === 'TABLE') {
+                    // if main init element is <table>, wrap with div
+                    datatable.table = $(datatable).removeClass(pfx + 'datatable').addClass(pfx + 'datatable__table');
+                    if ($(datatable.table).parents('.' + pfx + 'datatable').length === 0) {
+                        datatable.table.wrap($('<div/>').addClass(pfx + 'datatable').addClass(pfx + 'datatable--' + options.layout.theme));
+                        datatable.wrap = $(datatable.table).parent();
+                    }
+                } else {
+                    // create table
+                    datatable.wrap = $(datatable).addClass(pfx + 'datatable').addClass(pfx + 'datatable--' + options.layout.theme);
+                    datatable.table = $('<table/>').addClass(pfx + 'datatable__table').appendTo(datatable);
+                }
+
+                if (typeof options.layout.class !== 'undefined') {
+                    $(datatable.wrap).addClass(options.layout.class);
+                }
+
+                $(datatable.table).removeClass(pfx + 'datatable--destroyed').css('display', 'block');
+
+                // force disable save state
+                if (typeof $(datatable).attr('id') === 'undefined') {
+                    Plugin.setOption('data.saveState', false);
+                    $(datatable.table).attr('id', util.getUniqueID(pfx + 'datatable--'));
+                }
+
+                // predefine table height
+                if (Plugin.getOption('layout.minHeight'))
+                    $(datatable.table).css('min-height', Plugin.getOption('layout.minHeight'));
+
+                if (Plugin.getOption('layout.height'))
+                    $(datatable.table).css('max-height', Plugin.getOption('layout.height'));
+
+                // for normal table load
+                if (options.data.type === null) {
+                    $(datatable.table).css('width', '').css('display', '');
+                }
+
+                // create table head element
+                datatable.tableHead = $(datatable.table).find('thead');
+                if ($(datatable.tableHead).length === 0) {
+                    datatable.tableHead = $('<thead/>').prependTo(datatable.table);
+                }
+
+                // create table head element
+                datatable.tableBody = $(datatable.table).find('tbody');
+                if ($(datatable.tableBody).length === 0) {
+                    datatable.tableBody = $('<tbody/>').appendTo(datatable.table);
+                }
+
+                if (typeof options.layout.footer !== 'undefined' &&
+                    options.layout.footer) {
+                    // create table foot element
+                    datatable.tableFoot = $(datatable.table).find('tfoot');
+                    if ($(datatable.tableFoot).length === 0) {
+                        datatable.tableFoot = $('<tfoot/>').appendTo(datatable.table);
+                    }
+                }
+            },
+
+            /**
+             * Set column data before table manipulation.
+             */
+            setupCellField: function(tableParts) {
+                if (typeof tableParts === 'undefined') tableParts = $(datatable.table).children();
+                var columns = options.columns;
+                $.each(tableParts, function(part, tablePart) {
+                    $(tablePart).find('.' + pfx + 'datatable__row').each(function(tri, tr) {
+                        // prepare data
+                        $(tr).find('.' + pfx + 'datatable__cell').each(function(tdi, td) {
+                            if (typeof columns[tdi] !== 'undefined') {
+                                $(td).data(columns[tdi]);
+                            }
+                        });
+                    });
+                });
+            },
+
+            /**
+             * Set column template callback
+             * @param tablePart
+             */
+            setupTemplateCell: function(tablePart) {
+                if (typeof tablePart === 'undefined') tablePart = datatable.tableBody;
+                var columns = options.columns;
+                $(tablePart).find('.' + pfx + 'datatable__row').each(function(tri, tr) {
+                    // row data object, if any
+                    var obj = $(tr).data('obj');
+                    if (typeof obj === 'undefined') {
+                        return;
+                    }
+
+                    // @deprecated in v5.0.6
+                    // obj['getIndex'] = function() {
+                    // 	return tri;
+                    // };
+                    // @deprecated in v5.0.6
+                    // obj['getDatatable'] = function() {
+                    // 	return datatable;
+                    // };
+
+                    // @deprecated in v5.0.6
+                    var rowCallback = Plugin.getOption('rows.callback');
+                    if (typeof rowCallback === 'function') {
+                        rowCallback($(tr), obj, tri);
+                    }
+                    // before template row callback
+                    var beforeTemplate = Plugin.getOption('rows.beforeTemplate');
+                    if (typeof beforeTemplate === 'function') {
+                        beforeTemplate($(tr), obj, tri);
+                    }
+                    // if data object is undefined, collect from table
+                    if (typeof obj === 'undefined') {
+                        obj = {};
+                        $(tr).find('.' + pfx + 'datatable__cell').each(function(tdi, td) {
+                            // get column settings by field
+                            var column = $.grep(columns, function(n, i) {
+                                return $(td).data('field') === n.field;
+                            })[0];
+                            if (typeof column !== 'undefined') {
+                                obj[column['field']] = $(td).text();
+                            }
+                        });
+                    }
+
+                    $(tr).find('.' + pfx + 'datatable__cell').each(function(tdi, td) {
+                        // get column settings by field
+                        var column = $.grep(columns, function(n, i) {
+                            return $(td).data('field') === n.field;
+                        })[0];
+                        if (typeof column !== 'undefined') {
+                            // column template
+                            if (typeof column.template !== 'undefined') {
+                                var finalValue = '';
+                                // template string
+                                if (typeof column.template === 'string') {
+                                    finalValue = Plugin.dataPlaceholder(column.template, obj);
+                                }
+                                // template callback function
+                                if (typeof column.template === 'function') {
+                                    finalValue = column.template(obj, tri, datatable);
+                                }
+
+                                // sanitize using DOMPurify if installed
+                                if (typeof DOMPurify !== 'undefined') {
+                                    finalValue = DOMPurify.sanitize(finalValue);
+                                }
+
+                                var span = document.createElement('span');
+                                span.innerHTML = finalValue;
+
+                                // insert to cell, wrap with span
+                                $(td).html(span);
+
+                                // set span overflow
+                                if (typeof column.overflow !== 'undefined') {
+                                    $(span).css('overflow', column.overflow);
+                                    $(span).css('position', 'relative');
+                                }
+                            }
+                        }
+                    });
+
+                    // after template row callback
+                    var afterTemplate = Plugin.getOption('rows.afterTemplate');
+                    if (typeof afterTemplate === 'function') {
+                        afterTemplate($(tr), obj, tri);
+                    }
+                });
+            },
+
+            /**
+             * Setup extra system column properties
+             * Note: selector checkbox, subtable toggle
+             */
+            setupSystemColumn: function() {
+                datatable.dataSet = datatable.dataSet || [];
+                // no records available
+                if (datatable.dataSet.length === 0) return;
+
+                var columns = options.columns;
+                $(datatable.tableBody).find('.' + pfx + 'datatable__row').each(function(tri, tr) {
+                    $(tr).find('.' + pfx + 'datatable__cell').each(function(tdi, td) {
+                        // get column settings by field
+                        var column = $.grep(columns, function(n, i) {
+                            return $(td).data('field') === n.field;
+                        })[0];
+                        if (typeof column !== 'undefined') {
+                            var value = $(td).text();
+
+                            // enable column selector
+                            if (typeof column.selector !== 'undefined' && column.selector !== false) {
+                                // check if checkbox exist
+                                if ($(td).find('.' + pfx + 'checkbox [type="checkbox"]').length > 0) return;
+
+                                $(td).addClass(pfx + 'datatable__cell--check');
+
+                                // append checkbox
+                                var chk = $('<label/>').
+                                addClass(pfx + 'checkbox ' + pfx + 'checkbox--single').
+                                append($('<input/>').attr('type', 'checkbox').attr('value', value).on('click', function() {
+                                    if ($(this).is(':checked')) {
+                                        // add checkbox active row class
+                                        Plugin.setActive(this);
+                                    } else {
+                                        // add checkbox active row class
+                                        Plugin.setInactive(this);
+                                    }
+                                })).
+                                append('&nbsp;<span></span>');
+
+                                // checkbox selector has outline style
+                                if (typeof column.selector.class !== 'undefined') {
+                                    $(chk).addClass(column.selector.class);
+                                }
+
+                                $(td).children().html(chk);
+                            }
+
+                            // enable column subtable toggle
+                            if (typeof column.subtable !== 'undefined' && column.subtable) {
+                                // check if subtable toggle exist
+                                if ($(td).find('.' + pfx + 'datatable__toggle-subtable').length > 0) return;
+                                // append subtable toggle
+                                $(td).
+                                children().
+                                html($('<a/>').addClass(pfx + 'datatable__toggle-subtable').attr('href', '#').attr('data-value', value).append($('<i/>').addClass(Plugin.getOption('layout.icons.rowDetail.collapse'))));
+                            }
+                        }
+                    });
+                });
+
+                // init checkbox for header/footer
+                var initCheckbox = function(tr) {
+                    // get column settings by field
+                    var column = $.grep(columns, function(n, i) {
+                        return typeof n.selector !== 'undefined' && n.selector !== false;
+                    })[0];
+
+                    if (typeof column !== 'undefined') {
+                        // enable column selector
+                        if (typeof column.selector !== 'undefined' && column.selector !== false) {
+                            var td = $(tr).find('[data-field="' + column.field + '"]');
+                            // check if checkbox exist
+                            if ($(td).find('.' + pfx + 'checkbox [type="checkbox"]').length > 0) return;
+
+                            $(td).addClass(pfx + 'datatable__cell--check');
+
+                            // append checkbox
+                            var chk = $('<label/>').
+                            addClass(pfx + 'checkbox ' + pfx + 'checkbox--single ' + pfx + 'checkbox--all').
+                            append($('<input/>').attr('type', 'checkbox').on('click', function() {
+                                if ($(this).is(':checked')) {
+                                    Plugin.setActiveAll(true);
+                                } else {
+                                    Plugin.setActiveAll(false);
+                                }
+                            })).
+                            append('&nbsp;<span></span>');
+
+                            // checkbox selector has outline style
+                            if (typeof column.selector.class !== 'undefined') {
+                                $(chk).addClass(column.selector.class);
+                            }
+
+                            $(td).children().html(chk);
+                        }
+                    }
+                };
+
+                if (options.layout.header) {
+                    initCheckbox($(datatable.tableHead).find('.' + pfx + 'datatable__row').first());
+                }
+                if (options.layout.footer) {
+                    initCheckbox($(datatable.tableFoot).find('.' + pfx + 'datatable__row').first());
+                }
+            },
+
+            /**
+             * Adjust width to match container size
+             */
+            adjustCellsWidth: function() {
+                // get table width
+                var containerWidth = $(datatable.tableBody).innerWidth() - Plugin.iconOffset;
+
+                // get total number of columns
+                var columns = $(datatable.tableBody).
+                find('.' + pfx + 'datatable__row:first-child').
+                find('.' + pfx + 'datatable__cell').
+                    // exclude expand icon
+                not('.' + pfx + 'datatable__toggle-detail').
+                not(':hidden').length;
+
+                if (columns > 0) {
+                    //  remove reserved sort icon width
+                    containerWidth = containerWidth - (Plugin.iconOffset * columns);
+                    var minWidth = Math.floor(containerWidth / columns);
+
+                    // minimum width
+                    if (minWidth <= Plugin.cellOffset) {
+                        minWidth = Plugin.cellOffset;
+                    }
+
+                    var maxWidthList = {};
+                    $(datatable.table).find('.' + pfx + 'datatable__row').
+                    find('.' + pfx + 'datatable__cell').
+                        // exclude expand icon
+                    not('.' + pfx + 'datatable__toggle-detail').
+                    not(':hidden').each(function(tdi, td) {
+
+                        var width = minWidth;
+                        var dataWidth = $(td).data('width');
+
+                        if (typeof dataWidth !== 'undefined') {
+
+                            if (dataWidth === 'auto') {
+                                var field = $(td).data('field');
+                                if (maxWidthList[field]) {
+                                    width = maxWidthList[field];
+                                } else {
+                                    var cells = $(datatable.table).find('.' + pfx + 'datatable__cell[data-field="' + field + '"]');
+                                    width = maxWidthList[field] = Math.max.apply(null,
+                                        $(cells).map(function() {
+                                            return $(this).outerWidth();
+                                        }).get());
+                                }
+                            } else {
+                                width = dataWidth;
+                            }
+                        }
+                        $(td).children().css('width', Math.ceil(width));
+                    });
+                }
+
+                return datatable;
+            },
+
+            /**
+             * Adjust height to match container size
+             */
+            adjustCellsHeight: function() {
+                $.each($(datatable.table).children(), function(part, tablePart) {
+                    var totalRows = $(tablePart).find('.' + pfx + 'datatable__row').first().parent().find('.' + pfx + 'datatable__row').length;
+                    for (var i = 1; i <= totalRows; i++) {
+                        var rows = $(tablePart).find('.' + pfx + 'datatable__row:nth-child(' + i + ')');
+                        if ($(rows).length > 0) {
+                            var maxHeight = Math.max.apply(null, $(rows).map(function() {
+                                return $(this).outerHeight();
+                            }).get());
+                            $(rows).css('height', Math.ceil(maxHeight));
+                        }
+                    }
+                });
+            },
+
+            /**
+             * Setup table DOM and classes
+             */
+            setupDOM: function(table) {
+                // set table classes
+                $(table).find('> thead').addClass(pfx + 'datatable__head');
+                $(table).find('> tbody').addClass(pfx + 'datatable__body');
+                $(table).find('> tfoot').addClass(pfx + 'datatable__foot');
+                $(table).find('tr').addClass(pfx + 'datatable__row');
+                $(table).find('tr > th, tr > td').addClass(pfx + 'datatable__cell');
+                $(table).find('tr > th, tr > td').each(function(i, td) {
+                    if ($(td).find('span').length === 0) {
+                        $(td).wrapInner($('<span/>').css('width', Plugin.cellOffset));
+                    }
+                });
+            },
+
+            /**
+             * Default scrollbar
+             * @returns {{tableLocked: null, init: init, onScrolling:
+             *     onScrolling}}
+             */
+            scrollbar: function() {
+                var scroll = {
+                    scrollable: null,
+                    tableLocked: null,
+                    initPosition: null,
+                    init: function() {
+                        var screen = util.getViewPort().width;
+                        // setup scrollable datatable
+                        if (options.layout.scroll) {
+                            // add scrollable datatable class
+                            $(datatable.wrap).addClass(pfx + 'datatable--scroll');
+
+                            var scrollable = $(datatable.tableBody).find('.' + pfx + 'datatable__lock--scroll');
+
+                            // check if scrollable area have rows
+                            if ($(scrollable).find('.' + pfx + 'datatable__row').length > 0 && $(scrollable).length > 0) {
+                                scroll.scrollHead = $(datatable.tableHead).find('> .' + pfx + 'datatable__lock--scroll > .' + pfx + 'datatable__row');
+                                scroll.scrollFoot = $(datatable.tableFoot).find('> .' + pfx + 'datatable__lock--scroll > .' + pfx + 'datatable__row');
+                                scroll.tableLocked = $(datatable.tableBody).find('.' + pfx + 'datatable__lock:not(.' + pfx + 'datatable__lock--scroll)');
+                                if (Plugin.getOption('layout.customScrollbar') && util.detectIE() != 10 && screen > util.getBreakpoint('lg')) {
+                                    scroll.initCustomScrollbar(scrollable[0]);
+                                } else {
+                                    scroll.initDefaultScrollbar(scrollable);
+                                }
+                            } else if ($(datatable.tableBody).find('.' + pfx + 'datatable__row').length > 0) {
+                                scroll.scrollHead = $(datatable.tableHead).find('> .' + pfx + 'datatable__row');
+                                scroll.scrollFoot = $(datatable.tableFoot).find('> .' + pfx + 'datatable__row');
+                                if (Plugin.getOption('layout.customScrollbar') && util.detectIE() != 10 && screen > util.getBreakpoint('lg')) {
+                                    scroll.initCustomScrollbar(datatable.tableBody);
+                                } else {
+                                    scroll.initDefaultScrollbar(datatable.tableBody);
+                                }
+                            }
+                        }
+                    },
+                    initDefaultScrollbar: function(scrollable) {
+                        // get initial scroll position
+                        scroll.initPosition = $(scrollable).scrollLeft();
+                        $(scrollable).css('overflow-y', 'auto').off().on('scroll', scroll.onScrolling);
+                        if (Plugin.getOption('rows.autoHide') !== true) {
+                            $(scrollable).css('overflow-x', 'auto');
+                        }
+                    },
+                    onScrolling: function(e) {
+                        var left = $(this).scrollLeft();
+                        var top = $(this).scrollTop();
+                        if (util.isRTL()) {
+                            // deduct initial position for RTL
+                            left = left - scroll.initPosition;
+                        }
+                        $(scroll.scrollHead).css('left', -left);
+                        $(scroll.scrollFoot).css('left', -left);
+                        $(scroll.tableLocked).each(function(i, table) {
+                            if (Plugin.isLocked()) {
+                                // scrollbar offset
+                                top -= 1;
+                            }
+                            $(table).css('top', -top);
+                        });
+                    },
+                    initCustomScrollbar: function(scrollable) {
+                        scroll.scrollable = scrollable;
+                        // create a new instance for table body with scrollbar
+                        Plugin.initScrollbar(scrollable);
+                        // get initial scroll position
+                        scroll.initPosition = $(scrollable).scrollLeft();
+                        $(scrollable).off().on('scroll', scroll.onScrolling);
+                    },
+                };
+                scroll.init();
+                return scroll;
+            },
+
+            /**
+             * Init custom scrollbar and reset position
+             * @param element
+             * @param options
+             */
+            initScrollbar: function(element, options) {
+                if (!element || !element.nodeName) {
+                    return;
+                }
+                $(datatable.tableBody).css('overflow', '');
+                if (util.hasClass(element, 'ps')) {
+                    $(element).data('ps').update();
+                } else {
+                    var ps = new PerfectScrollbar(element, Object.assign({}, {
+                        wheelSpeed: 0.5,
+                        swipeEasing: true,
+                        // wheelPropagation: false,
+                        minScrollbarLength: 40,
+                        maxScrollbarLength: 300,
+                        suppressScrollX: Plugin.getOption('rows.autoHide') && !Plugin.isLocked()
+                    }, options));
+                    $(element).data('ps', ps);
+
+                    // reset perfect scrollbar on resize
+                    $(window).resize(function() {
+                        ps.update();
+                    });
+                }
+            },
+
+            /**
+             * Set column title from options.columns settings
+             */
+            setHeadTitle: function(tablePart) {
+                if (typeof tablePart === 'undefined') tablePart = datatable.tableHead;
+                tablePart = $(tablePart)[0];
+                var columns = options.columns;
+                var row = tablePart.getElementsByTagName('tr')[0];
+                var ths = tablePart.getElementsByTagName('td');
+
+                if (typeof row === 'undefined') {
+                    row = document.createElement('tr');
+                    tablePart.appendChild(row);
+                }
+
+                $.each(columns, function(i, column) {
+                    var th = ths[i];
+                    if (typeof th === 'undefined') {
+                        th = document.createElement('th');
+                        row.appendChild(th);
+                    }
+
+                    // set column title
+                    if (typeof column['title'] !== 'undefined') {
+                        th.innerHTML = column.title;
+                        th.setAttribute('data-field', column.field);
+                        util.addClass(th, column.class);
+                        // set disable autoHide or force enable
+                        if (typeof column.autoHide !== 'undefined') {
+                            if (column.autoHide !== true) {
+                                th.setAttribute('data-autohide-disabled', column.autoHide);
+                            } else {
+                                th.setAttribute('data-autohide-enabled', column.autoHide);
+                            }
+                        }
+                        $(th).data(column);
+                    }
+
+                    // set header attr option
+                    if (typeof column.attr !== 'undefined') {
+                        $.each(column.attr, function(key, val) {
+                            th.setAttribute(key, val);
+                        });
+                    }
+
+                    // apply text align to thead/tfoot
+                    if (typeof column.textAlign !== 'undefined') {
+                        var align = typeof datatable.textAlign[column.textAlign] !== 'undefined' ? datatable.textAlign[column.textAlign] : '';
+                        util.addClass(th, align);
+                    }
+                });
+                Plugin.setupDOM(tablePart);
+            },
+
+            /**
+             * Initiate to get remote or local data via ajax
+             */
+            dataRender: function(action) {
+                $(datatable.table).siblings('.' + pfx + 'datatable__pager').removeClass(pfx + 'datatable--paging-loaded');
+
+                var buildMeta = function() {
+                    datatable.dataSet = datatable.dataSet || [];
+                    Plugin.localDataUpdate();
+                    // local pagination meta
+                    var meta = Plugin.getDataSourceParam('pagination');
+                    if (meta.perpage === 0) {
+                        meta.perpage = options.data.pageSize || 10;
+                    }
+                    meta.total = datatable.dataSet.length;
+                    var start = Math.max(meta.perpage * (meta.page - 1), 0);
+                    var end = Math.min(start + meta.perpage, meta.total);
+                    datatable.dataSet = $(datatable.dataSet).slice(start, end);
+                    return meta;
+                };
+
+                var afterGetData = function(result) {
+                    var localPagingCallback = function(ctx, meta) {
+                        if (!$(ctx.pager).hasClass(pfx + 'datatable--paging-loaded')) {
+                            $(ctx.pager).remove();
+                            ctx.init(meta);
+                        }
+                        $(ctx.pager).off().on(pfx + 'datatable--on-goto-page', function(e) {
+                            $(ctx.pager).remove();
+                            ctx.init(meta);
+                        });
+
+                        var start = Math.max(meta.perpage * (meta.page - 1), 0);
+                        var end = Math.min(start + meta.perpage, meta.total);
+
+                        Plugin.localDataUpdate();
+                        datatable.dataSet = $(datatable.dataSet).slice(start, end);
+
+                        // insert data into table content
+                        Plugin.insertData();
+                    };
+
+                    $(datatable.wrap).removeClass(pfx + 'datatable--error');
+                    // pagination enabled
+                    if (options.pagination) {
+                        if (options.data.serverPaging && options.data.type !== 'local') {
+                            // server pagination
+                            var serverMeta = Plugin.getObject('meta', result || null);
+                            if (serverMeta !== null) {
+                                Plugin.pagingObject = Plugin.paging(serverMeta);
+                            } else {
+                                // no meta object from server response, fallback to local pagination
+                                Plugin.pagingObject = Plugin.paging(buildMeta(), localPagingCallback);
+                            }
+                        } else {
+                            // local pagination can be used by remote data also
+                            Plugin.pagingObject = Plugin.paging(buildMeta(), localPagingCallback);
+                        }
+                    } else {
+                        // pagination is disabled
+                        Plugin.localDataUpdate();
+                    }
+                    // insert data into table content
+                    Plugin.insertData();
+                };
+
+                // get local datasource
+                if (options.data.type === 'local'
+                    // for remote json datasource
+                    // || typeof options.data.source.read === 'undefined' && datatable.dataSet !== null
+                    // for remote datasource, server sorting is disabled and data already received from remote
+                    ||
+                    options.data.serverSorting === false && action === 'sort' ||
+                    options.data.serverFiltering === false && action === 'search'
+                ) {
+                    setTimeout(function() {
+                        afterGetData();
+                        Plugin.setAutoColumns();
+                    });
+                    return;
+                }
+
+                // getting data from remote only
+                Plugin.getData().done(afterGetData);
+            },
+
+            /**
+             * Process ajax data
+             */
+            insertData: function() {
+                datatable.dataSet = datatable.dataSet || [];
+                var params = Plugin.getDataSourceParam();
+
+                // get row attributes
+                var pagination = params.pagination;
+                var start = (Math.max(pagination.page, 1) - 1) * pagination.perpage;
+                var end = Math.min(pagination.page, pagination.pages) * pagination.perpage;
+                var rowProps = {};
+                if (typeof options.data.attr.rowProps !== 'undefined' && options.data.attr.rowProps.length) {
+                    rowProps = options.data.attr.rowProps.slice(start, end);
+                }
+
+                var tableBody = document.createElement('tbody');
+                tableBody.style.visibility = 'hidden';
+                var colLength = options.columns.length;
+
+                $.each(datatable.dataSet, function(rowIndex, row) {
+                    var tr = document.createElement('tr');
+                    tr.setAttribute('data-row', rowIndex);
+                    // keep data object to row
+                    $(tr).data('obj', row);
+
+                    if (typeof rowProps[rowIndex] !== 'undefined') {
+                        $.each(rowProps[rowIndex], function() {
+                            tr.setAttribute(this.name, this.value);
+                        });
+                    }
+
+                    var cellIndex = 0;
+                    var tds = [];
+                    for (var a = 0; a < colLength; a += 1) {
+                        var column = options.columns[a];
+                        var classes = [];
+                        // add sorted class to cells
+                        if (Plugin.getObject('sort.field', params) === column.field) {
+                            classes.push(pfx + 'datatable__cell--sorted');
+                        }
+
+                        // apply text align
+                        if (typeof column.textAlign !== 'undefined') {
+                            var align = typeof datatable.textAlign[column.textAlign] !== 'undefined' ? datatable.textAlign[column.textAlign] : '';
+                            classes.push(align);
+                        }
+
+                        // var classAttr = '';
+                        if (typeof column.class !== 'undefined') {
+                            classes.push(column.class);
+                        }
+
+                        var td = document.createElement('td');
+                        util.addClass(td, classes.join(' '));
+                        td.setAttribute('data-field', column.field);
+                        // set disable autoHide or force enable
+                        if (typeof column.autoHide !== 'undefined') {
+                            if (column.autoHide !== true) {
+                                td.setAttribute('data-autohide-disabled', column.autoHide);
+                            } else {
+                                td.setAttribute('data-autohide-enabled', column.autoHide);
+                            }
+                        }
+                        td.innerHTML = Plugin.getObject(column.field, row);
+                        tr.appendChild(td);
+                    }
+
+                    tableBody.appendChild(tr);
+                });
+
+                // display no records message
+                if (datatable.dataSet.length === 0) {
+                    var errorSpan = document.createElement('span');
+                    util.addClass(errorSpan, pfx + 'datatable--error');
+                    errorSpan.innerHTML = Plugin.getOption('translate.records.noRecords');
+                    tableBody.appendChild(errorSpan);
+                    $(datatable.wrap).addClass(pfx + 'datatable--error ' + pfx + 'datatable--loaded');
+                    Plugin.spinnerCallback(false);
+                }
+
+                // replace existing table body
+                $(datatable.tableBody).replaceWith(tableBody);
+                datatable.tableBody = tableBody;
+
+                // layout update
+                Plugin.setupDOM(datatable.table);
+                Plugin.setupCellField([datatable.tableBody]);
+                Plugin.setupTemplateCell(datatable.tableBody);
+                Plugin.layoutUpdate();
+            },
+
+            updateTableComponents: function() {
+                datatable.tableHead = $(datatable.table).children('thead');
+                datatable.tableBody = $(datatable.table).children('tbody');
+                datatable.tableFoot = $(datatable.table).children('tfoot');
+            },
+
+            /**
+             * Call ajax for raw JSON data
+             */
+            getData: function() {
+                // Plugin.spinnerCallback(true);
+
+                var ajaxParams = {
+                    dataType: 'json',
+                    method: 'POST',
+                    data: {},
+                    timeout: Plugin.getOption('data.source.read.timeout') || 30000,
+                };
+
+                if (options.data.type === 'local') {
+                    ajaxParams.url = options.data.source;
+                }
+
+                if (options.data.type === 'remote') {
+                    var data = Plugin.getDataSourceParam();
+                    // remove if server params is not enabled
+                    if (!Plugin.getOption('data.serverPaging')) {
+                        delete data['pagination'];
+                    }
+                    if (!Plugin.getOption('data.serverSorting')) {
+                        delete data['sort'];
+                    }
+                    ajaxParams.data = $.extend({}, ajaxParams.data, data, Plugin.getOption('data.source.read.params'));
+                    ajaxParams = $.extend({}, ajaxParams, Plugin.getOption('data.source.read'));
+
+                    if (typeof ajaxParams.url !== 'string') ajaxParams.url = Plugin.getOption('data.source.read');
+                    if (typeof ajaxParams.url !== 'string') ajaxParams.url = Plugin.getOption('data.source');
+                    // ajaxParams.data = $.extend(ajaxParams.data, data.pagination);
+                }
+
+                return $.ajax(ajaxParams).done(function(response, textStatus, jqXHR) {
+                    datatable.lastResponse = response;
+                    // extendible data map callback for custom datasource
+                    datatable.dataSet = datatable.originalDataSet = Plugin.dataMapCallback(response);
+                    Plugin.setAutoColumns();
+                    $(datatable).trigger(pfx + 'datatable--on-ajax-done', [datatable.dataSet]);
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    $(datatable).trigger(pfx + 'datatable--on-ajax-fail', [jqXHR]);
+                    $(datatable.tableBody).html($('<span/>').addClass(pfx + 'datatable--error').html(Plugin.getOption('translate.records.noRecords')));
+                    $(datatable.wrap).addClass(pfx + 'datatable--error ' + pfx + 'datatable--loaded');
+                    Plugin.spinnerCallback(false);
+                }).always(function() {});
+            },
+
+            /**
+             * Pagination object
+             * @param meta if null, local pagination, otherwise remote
+             *     pagination
+             * @param callback for update data when navigating page
+             */
+            paging: function(meta, callback) {
+                var pg = {
+                    meta: null,
+                    pager: null,
+                    paginateEvent: null,
+                    pagerLayout: { pagination: null, info: null },
+                    callback: null,
+                    init: function(meta) {
+                        pg.meta = meta;
+
+                        // parse pagination meta to integer
+                        pg.meta.page = parseInt(pg.meta.page);
+                        pg.meta.pages = parseInt(pg.meta.pages);
+                        pg.meta.perpage = parseInt(pg.meta.perpage);
+                        pg.meta.total = parseInt(pg.meta.total);
+
+                        // always recount total pages
+                        pg.meta.pages = Math.max(Math.ceil(pg.meta.total / pg.meta.perpage), 1);
+
+                        // current page must be not over than total pages
+                        if (pg.meta.page > pg.meta.pages) pg.meta.page = pg.meta.pages;
+
+                        // set unique event name between tables
+                        pg.paginateEvent = Plugin.getTablePrefix();
+
+                        pg.pager = $(datatable.table).siblings('.' + pfx + 'datatable__pager');
+                        if ($(pg.pager).hasClass(pfx + 'datatable--paging-loaded')) return;
+
+                        // if class .'+pfx+'datatable--paging-loaded not exist, recreate pagination
+                        $(pg.pager).remove();
+
+                        // if no pages available
+                        if (pg.meta.pages === 0) return;
+
+                        // update datasource params
+                        Plugin.setDataSourceParam('pagination', {
+                            page: pg.meta.page,
+                            pages: pg.meta.pages,
+                            perpage: pg.meta.perpage,
+                            total: pg.meta.total,
+                        });
+
+                        // default callback function, contains remote pagination handler
+                        pg.callback = pg.serverCallback;
+                        // custom callback function
+                        if (typeof callback === 'function') pg.callback = callback;
+
+                        pg.addPaginateEvent();
+                        pg.populate();
+
+                        pg.meta.page = Math.max(pg.meta.page || 1, pg.meta.page);
+
+                        $(datatable).trigger(pg.paginateEvent, pg.meta);
+
+                        pg.pagingBreakpoint.call();
+                        $(window).resize(pg.pagingBreakpoint);
+                    },
+                    serverCallback: function(ctx, meta) {
+                        Plugin.dataRender();
+                    },
+                    populate: function() {
+                        var icons = Plugin.getOption('layout.icons.pagination');
+                        var title = Plugin.getOption('translate.toolbar.pagination.items.default');
+                        // pager root element
+                        pg.pager = $('<div/>').addClass(pfx + 'datatable__pager ' + pfx + 'datatable--paging-loaded');
+                        // numbering links
+                        var pagerNumber = $('<ul/>').addClass(pfx + 'datatable__pager-nav');
+                        pg.pagerLayout['pagination'] = pagerNumber;
+
+                        // pager first/previous button
+                        $('<li/>').
+                        append($('<a/>').attr('title', title.first).addClass(pfx + 'datatable__pager-link ' + pfx + 'datatable__pager-link--first').append($('<i/>').addClass(icons.first)).on('click', pg.gotoMorePage).attr('data-page', 1)).
+                        appendTo(pagerNumber);
+                        $('<li/>').
+                        append($('<a/>').attr('title', title.prev).addClass(pfx + 'datatable__pager-link ' + pfx + 'datatable__pager-link--prev').append($('<i/>').addClass(icons.prev)).on('click', pg.gotoMorePage)).
+                        appendTo(pagerNumber);
+
+                        // more previous pages
+                        $('<li/>').
+                        append($('<a/>').attr('title', title.more).addClass(pfx + 'datatable__pager-link ' + pfx + 'datatable__pager-link--more-prev').html($('<i/>').addClass(icons.more)).on('click', pg.gotoMorePage)).
+                        appendTo(pagerNumber);
+
+                        $('<li/>').append($('<input/>').attr('type', 'text').addClass(pfx + 'pager-input form-control').attr('title', title.input).on('keyup', function() {
+                            // on keyup update [data-page]
+                            $(this).attr('data-page', Math.abs($(this).val()));
+                        }).on('keypress', function(e) {
+                            // on keypressed enter button
+                            if (e.which === 13) pg.gotoMorePage(e);
+                        })).appendTo(pagerNumber);
+
+                        var pagesNumber = Plugin.getOption('toolbar.items.pagination.pages.desktop.pagesNumber');
+                        var end = Math.ceil(pg.meta.page / pagesNumber) * pagesNumber;
+                        var start = end - pagesNumber;
+                        if (end > pg.meta.pages) {
+                            end = pg.meta.pages;
+                        }
+                        for (var x = start; x < end; x++) {
+                            var pageNumber = x + 1;
+                            $('<li/>').
+                            append($('<a/>').addClass(pfx + 'datatable__pager-link ' + pfx + 'datatable__pager-link-number').text(pageNumber).attr('data-page', pageNumber).attr('title', pageNumber).on('click', pg.gotoPage)).
+                            appendTo(pagerNumber);
+                        }
+
+                        // more next pages
+                        $('<li/>').
+                        append($('<a/>').attr('title', title.more).addClass(pfx + 'datatable__pager-link ' + pfx + 'datatable__pager-link--more-next').html($('<i/>').addClass(icons.more)).on('click', pg.gotoMorePage)).
+                        appendTo(pagerNumber);
+
+                        // pager next/last button
+                        $('<li/>').
+                        append($('<a/>').attr('title', title.next).addClass(pfx + 'datatable__pager-link ' + pfx + 'datatable__pager-link--next').append($('<i/>').addClass(icons.next)).on('click', pg.gotoMorePage)).
+                        appendTo(pagerNumber);
+                        $('<li/>').
+                        append($('<a/>').attr('title', title.last).addClass(pfx + 'datatable__pager-link ' + pfx + 'datatable__pager-link--last').append($('<i/>').addClass(icons.last)).on('click', pg.gotoMorePage).attr('data-page', pg.meta.pages)).
+                        appendTo(pagerNumber);
+
+                        // page info
+                        if (Plugin.getOption('toolbar.items.info')) {
+                            pg.pagerLayout['info'] = $('<div/>').addClass(pfx + 'datatable__pager-info').append($('<span/>').addClass(pfx + 'datatable__pager-detail'));
+                        }
+
+                        $.each(Plugin.getOption('toolbar.layout'), function(i, layout) {
+                            $(pg.pagerLayout[layout]).appendTo(pg.pager);
+                        });
+
+                        // page size select
+                        var pageSizeSelect = $('<select/>').
+                        addClass('selectpicker ' + pfx + 'datatable__pager-size').
+                        attr('title', Plugin.getOption('translate.toolbar.pagination.items.default.select')).
+                        attr('data-width', '60px').
+                        val(pg.meta.perpage).
+                        on('change', pg.updatePerpage).
+                        prependTo(pg.pagerLayout['info']);
+
+                        var pageSizes = Plugin.getOption('toolbar.items.pagination.pageSizeSelect');
+                        // default value here, to fix override option by user
+                        if (pageSizes.length == 0) pageSizes = [10, 20, 30, 50, 100];
+                        $.each(pageSizes, function(i, size) {
+                            var display = size;
+                            if (size === -1) display = Plugin.getOption('translate.toolbar.pagination.items.default.all');
+                            $('<option/>').attr('value', size).html(display).appendTo(pageSizeSelect);
+                        });
+
+                        // init selectpicker to dropdown
+                        $(datatable).ready(function() {
+                            $('.selectpicker').
+                            selectpicker().
+                            on('hide.bs.select', function() {
+                                // fix dropup arrow icon on hide
+                                $(this).closest('.bootstrap-select').removeClass('dropup');
+                            }).
+                            siblings('.dropdown-toggle').
+                            attr('title', Plugin.getOption('translate.toolbar.pagination.items.default.select'));
+                        });
+
+                        pg.paste();
+                    },
+                    paste: function() {
+                        // insert pagination based on placement position, top|bottom
+                        $.each($.unique(Plugin.getOption('toolbar.placement')),
+                            function(i, position) {
+                                if (position === 'bottom') {
+                                    $(pg.pager).clone(true).insertAfter(datatable.table);
+                                }
+                                if (position === 'top') {
+                                    // pager top need some extra space
+                                    $(pg.pager).clone(true).addClass(pfx + 'datatable__pager--top').insertBefore(datatable.table);
+                                }
+                            });
+                    },
+                    gotoMorePage: function(e) {
+                        e.preventDefault();
+                        // $(this) is a link of .'+pfx+'datatable__pager-link
+
+                        if ($(this).attr('disabled') === 'disabled') return false;
+
+                        var page = $(this).attr('data-page');
+
+                        // event from text input
+                        if (typeof page === 'undefined') {
+                            page = $(e.target).attr('data-page');
+                        }
+
+                        pg.openPage(parseInt(page));
+                        return false;
+                    },
+                    gotoPage: function(e) {
+                        e.preventDefault();
+                        // prevent from click same page number
+                        if ($(this).hasClass(pfx + 'datatable__pager-link--active')) return;
+
+                        pg.openPage(parseInt($(this).data('page')));
+                    },
+                    openPage: function(page) {
+                        // currentPage is 1-based index
+                        pg.meta.page = parseInt(page);
+
+                        $(datatable).trigger(pg.paginateEvent, pg.meta);
+                        pg.callback(pg, pg.meta);
+
+                        // update page callback function
+                        $(pg.pager).trigger(pfx + 'datatable--on-goto-page', pg.meta);
+                    },
+                    updatePerpage: function(e) {
+                        e.preventDefault();
+                        // if (Plugin.getOption('layout.height') === null) {
+                        // fix white space, when perpage is set from many records to less records
+                        // $('html, body').animate({scrollTop: $(datatable).position().top});
+                        // }
+
+                        pg.pager = $(datatable.table).siblings('.' + pfx + 'datatable__pager').removeClass(pfx + 'datatable--paging-loaded');
+
+                        // on change select page size
+                        if (e.originalEvent) {
+                            pg.meta.perpage = parseInt($(this).val());
+                        }
+
+                        $(pg.pager).find('select.' + pfx + 'datatable__pager-size').val(pg.meta.perpage).attr('data-selected', pg.meta.perpage);
+
+                        // update datasource params
+                        Plugin.setDataSourceParam('pagination', {
+                            page: pg.meta.page,
+                            pages: pg.meta.pages,
+                            perpage: pg.meta.perpage,
+                            total: pg.meta.total,
+                        });
+
+                        // update page callback function
+                        $(pg.pager).trigger(pfx + 'datatable--on-update-perpage', pg.meta);
+                        $(datatable).trigger(pg.paginateEvent, pg.meta);
+                        pg.callback(pg, pg.meta);
+
+                        // update pagination info
+                        pg.updateInfo.call();
+                    },
+                    addPaginateEvent: function(e) {
+                        // pagination event
+                        $(datatable).off(pg.paginateEvent).on(pg.paginateEvent, function(e, meta) {
+                            Plugin.spinnerCallback(true);
+
+                            pg.pager = $(datatable.table).siblings('.' + pfx + 'datatable__pager');
+                            var pagerNumber = $(pg.pager).find('.' + pfx + 'datatable__pager-nav');
+
+                            // set sync active page class
+                            $(pagerNumber).find('.' + pfx + 'datatable__pager-link--active').removeClass(pfx + 'datatable__pager-link--active');
+                            $(pagerNumber).find('.' + pfx + 'datatable__pager-link-number[data-page="' + meta.page + '"]').addClass(pfx + 'datatable__pager-link--active');
+
+                            // set next and previous link page number
+                            $(pagerNumber).find('.' + pfx + 'datatable__pager-link--prev').attr('data-page', Math.max(meta.page - 1, 1));
+                            $(pagerNumber).find('.' + pfx + 'datatable__pager-link--next').attr('data-page', Math.min(meta.page + 1, meta.pages));
+
+                            // current page input value sync
+                            $(pg.pager).each(function() {
+                                $(this).find('.' + pfx + 'pager-input[type="text"]').prop('value', meta.page);
+                            });
+
+                            $(pg.pager).find('.' + pfx + 'datatable__pager-nav').show();
+                            if (meta.pages <= 1) {
+                                // hide pager if has 1 page
+                                $(pg.pager).find('.' + pfx + 'datatable__pager-nav').hide();
+                            }
+
+                            // update datasource params
+                            Plugin.setDataSourceParam('pagination', {
+                                page: pg.meta.page,
+                                pages: pg.meta.pages,
+                                perpage: pg.meta.perpage,
+                                total: pg.meta.total,
+                            });
+
+                            $(pg.pager).find('select.' + pfx + 'datatable__pager-size').val(meta.perpage).attr('data-selected', meta.perpage);
+
+                            // clear active rows
+                            $(datatable.table).find('.' + pfx + 'checkbox > [type="checkbox"]').prop('checked', false);
+                            $(datatable.table).find('.' + pfx + 'datatable__row--active').removeClass(pfx + 'datatable__row--active');
+
+                            pg.updateInfo.call();
+                            pg.pagingBreakpoint.call();
+                            // Plugin.resetScroll();
+                        });
+                    },
+                    updateInfo: function() {
+                        var start = Math.max(pg.meta.perpage * (pg.meta.page - 1) + 1, 1);
+                        var end = Math.min(start + pg.meta.perpage - 1, pg.meta.total);
+                        // page info update
+                        $(pg.pager).find('.' + pfx + 'datatable__pager-info').find('.' + pfx + 'datatable__pager-detail').html(Plugin.dataPlaceholder(
+                            Plugin.getOption('translate.toolbar.pagination.items.info'), {
+                                start: start,
+                                end: pg.meta.perpage === -1 ? pg.meta.total : end,
+                                pageSize: pg.meta.perpage === -1 ||
+                                    pg.meta.perpage >= pg.meta.total ?
+                                    pg.meta.total :
+                                    pg.meta.perpage,
+                                total: pg.meta.total,
+                            }));
+                    },
+
+                    /**
+                     * Update pagination layout breakpoint
+                     */
+                    pagingBreakpoint: function() {
+                        // keep page links reference
+                        var pagerNumber = $(datatable.table).siblings('.' + pfx + 'datatable__pager').find('.' + pfx + 'datatable__pager-nav');
+                        if ($(pagerNumber).length === 0) return;
+
+                        var currentPage = Plugin.getCurrentPage();
+                        var pagerInput = $(pagerNumber).find('.' + pfx + 'pager-input').closest('li');
+
+                        // reset
+                        $(pagerNumber).find('li').show();
+
+                        // pagination update
+                        $.each(Plugin.getOption('toolbar.items.pagination.pages'),
+                            function(mode, option) {
+                                if (util.isInResponsiveRange(mode)) {
+                                    switch (mode) {
+                                        case 'desktop':
+                                        case 'tablet':
+                                            var end = Math.ceil(currentPage / option.pagesNumber) *
+                                                option.pagesNumber;
+                                            var start = end - option.pagesNumber;
+                                            $(pagerInput).hide();
+                                            pg.meta = Plugin.getDataSourceParam('pagination');
+                                            pg.paginationUpdate();
+                                            break;
+
+                                        case 'mobile':
+                                            $(pagerInput).show();
+                                            $(pagerNumber).find('.' + pfx + 'datatable__pager-link--more-prev').closest('li').hide();
+                                            $(pagerNumber).find('.' + pfx + 'datatable__pager-link--more-next').closest('li').hide();
+                                            $(pagerNumber).find('.' + pfx + 'datatable__pager-link-number').closest('li').hide();
+                                            break;
+                                    }
+
+                                    return false;
+                                }
+                            });
+                    },
+
+                    /**
+                     * Update pagination number and button display
+                     */
+                    paginationUpdate: function() {
+                        var pager = $(datatable.table).siblings('.' + pfx + 'datatable__pager').find('.' + pfx + 'datatable__pager-nav'),
+                            pagerMorePrev = $(pager).find('.' + pfx + 'datatable__pager-link--more-prev'),
+                            pagerMoreNext = $(pager).find('.' + pfx + 'datatable__pager-link--more-next'),
+                            pagerFirst = $(pager).find('.' + pfx + 'datatable__pager-link--first'),
+                            pagerPrev = $(pager).find('.' + pfx + 'datatable__pager-link--prev'),
+                            pagerNext = $(pager).find('.' + pfx + 'datatable__pager-link--next'),
+                            pagerLast = $(pager).find('.' + pfx + 'datatable__pager-link--last');
+
+                        // get visible page
+                        var pagerNumber = $(pager).find('.' + pfx + 'datatable__pager-link-number');
+                        // get page before of first visible
+                        var morePrevPage = Math.max($(pagerNumber).first().data('page') - 1,
+                            1);
+                        $(pagerMorePrev).each(function(i, prev) {
+                            $(prev).attr('data-page', morePrevPage);
+                        });
+                        // show/hide <li>
+                        if (morePrevPage === 1) {
+                            $(pagerMorePrev).parent().hide();
+                        } else {
+                            $(pagerMorePrev).parent().show();
+                        }
+
+                        // get page after of last visible
+                        var moreNextPage = Math.min($(pagerNumber).last().data('page') + 1,
+                            pg.meta.pages);
+                        $(pagerMoreNext).each(function(i, prev) {
+                            $(pagerMoreNext).attr('data-page', moreNextPage).show();
+                        });
+
+                        // show/hide <li>
+                        if (moreNextPage === pg.meta.pages
+                            // missing dot fix when last hidden page is one left
+                            &&
+                            moreNextPage === $(pagerNumber).last().data('page')) {
+                            $(pagerMoreNext).parent().hide();
+                        } else {
+                            $(pagerMoreNext).parent().show();
+                        }
+
+                        // begin/end of pages
+                        if (pg.meta.page === 1) {
+                            $(pagerFirst).attr('disabled', true).addClass(pfx + 'datatable__pager-link--disabled');
+                            $(pagerPrev).attr('disabled', true).addClass(pfx + 'datatable__pager-link--disabled');
+                        } else {
+                            $(pagerFirst).removeAttr('disabled').removeClass(pfx + 'datatable__pager-link--disabled');
+                            $(pagerPrev).removeAttr('disabled').removeClass(pfx + 'datatable__pager-link--disabled');
+                        }
+                        if (pg.meta.page === pg.meta.pages) {
+                            $(pagerNext).attr('disabled', true).addClass(pfx + 'datatable__pager-link--disabled');
+                            $(pagerLast).attr('disabled', true).addClass(pfx + 'datatable__pager-link--disabled');
+                        } else {
+                            $(pagerNext).removeAttr('disabled').removeClass(pfx + 'datatable__pager-link--disabled');
+                            $(pagerLast).removeAttr('disabled').removeClass(pfx + 'datatable__pager-link--disabled');
+                        }
+
+                        // display more buttons
+                        var nav = Plugin.getOption('toolbar.items.pagination.navigation');
+                        if (!nav.first) $(pagerFirst).remove();
+                        if (!nav.prev) $(pagerPrev).remove();
+                        if (!nav.next) $(pagerNext).remove();
+                        if (!nav.last) $(pagerLast).remove();
+                    },
+                };
+                pg.init(meta);
+                return pg;
+            },
+
+            /**
+             * Hide/show table cell defined by
+             * options[columns][i][responsive][visible/hidden]
+             */
+            columnHide: function() {
+                var screen = util.getViewPort().width;
+                // foreach columns setting
+                $.each(options.columns, function(i, column) {
+                    if (typeof column.responsive !== 'undefined') {
+                        var field = column.field;
+                        var tds = $.grep($(datatable.table).find('.' + pfx + 'datatable__cell'), function(n, i) {
+                            return field === $(n).data('field');
+                        });
+                        if (util.getBreakpoint(column.responsive.hidden) >= screen) {
+                            $(tds).hide();
+                        } else {
+                            $(tds).show();
+                        }
+                        if (util.getBreakpoint(column.responsive.visible) <= screen) {
+                            $(tds).show();
+                        } else {
+                            $(tds).hide();
+                        }
+                    }
+                });
+            },
+
+            /**
+             * Setup sub datatable
+             */
+            setupSubDatatable: function() {
+                var subTableCallback = Plugin.getOption('detail.content');
+                if (typeof subTableCallback !== 'function') return;
+
+                // subtable already exist
+                if ($(datatable.table).find('.' + pfx + 'datatable__subtable').length > 0) return;
+
+                $(datatable.wrap).addClass(pfx + 'datatable--subtable');
+
+                options.columns[0]['subtable'] = true;
+
+                // toggle on open sub table
+                var toggleSubTable = function(e) {
+                    e.preventDefault();
+                    // get parent row of this subtable
+                    var parentRow = $(this).closest('.' + pfx + 'datatable__row');
+
+                    // get subtable row for sub table
+                    var subTableRow = $(parentRow).next('.' + pfx + 'datatable__row-subtable');
+                    if ($(subTableRow).length === 0) {
+                        // prepare DOM for sub table, each <tr> as parent and add <tr> as child table
+                        subTableRow = $('<tr/>').
+                        addClass(pfx + 'datatable__row-subtable ' + pfx + 'datatable__row-loading').
+                        hide().
+                        append($('<td/>').addClass(pfx + 'datatable__subtable').attr('colspan', Plugin.getTotalColumns()));
+                        $(parentRow).after(subTableRow);
+                        // add class to even row
+                        if ($(parentRow).hasClass(pfx + 'datatable__row--even')) {
+                            $(subTableRow).addClass(pfx + 'datatable__row-subtable--even');
+                        }
+                    }
+
+                    $(subTableRow).toggle();
+
+                    var subTable = $(subTableRow).find('.' + pfx + 'datatable__subtable');
+
+                    // get id from first column of parent row
+                    var primaryKey = $(this).closest('[data-field]:first-child').find('.' + pfx + 'datatable__toggle-subtable').data('value');
+
+                    var icon = $(this).find('i').removeAttr('class');
+
+                    // prevent duplicate datatable init
+                    if ($(parentRow).hasClass(pfx + 'datatable__row--subtable-expanded')) {
+                        $(icon).addClass(Plugin.getOption('layout.icons.rowDetail.collapse'));
+                        // remove expand class from parent row
+                        $(parentRow).removeClass(pfx + 'datatable__row--subtable-expanded');
+                        // trigger event on collapse
+                        $(datatable).trigger(pfx + 'datatable--on-collapse-subtable', [parentRow]);
+                    } else {
+                        // expand and run callback function
+                        $(icon).addClass(Plugin.getOption('layout.icons.rowDetail.expand'));
+                        // add expand class to parent row
+                        $(parentRow).addClass(pfx + 'datatable__row--subtable-expanded');
+                        // trigger event on expand
+                        $(datatable).trigger(pfx + 'datatable--on-expand-subtable', [parentRow]);
+                    }
+
+                    // prevent duplicate datatable init
+                    if ($(subTable).find('.' + pfx + 'datatable').length === 0) {
+                        // get data by primary id
+                        $.map(datatable.dataSet, function(n, i) {
+                            // primary id must be at the first column, otherwise e.data will be undefined
+                            if (primaryKey === n[options.columns[0].field]) {
+                                e.data = n;
+                                return true;
+                            }
+                            return false;
+                        });
+
+                        // deprecated in v5.0.6
+                        e.detailCell = subTable;
+
+                        e.parentRow = parentRow;
+                        e.subTable = subTable;
+
+                        // run callback with event
+                        subTableCallback(e);
+
+                        $(subTable).children('.' + pfx + 'datatable').on(pfx + 'datatable--on-init', function(e) {
+                            $(subTableRow).removeClass(pfx + 'datatable__row-loading');
+                        });
+                        if (Plugin.getOption('data.type') === 'local') {
+                            $(subTableRow).removeClass(pfx + 'datatable__row-loading');
+                        }
+                    }
+                };
+
+                var columns = options.columns;
+                $(datatable.tableBody).find('.' + pfx + 'datatable__row').each(function(tri, tr) {
+                    $(tr).find('.' + pfx + 'datatable__cell').each(function(tdi, td) {
+                        // get column settings by field
+                        var column = $.grep(columns, function(n, i) {
+                            return $(td).data('field') === n.field;
+                        })[0];
+                        if (typeof column !== 'undefined') {
+                            var value = $(td).text();
+                            // enable column subtable toggle
+                            if (typeof column.subtable !== 'undefined' && column.subtable) {
+                                // check if subtable toggle exist
+                                if ($(td).find('.' + pfx + 'datatable__toggle-subtable').length > 0) return;
+                                // append subtable toggle
+                                $(td).
+                                html($('<a/>').addClass(pfx + 'datatable__toggle-subtable').attr('href', '#').attr('data-value', value).attr('title', Plugin.getOption('detail.title')).on('click', toggleSubTable).append($('<i/>').css('width', $(td).data('width')).addClass(Plugin.getOption('layout.icons.rowDetail.collapse'))));
+                            }
+                        }
+                    });
+                });
+
+                // $(datatable.tableHead).find('.'+pfx+'-datatable__row').first()
+            },
+
+            /**
+             * Datasource mapping callback
+             */
+            dataMapCallback: function(raw) {
+                // static dataset array
+                var dataSet = raw;
+                // dataset mapping callback
+                if (typeof Plugin.getOption('data.source.read.map') === 'function') {
+                    return Plugin.getOption('data.source.read.map')(raw);
+                } else {
+                    // default data mapping fallback
+                    if (typeof raw !== 'undefined' && typeof raw.data !== 'undefined') {
+                        dataSet = raw.data;
+                    }
+                }
+                return dataSet;
+            },
+
+            isSpinning: false,
+            /**
+             * BlockUI spinner callback
+             * @param block
+             * @param target
+             */
+            spinnerCallback: function(block, target) {
+                if (typeof target === 'undefined') target = datatable;
+                // get spinner options
+                var spinnerOptions = Plugin.getOption('layout.spinner');
+                // spinner is disabled
+                if (typeof spinnerOptions === 'undefined' || !spinnerOptions) {
+                    return;
+                }
+                if (block) {
+                    if (!Plugin.isSpinning) {
+                        if (typeof spinnerOptions.message !== 'undefined' && spinnerOptions.message === true) {
+                            // use default spinner message from translation
+                            spinnerOptions.message = Plugin.getOption('translate.records.processing');
+                        }
+                        Plugin.isSpinning = true;
+                        if (typeof app !== 'undefined') {
+                            app.block(target, spinnerOptions);
+                        }
+                    }
+                } else {
+                    Plugin.isSpinning = false;
+                    if (typeof app !== 'undefined') {
+                        app.unblock(target);
+                    }
+                }
+            },
+
+            /**
+             * Default sort callback function
+             * @param data
+             * @param sort
+             * @param column
+             * @returns {*|Array.<T>|{sort, field}|{asc, desc}}
+             */
+            sortCallback: function(data, sort, column) {
+                var type = column['type'] || 'string';
+                var format = column['format'] || '';
+                var field = column['field'];
+
+                return $(data).sort(function(a, b) {
+                    var aField = a[field];
+                    var bField = b[field];
+
+                    switch (type) {
+                        case 'date':
+                            if (typeof moment === 'undefined') {
+                                throw new Error('Moment.js is required.');
+                            }
+                            var diff = moment(aField, format).diff(moment(bField, format));
+                            if (sort === 'asc') {
+                                return diff > 0 ? 1 : diff < 0 ? -1 : 0;
+                            } else {
+                                return diff < 0 ? 1 : diff > 0 ? -1 : 0;
+                            }
+                            break;
+
+                        case 'number':
+                            if (isNaN(parseFloat(aField)) && aField != null) {
+                                aField = Number(aField.replace(/[^0-9\.-]+/g, ''));
+                            }
+                            if (isNaN(parseFloat(bField)) && bField != null) {
+                                bField = Number(bField.replace(/[^0-9\.-]+/g, ''));
+                            }
+                            aField = parseFloat(aField);
+                            bField = parseFloat(bField);
+                            if (sort === 'asc') {
+                                return aField > bField ? 1 : aField < bField ? -1 : 0;
+                            } else {
+                                return aField < bField ? 1 : aField > bField ? -1 : 0;
+                            }
+                            break;
+
+                        case 'string':
+                        default:
+                            if (sort === 'asc') {
+                                return aField > bField ? 1 : aField < bField ? -1 : 0;
+                            } else {
+                                return aField < bField ? 1 : aField > bField ? -1 : 0;
+                            }
+                            break;
+                    }
+                });
+            },
+
+            /**
+             * Custom debug log
+             * @param text
+             * @param obj
+             */
+            log: function(text, obj) {
+                if (typeof obj === 'undefined') obj = '';
+                if (datatable.debug) {
+                    console.log(text, obj);
+                }
+            },
+
+            /**
+             * Auto hide columnds overflow in row
+             */
+            autoHide: function() {
+                var hiddenExist = false;
+                // force hide enabled
+                var hidDefault = $(datatable.table).find('[data-autohide-enabled]');
+                if (hidDefault.length) {
+                    hiddenExist = true;
+                    hidDefault.hide();
+                }
+
+                var toggleHiddenColumns = function(e) {
+                    e.preventDefault();
+
+                    var row = $(this).closest('.' + pfx + 'datatable__row');
+                    var detailRow = $(row).next();
+
+                    if (!$(detailRow).hasClass(pfx + 'datatable__row-detail')) {
+                        $(this).find('i').removeClass(Plugin.getOption('layout.icons.rowDetail.collapse')).addClass(Plugin.getOption('layout.icons.rowDetail.expand'));
+
+                        var hiddenCells = $(row).find('.' + pfx + 'datatable__cell:hidden');
+                        var clonedCells = hiddenCells.clone().show();
+
+                        detailRow = $('<tr/>').addClass(pfx + 'datatable__row-detail').insertAfter(row);
+                        var detailRowTd = $('<td/>').addClass(pfx + 'datatable__detail').attr('colspan', Plugin.getTotalColumns()).appendTo(detailRow);
+
+                        var detailSubTable = $('<table/>');
+                        $(clonedCells).each(function() {
+                            var field = $(this).data('field');
+                            var column = $.grep(options.columns, function(n, i) {
+                                return field === n.field;
+                            })[0];
+                            $(detailSubTable).
+                            append($('<tr class="' + pfx + 'datatable__row"></tr>').append($('<td class="' + pfx + 'datatable__cell"></td>').append($('<span/>').append(column.title))).append(this));
+                        });
+                        $(detailRowTd).append(detailSubTable);
+
+                    } else {
+                        $(this).find('i').removeClass(Plugin.getOption('layout.icons.rowDetail.expand')).addClass(Plugin.getOption('layout.icons.rowDetail.collapse'));
+                        $(detailRow).remove();
+                    }
+                };
+
+                setTimeout(function() {
+                    $(datatable.table).find('.' + pfx + 'datatable__cell').show();
+                    $(datatable.tableBody).each(function() {
+                        var recursive = 0;
+                        while ($(this)[0].offsetWidth < $(this)[0].scrollWidth && recursive < options.columns.length) {
+                            $(datatable.table).find('.' + pfx + 'datatable__row').each(function(i) {
+                                var cell = $(this).find('.' + pfx + 'datatable__cell:not(:hidden):not([data-autohide-disabled])').last();
+                                $(cell).hide();
+                                hiddenExist = true;
+                            });
+                            recursive++;
+                        }
+                    });
+
+                    if (hiddenExist) {
+                        // toggle show hidden columns
+                        $(datatable.tableBody).find('.' + pfx + 'datatable__row').each(function() {
+                            // if no toggle yet
+                            if ($(this).find('.' + pfx + 'datatable__toggle-detail').length === 0) {
+                                // add toggle
+                                $(this).prepend($('<td/>').addClass(pfx + 'datatable__cell ' + pfx + 'datatable__toggle-detail').append($('<a/>').addClass(pfx + 'datatable__toggle-detail').attr('href', '').on('click', toggleHiddenColumns).append('<i class="' + Plugin.getOption('layout.icons.rowDetail.collapse') + '"></i>')));
+                            }
+
+                            // check if subtable toggle exist
+                            if ($(datatable.tableHead).find('.' + pfx + 'datatable__toggle-detail').length === 0) {
+                                // add empty column to the header and footer
+                                $(datatable.tableHead).
+                                find('.' + pfx + 'datatable__row').
+                                first().
+                                prepend('<th class="' + pfx + 'datatable__cell ' + pfx + 'datatable__toggle-detail"><span></span></th>');
+                                $(datatable.tableFoot).
+                                find('.' + pfx + 'datatable__row').
+                                first().
+                                prepend('<th class="' + pfx + 'datatable__cell ' + pfx + 'datatable__toggle-detail"><span></span></th>');
+                            } else {
+                                $(datatable.tableHead).find('.' + pfx + 'datatable__toggle-detail').find('span');
+                            }
+                        });
+                    }
+                });
+
+                Plugin.adjustCellsWidth.call();
+            },
+
+            /**
+             * To enable auto columns features for remote data source
+             */
+            setAutoColumns: function() {
+                if (Plugin.getOption('data.autoColumns')) {
+                    $.each(datatable.dataSet[0], function(k, v) {
+                        var found = $.grep(options.columns, function(n, i) {
+                            return k === n.field;
+                        });
+                        if (found.length === 0) {
+                            options.columns.push({ field: k, title: k });
+                        }
+                    });
+                    $(datatable.tableHead).find('.' + pfx + 'datatable__row').remove();
+                    Plugin.setHeadTitle();
+                    if (Plugin.getOption('layout.footer')) {
+                        $(datatable.tableFoot).find('.' + pfx + 'datatable__row').remove();
+                        Plugin.setHeadTitle(datatable.tableFoot);
+                    }
+                }
+            },
+
+            /********************
+             ** HELPERS
+             ********************/
+
+            /**
+             * Check if table is a locked colums table
+             */
+            isLocked: function() {
+                var isLocked = Plugin.lockEnabledColumns();
+                return isLocked.left.length > 0 || isLocked.right.length > 0;
+            },
+
+            isSubtable: function() {
+                return util.hasClass(datatable.wrap[0], pfx + 'datatable--subtable') || false;
+            },
+
+            /**
+             * Get total extra space of an element for width calculation,
+             * including padding, margin, border
+             * @param element
+             * @returns {number}
+             */
+            getExtraSpace: function(element) {
+                var padding = parseInt($(element).css('paddingRight')) +
+                    parseInt($(element).css('paddingLeft'));
+                var margin = parseInt($(element).css('marginRight')) +
+                    parseInt($(element).css('marginLeft'));
+                var border = Math.ceil(
+                    $(element).css('border-right-width').replace('px', ''));
+                return padding + margin + border;
+            },
+
+            /**
+             * Insert data of array into {{ }} template placeholder
+             * @param template
+             * @param data
+             * @returns {*}
+             */
+            dataPlaceholder: function(template, data) {
+                var result = template;
+                $.each(data, function(key, val) {
+                    result = result.replace('{{' + key + '}}', val);
+                });
+                return result;
+            },
+
+            /**
+             * Get table unique ID
+             * Note: table unique change each time refreshed
+             * @param suffix
+             * @returns {*}
+             */
+            getTableId: function(suffix) {
+                if (typeof suffix === 'undefined') suffix = '';
+                var id = $(datatable).attr('id');
+                if (typeof id === 'undefined') {
+                    id = $(datatable).attr('class').split(' ')[0];
+                }
+                return id + suffix;
+            },
+
+            /**
+             * Get table prefix with depth number
+             */
+            getTablePrefix: function(suffix) {
+                if (typeof suffix !== 'undefined') suffix = '-' + suffix;
+                return Plugin.getTableId() + '-' + Plugin.getDepth() + suffix;
+            },
+
+            /**
+             * Get current table depth of sub table
+             * @returns {number}
+             */
+            getDepth: function() {
+                var depth = 0;
+                var table = datatable.table;
+                do {
+                    table = $(table).parents('.' + pfx + 'datatable__table');
+                    depth++;
+                } while ($(table).length > 0);
+                return depth;
+            },
+
+            /**
+             * Keep state item
+             * @param key
+             * @param value
+             */
+            stateKeep: function(key, value) {
+                key = Plugin.getTablePrefix(key);
+                if (Plugin.getOption('data.saveState') === false) return;
+                if (Plugin.getOption('data.saveState.webstorage') && localStorage) {
+                    localStorage.setItem(key, JSON.stringify(value));
+                }
+                if (Plugin.getOption('data.saveState.cookie')) {
+                    Cookies.set(key, JSON.stringify(value));
+                }
+            },
+
+            /**
+             * Get state item
+             * @param key
+             * @param defValue
+             */
+            stateGet: function(key, defValue) {
+                key = Plugin.getTablePrefix(key);
+                if (Plugin.getOption('data.saveState') === false) return;
+                var value = null;
+                if (Plugin.getOption('data.saveState.webstorage') && localStorage) {
+                    value = localStorage.getItem(key);
+                } else {
+                    value = Cookies.get(key);
+                }
+                if (typeof value !== 'undefined' && value !== null) {
+                    return JSON.parse(value);
+                }
+            },
+
+            /**
+             * Update data in state without clear existing
+             * @param key
+             * @param value
+             */
+            stateUpdate: function(key, value) {
+                var ori = Plugin.stateGet(key);
+                if (typeof ori === 'undefined' || ori === null) ori = {};
+                Plugin.stateKeep(key, $.extend({}, ori, value));
+            },
+
+            /**
+             * Remove state item
+             * @param key
+             */
+            stateRemove: function(key) {
+                key = Plugin.getTablePrefix(key);
+                if (localStorage) {
+                    localStorage.removeItem(key);
+                }
+                Cookies.remove(key);
+            },
+
+            /**
+             * Get total columns.
+             */
+            getTotalColumns: function(tablePart) {
+                if (typeof tablePart === 'undefined') tablePart = datatable.tableBody;
+                return $(tablePart).find('.' + pfx + 'datatable__row').first().find('.' + pfx + 'datatable__cell').length;
+            },
+
+            /**
+             * Get table row. Useful to get row when current table is in lock
+             * mode. Can be used for both lock and normal table mode. By
+             * default, returning result will be in a list of <td>.
+             * @param tablePart
+             * @param row 1-based index
+             * @param tdOnly Optional. Default true
+             * @returns {*}
+             */
+            getOneRow: function(tablePart, row, tdOnly) {
+                if (typeof tdOnly === 'undefined') tdOnly = true;
+                // get list of <tr>
+                var result = $(tablePart).find('.' + pfx + 'datatable__row:not(.' + pfx + 'datatable__row-detail):nth-child(' + row + ')');
+                if (tdOnly) {
+                    // get list of <td> or <th>
+                    result = result.find('.' + pfx + 'datatable__cell');
+                }
+                return result;
+            },
+
+            /**
+             * Sort table row at HTML level by column index.
+             * todo; Not in use.
+             * @param header Header sort clicked
+             * @param sort asc|desc. Optional. Default asc
+             * @param int Boolean. Optional. Comparison value parse to integer.
+             *     Default false
+             */
+            sortColumn: function(header, sort, int) {
+                if (typeof sort === 'undefined') sort = 'asc'; // desc
+                if (typeof int === 'undefined') int = false;
+
+                var column = $(header).index();
+                var rows = $(datatable.tableBody).find('.' + pfx + 'datatable__row');
+                var hIndex = $(header).closest('.' + pfx + 'datatable__lock').index();
+                if (hIndex !== -1) {
+                    rows = $(datatable.tableBody).find('.' + pfx + 'datatable__lock:nth-child(' + (hIndex + 1) + ')').find('.' + pfx + 'datatable__row');
+                }
+
+                var container = $(rows).parent();
+                $(rows).sort(function(a, b) {
+                    var tda = $(a).find('td:nth-child(' + column + ')').text();
+                    var tdb = $(b).find('td:nth-child(' + column + ')').text();
+
+                    if (int) {
+                        // useful for integer type sorting
+                        tda = parseInt(tda);
+                        tdb = parseInt(tdb);
+                    }
+
+                    if (sort === 'asc') {
+                        return tda > tdb ? 1 : tda < tdb ? -1 : 0;
+                    } else {
+                        return tda < tdb ? 1 : tda > tdb ? -1 : 0;
+                    }
+                }).appendTo(container);
+            },
+
+            /**
+             * Perform sort remote and local
+             */
+            sorting: function() {
+                var sortObj = {
+                    init: function() {
+                        if (options.sortable) {
+                            $(datatable.tableHead).
+                            find('.' + pfx + 'datatable__cell:not(.' + pfx + 'datatable__cell--check)').
+                            addClass(pfx + 'datatable__cell--sort').
+                            off('click').
+                            on('click', sortObj.sortClick);
+                            // first init
+                            sortObj.setIcon();
+                        }
+                    },
+                    setIcon: function() {
+                        var meta = Plugin.getDataSourceParam('sort');
+                        if ($.isEmptyObject(meta)) return;
+
+                        var column = Plugin.getColumnByField(meta.field);
+                        // sort is disabled for this column
+                        if (typeof column !== 'undefined' && typeof column.sortable !== 'undefined' && column.sortable === false) return;
+
+                        // sort icon beside column header
+                        var td = $(datatable.tableHead).find('.' + pfx + 'datatable__cell[data-field="' + meta.field + '"]').attr('data-sort', meta.sort);
+                        var sorting = $(td).find('span');
+                        var icon = $(sorting).find('i');
+
+                        var icons = Plugin.getOption('layout.icons.sort');
+                        // update sort icon; desc & asc
+                        if ($(icon).length > 0) {
+                            $(icon).removeAttr('class').addClass(icons[meta.sort]);
+                        } else {
+                            $(sorting).append($('<i/>').addClass(icons[meta.sort]));
+                        }
+
+                        // set sorted class to header on init
+                        $(td).addClass(pfx + 'datatable__cell--sorted');
+                    },
+                    sortClick: function(e) {
+                        var meta = Plugin.getDataSourceParam('sort');
+                        var field = $(this).data('field');
+                        var column = Plugin.getColumnByField(field);
+                        // sort is disabled for this column
+                        if (typeof column.sortable !== 'undefined' && column.sortable === false) return;
+
+                        // set sorted class to header
+                        $(datatable.tableHead).find('th').removeClass(pfx + 'datatable__cell--sorted');
+                        util.addClass(this, pfx + 'datatable__cell--sorted');
+
+                        $(datatable.tableHead).find('.' + pfx + 'datatable__cell > span > i').remove();
+
+                        if (options.sortable) {
+                            Plugin.spinnerCallback(true);
+
+                            var sort = 'desc';
+                            if (Plugin.getObject('field', meta) === field) {
+                                sort = Plugin.getObject('sort', meta);
+                            }
+
+                            // toggle sort
+                            sort = typeof sort === 'undefined' || sort === 'desc' ?
+                                'asc' :
+                                'desc';
+
+                            // update field and sort params
+                            meta = { field: field, sort: sort };
+                            Plugin.setDataSourceParam('sort', meta);
+
+                            sortObj.setIcon();
+
+                            setTimeout(function() {
+                                Plugin.dataRender('sort');
+                                $(datatable).trigger(pfx + 'datatable--on-sort', meta);
+                            }, 300);
+                        }
+                    },
+                };
+                sortObj.init();
+            },
+
+            /**
+             * Update JSON data list linked with sort, filter and pagination.
+             * Call this method, before using dataSet variable.
+             * @returns {*|null}
+             */
+            localDataUpdate: function() {
+                var params = Plugin.getDataSourceParam();
+                if (typeof datatable.originalDataSet === 'undefined') {
+                    datatable.originalDataSet = datatable.dataSet;
+                }
+
+                var field = Plugin.getObject('sort.field', params);
+                var sort = Plugin.getObject('sort.sort', params);
+                var column = Plugin.getColumnByField(field);
+                if (typeof column !== 'undefined' && Plugin.getOption('data.serverSorting') !== true) {
+                    if (typeof column.sortCallback === 'function') {
+                        datatable.dataSet = column.sortCallback(datatable.originalDataSet, sort, column);
+                    } else {
+                        datatable.dataSet = Plugin.sortCallback(datatable.originalDataSet, sort, column);
+                    }
+                } else {
+                    datatable.dataSet = datatable.originalDataSet;
+                }
+
+                // if server filter enable, don't pass local filter
+                if (typeof params.query === 'object' && !Plugin.getOption('data.serverFiltering')) {
+                    params.query = params.query || {};
+
+                    var nestedSearch = function(obj) {
+                        for (var field in obj) {
+                            if (!obj.hasOwnProperty(field)) continue;
+                            if (typeof obj[field] === 'string') {
+                                if (obj[field].toLowerCase() == search || obj[field].toLowerCase().indexOf(search) !== -1) {
+                                    return true;
+                                }
+                            } else if (typeof obj[field] === 'number') {
+                                if (obj[field] === search) {
+                                    return true;
+                                }
+                            } else if (typeof obj[field] === 'object') {
+                                if (nestedSearch(obj[field])) {
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    };
+
+                    var search = $(Plugin.getOption('search.input')).val();
+                    if (typeof search !== 'undefined' && search !== '') {
+                        search = search.toLowerCase();
+                        datatable.dataSet = $.grep(datatable.dataSet, nestedSearch);
+                        // remove generalSearch as we don't need this for next columns filter
+                        delete params.query[Plugin.getGeneralSearchKey()];
+                    }
+
+                    // remove empty element from array
+                    $.each(params.query, function(k, v) {
+                        if (v === '') {
+                            delete params.query[k];
+                        }
+                    });
+
+                    // filter array by query
+                    datatable.dataSet = Plugin.filterArray(datatable.dataSet, params.query);
+
+                    // reset array index
+                    datatable.dataSet = datatable.dataSet.filter(function() {
+                        return true;
+                    });
+                }
+
+                return datatable.dataSet;
+            },
+
+            /**
+             * Utility helper to filter array by object pair of {key:value}
+             * @param list
+             * @param args
+             * @param operator
+             * @returns {*}
+             */
+            filterArray: function(list, args, operator) {
+                if (typeof list !== 'object') {
+                    return [];
+                }
+
+                if (typeof operator === 'undefined') operator = 'AND';
+
+                if (typeof args !== 'object') {
+                    return list;
+                }
+
+                operator = operator.toUpperCase();
+
+                if ($.inArray(operator, ['AND', 'OR', 'NOT']) === -1) {
+                    return [];
+                }
+
+                var count = Object.keys(args).length;
+                var filtered = [];
+
+                $.each(list, function(key, obj) {
+                    var to_match = obj;
+
+                    var matched = 0;
+                    $.each(args, function(m_key, m_value) {
+                        m_value = m_value instanceof Array ? m_value : [m_value];
+                        var match_property = Plugin.getObject(m_key, to_match);
+                        if (typeof match_property !== 'undefined' && match_property) {
+                            var lhs = match_property.toString().toLowerCase();
+                            m_value.forEach(function(item, index) {
+                                if (item.toString().toLowerCase() == lhs || lhs.indexOf(item.toString().toLowerCase()) !== -1) {
+                                    matched++;
+                                }
+                            });
+                        }
+                    });
+
+                    if (('AND' == operator && matched == count) ||
+                        ('OR' == operator && matched > 0) ||
+                        ('NOT' == operator && 0 == matched)) {
+                        filtered[key] = obj;
+                    }
+                });
+
+                list = filtered;
+
+                return list;
+            },
+
+            /**
+             * Reset lock column scroll to 0 when resize
+             */
+            resetScroll: function() {
+                if (typeof options.detail === 'undefined' && Plugin.getDepth() === 1) {
+                    $(datatable.table).find('.' + pfx + 'datatable__row').css('left', 0);
+                    $(datatable.table).find('.' + pfx + 'datatable__lock').css('top', 0);
+                    $(datatable.tableBody).scrollTop(0);
+                }
+            },
+
+            /**
+             * Get column options by field
+             * @param field
+             * @returns {boolean}
+             */
+            getColumnByField: function(field) {
+                if (typeof field === 'undefined') return;
+                var result;
+                $.each(options.columns, function(i, column) {
+                    if (field === column.field) {
+                        result = column;
+                        return false;
+                    }
+                });
+                return result;
+            },
+
+            /**
+             * Get default sort column
+             */
+            getDefaultSortColumn: function() {
+                var result;
+                $.each(options.columns, function(i, column) {
+                    if (typeof column.sortable !== 'undefined' &&
+                        $.inArray(column.sortable, ['asc', 'desc']) !== -1) {
+                        result = { sort: column.sortable, field: column.field };
+                        return false;
+                    }
+                });
+                return result;
+            },
+
+            /**
+             * Helper to get element dimensions, when the element is hidden
+             * @param element
+             * @param includeMargin
+             * @returns {{width: number, height: number, innerWidth: number,
+             *     innerHeight: number, outerWidth: number, outerHeight:
+             *     number}}
+             */
+            getHiddenDimensions: function(element, includeMargin) {
+                var props = {
+                        position: 'absolute',
+                        visibility: 'hidden',
+                        display: 'block',
+                    },
+                    dim = {
+                        width: 0,
+                        height: 0,
+                        innerWidth: 0,
+                        innerHeight: 0,
+                        outerWidth: 0,
+                        outerHeight: 0,
+                    },
+                    hiddenParents = $(element).parents().addBack().not(':visible');
+                includeMargin = (typeof includeMargin === 'boolean') ?
+                    includeMargin :
+                    false;
+
+                var oldProps = [];
+                hiddenParents.each(function() {
+                    var old = {};
+
+                    for (var name in props) {
+                        old[name] = this.style[name];
+                        this.style[name] = props[name];
+                    }
+
+                    oldProps.push(old);
+                });
+
+                dim.width = $(element).width();
+                dim.outerWidth = $(element).outerWidth(includeMargin);
+                dim.innerWidth = $(element).innerWidth();
+                dim.height = $(element).height();
+                dim.innerHeight = $(element).innerHeight();
+                dim.outerHeight = $(element).outerHeight(includeMargin);
+
+                hiddenParents.each(function(i) {
+                    var old = oldProps[i];
+                    for (var name in props) {
+                        this.style[name] = old[name];
+                    }
+                });
+
+                return dim;
+            },
+
+            getGeneralSearchKey: function() {
+                var searchInput = $(Plugin.getOption('search.input'));
+                return $(searchInput).prop('name') || $(searchInput).prop('id');
+            },
+
+            /**
+             * Get value by dot notation path string and to prevent undefined
+             * errors
+             * @param path String Dot notation path in string
+             * @param object Object to iterate
+             * @returns {*}
+             */
+            getObject: function(path, object) {
+                return path.split('.').reduce(function(obj, i) {
+                    return obj !== null && typeof obj[i] !== 'undefined' ? obj[i] : null;
+                }, object);
+            },
+
+            /**
+             * Extend object
+             * @param obj
+             * @param path
+             * @param value
+             * @returns {*}
+             */
+            extendObj: function(obj, path, value) {
+                var levels = path.split('.'),
+                    i = 0;
+
+                function createLevel(child) {
+                    var name = levels[i++];
+                    if (typeof child[name] !== 'undefined' && child[name] !== null) {
+                        if (typeof child[name] !== 'object' &&
+                            typeof child[name] !== 'function') {
+                            child[name] = {};
+                        }
+                    } else {
+                        child[name] = {};
+                    }
+                    if (i === levels.length) {
+                        child[name] = value;
+                    } else {
+                        createLevel(child[name]);
+                    }
+                }
+
+                createLevel(obj);
+                return obj;
+            },
+
+            rowEvenOdd: function() {
+                // row even class
+                $(datatable.tableBody).find('.' + pfx + 'datatable__row').removeClass(pfx + 'datatable__row--even');
+                if ($(datatable.wrap).hasClass(pfx + 'datatable--subtable')) {
+                    $(datatable.tableBody).find('.' + pfx + 'datatable__row:not(.' + pfx + 'datatable__row-detail):even').addClass(pfx + 'datatable__row--even');
+                } else {
+                    $(datatable.tableBody).find('.' + pfx + 'datatable__row:nth-child(even)').addClass(pfx + 'datatable__row--even');
+                }
+            },
+
+            /********************
+             ** PUBLIC API METHODS
+             ********************/
+
+            // delay timer
+            timer: 0,
+
+            /**
+             * Redraw datatable by recalculating its DOM elements, etc.
+             * @returns {jQuery}
+             */
+            redraw: function() {
+                Plugin.adjustCellsWidth.call();
+                if (Plugin.isLocked()) {
+                    // fix hiding cell width issue
+                    Plugin.scrollbar();
+                    Plugin.resetScroll();
+                    Plugin.adjustCellsHeight.call();
+                }
+                Plugin.adjustLockContainer.call();
+                Plugin.initHeight.call();
+                return datatable;
+            },
+
+            /**
+             * Shortcode to reload
+             * @returns {jQuery}
+             */
+            load: function() {
+                Plugin.reload();
+                return datatable;
+            },
+
+            /**
+             * Datasource reload
+             * @returns {jQuery}
+             */
+            reload: function() {
+                var delay = (function() {
+                    return function(callback, ms) {
+                        clearTimeout(Plugin.timer);
+                        Plugin.timer = setTimeout(callback, ms);
+                    };
+                })();
+                delay(function() {
+                    // local only. remote pagination will skip this block
+                    if (!options.data.serverFiltering) {
+                        Plugin.localDataUpdate();
+                    }
+                    Plugin.dataRender();
+                    $(datatable).trigger(pfx + 'datatable--on-reloaded');
+                }, Plugin.getOption('search.delay'));
+                return datatable;
+            },
+
+            /**
+             * Get record by record ID
+             * @param id
+             * @returns {jQuery}
+             */
+            getRecord: function(id) {
+                if (typeof datatable.tableBody === 'undefined') datatable.tableBody = $(datatable.table).children('tbody');
+                $(datatable.tableBody).find('.' + pfx + 'datatable__cell:first-child').each(function(i, cell) {
+                    if (id == $(cell).text()) {
+                        var rowNumber = $(cell).closest('.' + pfx + 'datatable__row').index() + 1;
+                        datatable.API.record = datatable.API.value = Plugin.getOneRow(datatable.tableBody, rowNumber);
+                        return datatable;
+                    }
+                });
+                return datatable;
+            },
+
+            /**
+             * @deprecated in v5.0.6
+             * Get column of current record ID
+             * @param columnName
+             * @returns {jQuery}
+             */
+            getColumn: function(columnName) {
+                Plugin.setSelectedRecords();
+                datatable.API.value = $(datatable.API.record).find('[data-field="' + columnName + '"]');
+                return datatable;
+            },
+
+            /**
+             * Destroy datatable to original DOM state before datatable was
+             * initialized
+             * @returns {jQuery}
+             */
+            destroy: function() {
+                $(datatable).parent().find('.' + pfx + 'datatable__pager').remove();
+                var initialDatatable = $(datatable.initialDatatable).addClass(pfx + 'datatable--destroyed').show();
+                $(datatable).replaceWith(initialDatatable);
+                datatable = initialDatatable;
+                $(datatable).trigger(pfx + 'datatable--on-destroy');
+                Plugin.isInit = false;
+                initialDatatable = null;
+                return initialDatatable;
+            },
+
+            /**
+             * Sort by column field
+             * @param field
+             * @param sort
+             */
+            sort: function(field, sort) {
+                // toggle sort
+                sort = typeof sort === 'undefined' ? 'asc' : sort;
+
+                Plugin.spinnerCallback(true);
+
+                // update field and sort params
+                var meta = { field: field, sort: sort };
+                Plugin.setDataSourceParam('sort', meta);
+
+                setTimeout(function() {
+                    Plugin.dataRender('sort');
+                    $(datatable).trigger(pfx + 'datatable--on-sort', meta);
+                    $(datatable.tableHead).find('.' + pfx + 'datatable__cell > span > i').remove();
+                }, 300);
+
+                return datatable;
+            },
+
+            /**
+             * @deprecated in v5.0.6
+             * Get current selected column value
+             * @returns {jQuery}
+             */
+            getValue: function() {
+                return $(datatable.API.value).text();
+            },
+
+            /**
+             * Set checkbox active
+             * @param cell JQuery selector or checkbox ID
+             */
+            setActive: function(cell) {
+                if (typeof cell === 'string') {
+                    // set by checkbox id
+                    cell = $(datatable.tableBody).find('.' + pfx + 'checkbox--single > [type="checkbox"][value="' + cell + '"]');
+                }
+
+                $(cell).prop('checked', true);
+
+                var ids = [];
+                $(cell).each(function(i, td) {
+                    // normal table
+                    var row = $(td).closest('tr').addClass(pfx + 'datatable__row--active');
+                    var colIndex = $(row).index() + 1;
+
+                    // lock table
+                    $(row).closest('tbody').find('tr:nth-child(' + colIndex + ')').not('.' + pfx + 'datatable__row-subtable').addClass(pfx + 'datatable__row--active');
+
+                    var id = $(td).attr('value');
+                    if (typeof id !== 'undefined') {
+                        ids.push(id);
+                    }
+                });
+
+                $(datatable).trigger(pfx + 'datatable--on-check', [ids]);
+            },
+
+            /**
+             * Set checkbox inactive
+             * @param cell JQuery selector or checkbox ID
+             */
+            setInactive: function(cell) {
+                if (typeof cell === 'string') {
+                    // set by checkbox id
+                    cell = $(datatable.tableBody).find('.' + pfx + 'checkbox--single > [type="checkbox"][value="' + cell + '"]');
+                }
+
+                $(cell).prop('checked', false);
+
+                var ids = [];
+                $(cell).each(function(i, td) {
+                    // normal table
+                    var row = $(td).closest('tr').removeClass(pfx + 'datatable__row--active');
+                    var colIndex = $(row).index() + 1;
+
+                    // lock table
+                    $(row).closest('tbody').find('tr:nth-child(' + colIndex + ')').not('.' + pfx + 'datatable__row-subtable').removeClass(pfx + 'datatable__row--active');
+
+                    var id = $(td).attr('value');
+                    if (typeof id !== 'undefined') {
+                        ids.push(id);
+                    }
+                });
+
+                $(datatable).trigger(pfx + 'datatable--on-uncheck', [ids]);
+            },
+
+            /**
+             * Set all checkboxes active or inactive
+             * @param active
+             */
+            setActiveAll: function(active) {
+                var checkboxes = $(datatable.table).
+                find('> tbody, > thead').
+                find('tr').not('.' + pfx + 'datatable__row-subtable').
+                find('.' + pfx + 'datatable__cell--check [type="checkbox"]');
+                if (active) {
+                    Plugin.setActive(checkboxes);
+                } else {
+                    Plugin.setInactive(checkboxes);
+                }
+            },
+
+            /**
+             * @deprecated in v5.0.6
+             * Get selected rows which are active
+             * @returns {jQuery}
+             */
+            setSelectedRecords: function() {
+                datatable.API.record = $(datatable.tableBody).find('.' + pfx + 'datatable__row--active');
+                return datatable;
+            },
+
+            /**
+             * Get selected records
+             * @returns {null}
+             */
+            getSelectedRecords: function() {
+                // support old method
+                Plugin.setSelectedRecords();
+                datatable.API.record = datatable.rows('.' + pfx + 'datatable__row--active').nodes();
+                return datatable.API.record;
+            },
+
+            /**
+             * Get options by dots notation path
+             * @param path String Dot notation path in string
+             * @returns {*}
+             */
+            getOption: function(path) {
+                return Plugin.getObject(path, options);
+            },
+
+            /**
+             * Set global options nodes by dots notation path
+             * @param path
+             * @param object
+             */
+            setOption: function(path, object) {
+                options = Plugin.extendObj(options, path, object);
+            },
+
+            /**
+             * Search filter for local & remote
+             * @param value
+             * @param columns. Optional list of columns to be filtered.
+             */
+            search: function(value, columns) {
+                if (typeof columns !== 'undefined') columns = $.makeArray(columns);
+                var delay = (function() {
+                    return function(callback, ms) {
+                        clearTimeout(Plugin.timer);
+                        Plugin.timer = setTimeout(callback, ms);
+                    };
+                })();
+
+                delay(function() {
+                    // get query parameters
+                    var query = Plugin.getDataSourceQuery();
+
+                    // search not by columns
+                    if (typeof columns === 'undefined' && typeof value !== 'undefined') {
+                        var key = Plugin.getGeneralSearchKey();
+                        query[key] = value;
+                    }
+
+                    // search by columns, support multiple columns
+                    if (typeof columns === 'object') {
+                        $.each(columns, function(k, column) {
+                            query[column] = value;
+                        });
+                        // remove empty element from arrays
+                        $.each(query, function(k, v) {
+                            if (v === '' || $.isEmptyObject(v)) {
+                                delete query[k];
+                            }
+                        });
+                    }
+
+                    Plugin.setDataSourceQuery(query);
+
+                    // local filter only. remote pagination will skip this block
+                    if (!options.data.serverFiltering) {
+                        Plugin.localDataUpdate();
+                    }
+                    Plugin.dataRender('search');
+                }, Plugin.getOption('search.delay'));
+            },
+
+            /**
+             * Set datasource params extract
+             * @param param
+             * @param value
+             */
+            setDataSourceParam: function(param, value) {
+                datatable.API.params = $.extend({}, {
+                    pagination: { page: 1, perpage: Plugin.getOption('data.pageSize') },
+                    sort: Plugin.getDefaultSortColumn(),
+                    query: {},
+                }, datatable.API.params, Plugin.stateGet(Plugin.stateId));
+
+                datatable.API.params = Plugin.extendObj(datatable.API.params, param, value);
+
+                Plugin.stateKeep(Plugin.stateId, datatable.API.params);
+            },
+
+            /**
+             * Get datasource params
+             * @param param
+             */
+            getDataSourceParam: function(param) {
+                datatable.API.params = $.extend({}, {
+                    pagination: { page: 1, perpage: Plugin.getOption('data.pageSize') },
+                    sort: Plugin.getDefaultSortColumn(),
+                    query: {},
+                }, datatable.API.params, Plugin.stateGet(Plugin.stateId));
+
+                if (typeof param === 'string') {
+                    return Plugin.getObject(param, datatable.API.params);
+                }
+
+                return datatable.API.params;
+            },
+
+            /**
+             * Shortcode to datatable.getDataSourceParam('query');
+             * @returns {*}
+             */
+            getDataSourceQuery: function() {
+                return Plugin.getDataSourceParam('query') || {};
+            },
+
+            /**
+             * Shortcode to datatable.setDataSourceParam('query', query);
+             * @param query
+             */
+            setDataSourceQuery: function(query) {
+                Plugin.setDataSourceParam('query', query);
+            },
+
+            /**
+             * Get current page number
+             * @returns {number}
+             */
+            getCurrentPage: function() {
+                return $(datatable.table).
+                siblings('.' + pfx + 'datatable__pager').
+                last().
+                find('.' + pfx + 'datatable__pager-nav').
+                find('.' + pfx + 'datatable__pager-link.' + pfx + 'datatable__pager-link--active').
+                data('page') || 1;
+            },
+
+            /**
+             * Get selected dropdown page size
+             * @returns {*|number}
+             */
+            getPageSize: function() {
+                return $(datatable.table).siblings('.' + pfx + 'datatable__pager').last().find('select.' + pfx + 'datatable__pager-size').val() || 10;
+            },
+
+            /**
+             * Get total rows
+             */
+            getTotalRows: function() {
+                return datatable.API.params.pagination.total;
+            },
+
+            /**
+             * Get full dataset in grid
+             * @returns {*|null|Array}
+             */
+            getDataSet: function() {
+                return datatable.originalDataSet;
+            },
+
+            /**
+             * @deprecated in v5.0.6
+             * Hide column by column's field name
+             * @param fieldName
+             */
+            hideColumn: function(fieldName) {
+                // add hide option for this column
+                $.map(options.columns, function(column) {
+                    if (fieldName === column.field) {
+                        column.responsive = { hidden: 'xl' };
+                    }
+                    return column;
+                });
+                // hide current displayed column
+                var tds = $.grep($(datatable.table).find('.' + pfx + 'datatable__cell'), function(n, i) {
+                    return fieldName === $(n).data('field');
+                });
+                $(tds).hide();
+            },
+
+            /**
+             * @deprecated in v5.0.6
+             * Show column by column's field name
+             * @param fieldName
+             */
+            showColumn: function(fieldName) {
+                // add hide option for this column
+                $.map(options.columns, function(column) {
+                    if (fieldName === column.field) {
+                        delete column.responsive;
+                    }
+                    return column;
+                });
+                // hide current displayed column
+                var tds = $.grep($(datatable.table).find('.' + pfx + 'datatable__cell'), function(n, i) {
+                    return fieldName === $(n).data('field');
+                });
+                $(tds).show();
+            },
+
+            nodeTr: [],
+            nodeTd: [],
+            nodeCols: [],
+            recentNode: [],
+
+            table: function() {
+                if (typeof datatable.table !== 'undefined') {
+                    return datatable.table;
+                }
+            },
+
+            /**
+             * Select a single row from the table
+             * @param selector
+             * @returns {jQuery}
+             */
+            row: function(selector) {
+                Plugin.rows(selector);
+                Plugin.nodeTr = Plugin.recentNode = $(Plugin.nodeTr).first();
+                return datatable;
+            },
+
+            /**
+             * Select multiple rows from the table
+             * @param selector
+             * @returns {jQuery}
+             */
+            rows: function(selector) {
+                if (Plugin.isLocked()) {
+                    Plugin.nodeTr = Plugin.recentNode = t(datatable.tableBody).find(selector).filter('.' + pfx + 'datatable__lock--scroll > .' + pfx + 'datatable__row');
+                } else {
+                    Plugin.nodeTr = Plugin.recentNode = t(datatable.tableBody).find(selector).filter('.' + pfx + 'datatable__row');
+                }
+                return datatable;
+            },
+
+            /**
+             * Select a single column from the table
+             * @param index zero-based index
+             * @returns {jQuery}
+             */
+            column: function(index) {
+                Plugin.nodeCols = Plugin.recentNode = $(datatable.tableBody).find('.' + pfx + 'datatable__cell:nth-child(' + (index + 1) + ')');
+                return datatable;
+            },
+
+            /**
+             * Select multiple columns from the table
+             * @param selector
+             * @returns {jQuery}
+             */
+            columns: function(selector) {
+                var context = datatable.table;
+                if (Plugin.nodeTr === Plugin.recentNode) {
+                    context = Plugin.nodeTr;
+                }
+                var columns = $(context).find('.' + pfx + 'datatable__cell[data-field="' + selector + '"]');
+                if (columns.length > 0) {
+                    Plugin.nodeCols = Plugin.recentNode = columns;
+                } else {
+                    Plugin.nodeCols = Plugin.recentNode = $(context).find(selector).filter('.' + pfx + 'datatable__cell');
+                }
+                return datatable;
+            },
+
+            cell: function(selector) {
+                Plugin.cells(selector);
+                Plugin.nodeTd = Plugin.recentNode = $(Plugin.nodeTd).first();
+                return datatable;
+            },
+
+            cells: function(selector) {
+                var cells = $(datatable.tableBody).find('.' + pfx + 'datatable__cell');
+                if (typeof selector !== 'undefined') {
+                    cells = $(cells).filter(selector);
+                }
+                Plugin.nodeTd = Plugin.recentNode = cells;
+                return datatable;
+            },
+
+            /**
+             * Delete the selected row from the table
+             * @returns {jQuery}
+             */
+            remove: function() {
+                if ($(Plugin.nodeTr.length) && Plugin.nodeTr === Plugin.recentNode) {
+                    $(Plugin.nodeTr).remove();
+                }
+                Plugin.layoutUpdate();
+                return datatable;
+            },
+
+            /**
+             * Show or hide the columns or rows
+             */
+            visible: function(bool) {
+                if ($(Plugin.recentNode.length)) {
+                    var locked = Plugin.lockEnabledColumns();
+                    if (Plugin.recentNode === Plugin.nodeCols) {
+                        var index = Plugin.recentNode.index();
+
+                        if (Plugin.isLocked()) {
+                            var scrollColumns = $(Plugin.recentNode).closest('.' + pfx + 'datatable__lock--scroll').length;
+                            if (scrollColumns) {
+                                // is at center of scrollable area
+                                index += locked.left.length + 1;
+                            } else if ($(Plugin.recentNode).closest('.' + pfx + 'datatable__lock--right').length) {
+                                // is at the right locked table
+                                index += locked.left.length + scrollColumns + 1;
+                            }
+                        }
+                    }
+
+                    if (bool) {
+                        if (Plugin.recentNode === Plugin.nodeCols) {
+                            delete options.columns[index].responsive;
+                        }
+                        $(Plugin.recentNode).show();
+                    } else {
+                        if (Plugin.recentNode === Plugin.nodeCols) {
+                            Plugin.setOption('columns.' + index + '.responsive', { hidden: 'xl' });
+                        }
+                        $(Plugin.recentNode).hide();
+                    }
+                    Plugin.redraw();
+                }
+            },
+
+            /**
+             * Get the the DOM element for the selected rows or columns
+             * @returns {Array}
+             */
+            nodes: function() {
+                return Plugin.recentNode;
+            },
+
+            /**
+             * will be implemented soon
+             * @returns {jQuery}
+             */
+            dataset: function() {
+                return datatable;
+            },
+
+            /**
+             * Open page by number
+             * @param page number
+             */
+            gotoPage: function(page) {
+                Plugin.pagingObject.openPage(page);
+            },
+
+        };
+
+        /**
+         * Public API methods can be used directly by datatable
+         */
+        $.each(Plugin, function(funcName, func) {
+            datatable[funcName] = func;
+        });
+
+        // initialize main datatable plugin
+        if (typeof options !== 'undefined') {
+            if (typeof options === 'string') {
+                var method = options;
+                datatable = $(this).data(pluginName);
+                if (typeof datatable !== 'undefined') {
+                    options = datatable.options;
+                    Plugin[method].apply(this, Array.prototype.slice.call(arguments, 1));
+                }
+            } else {
+                if (!datatable.data(pluginName) && !$(this).hasClass(pfx + 'datatable--loaded')) {
+                    datatable.dataSet = null;
+                    datatable.textAlign = {
+                        left: pfx + 'datatable__cell--left',
+                        center: pfx + 'datatable__cell--center',
+                        right: pfx + 'datatable__cell--right',
+                    };
+
+                    // merge default and user defined options
+                    options = $.extend(true, {}, $.fn[pluginName].defaults, options);
+
+                    datatable.options = options;
+
+                    // init plugin process
+                    Plugin.init.apply(this, [options]);
+
+                    $(datatable.wrap).data(pluginName, datatable);
+                }
+            }
+        } else {
+            // get existing instance datatable
+            datatable = $(this).data(pluginName);
+            if (typeof datatable === 'undefined') {
+                $.error(pluginName + ' not initialized');
+            }
+            options = datatable.options;
         }
 
-				// hide header
-				if (typeof options.layout.header !== 'undefined' &&
-					options.layout.header === false) {
-					$(datatable.table).find('thead').remove();
-				}
-
-				// hide footer
-				if (typeof options.layout.footer !== 'undefined' &&
-					options.layout.footer === false) {
-					$(datatable.table).find('tfoot').remove();
-				}
-
-				// for normal and local data type, run layoutUpdate
-				if (options.data.type === null ||
-					options.data.type === 'local') {
-					Plugin.setupCellField.call();
-					Plugin.setupTemplateCell.call();
-
-					// setup nested datatable, if option enabled
-					Plugin.setupSubDatatable.call();
-
-					// setup extra system column properties
-					Plugin.setupSystemColumn.call();
-					Plugin.redraw();
-				}
-
-				var width;
-				var initialWidth = false;
-				$(window).resize(function() {
-					// get initial width
-					if (!initialWidth) {
-						width = $(this).width();
-						initialWidth = true;
-					}
-					// issue: URL Bar Resizing on mobile, https://developers.google.com/web/updates/2016/12/url-bar-resizing
-					// trigger datatable resize on width change only
-					if ($(this).width() !== width) {
-						width = $(this).width();
-						Plugin.fullRender();
-					}
-				});
-
-				$(datatable).height('');
-
-				$(Plugin.getOption('search.input')).on('keyup', function(e) {
-					if (Plugin.getOption('search.onEnter') && e.which !== 13) return;
-					Plugin.search($(this).val());
-				});
-
-				return datatable;
-			},
-
-			/**
-			 * Extract static HTML table content into datasource
-			 */
-			extractTable: function() {
-				var columns = [];
-				var headers = $(datatable).find('tr:first-child th').get().map(function(cell, i) {
-					var field = $(cell).data('field');
-					if (typeof field === 'undefined') {
-						field = $(cell).text().trim();
-					}
-					var column = {field: field, title: field};
-					for (var ii in options.columns) {
-						if (options.columns[ii].field === field) {
-							column = $.extend(true, {}, options.columns[ii], column);
-						}
-					}
-					columns.push(column);
-					return field;
-				});
-				// auto create columns config
-				options.columns = columns;
-
-				var rowProp = [];
-				var source = [];
-
-				$(datatable).find('tr').each(function() {
-					if ($(this).find('td').length) {
-						rowProp.push($(this).prop('attributes'));
-					}
-					var td = {};
-					$(this).find('td').each(function(i, cell) {
-						td[headers[i]] = cell.innerHTML.trim();
-					});
-					if (!util.isEmpty(td)) {
-						source.push(td);
-					}
-				});
-
-				options.data.attr.rowProps = rowProp;
-				options.data.source = source;
-			},
-
-			/**
-			 * One time layout update on init
-			 */
-			layoutUpdate: function() {
-				// setup nested datatable, if option enabled
-				Plugin.setupSubDatatable.call();
-
-				// setup extra system column properties
-				Plugin.setupSystemColumn.call();
-
-				// setup cell hover event
-				Plugin.setupHover.call();
-
-				if (typeof options.detail === 'undefined'
-					// temporary disable lock column in subtable
-					&& Plugin.getDepth() === 1) {
-					// lock columns handler
-					Plugin.lockTable.call();
-				}
-
-				Plugin.columnHide.call();
-
-				Plugin.resetScroll();
-
-				// check if not is a locked column
-				if (!Plugin.isLocked()) {
-					Plugin.redraw.call();
-					// check if its not a subtable and has autoHide option enabled
-					if (!Plugin.isSubtable() && Plugin.getOption('rows.autoHide') === true) {
-						Plugin.autoHide();
-					}
-					// reset row
-					$(datatable.table).find('.' + pfx + 'datatable__row').css('height', '');
-				}
-
-				Plugin.rowEvenOdd.call();
-
-				Plugin.sorting.call();
-
-				Plugin.scrollbar.call();
-
-				if (!Plugin.isInit) {
-					// run once dropdown inside datatable
-					Plugin.dropdownFix();
-					$(datatable).trigger(pfx + 'datatable--on-init', {table: $(datatable.wrap).attr('id'), options: options});
-					Plugin.isInit = true;
-				}
-
-				$(datatable).trigger(pfx + 'datatable--on-layout-updated', {table: $(datatable.wrap).attr('id')});
-			},
-
-			lockTable: function() {
-				var lock = {
-					lockEnabled: false,
-					init: function() {
-						// check if table should be locked columns
-						lock.lockEnabled = Plugin.lockEnabledColumns();
-						if (lock.lockEnabled.left.length === 0 &&
-							lock.lockEnabled.right.length === 0) {
-							return;
-						}
-						lock.enable();
-					},
-					enable: function() {
-						var enableLock = function(tablePart) {
-							// check if already has lock column
-							if ($(tablePart).find('.' + pfx + 'datatable__lock').length > 0) {
-								Plugin.log('Locked container already exist in: ', tablePart);
-								return;
-							}
-							// check if no rows exists
-							if ($(tablePart).find('.' + pfx + 'datatable__row').length === 0) {
-								Plugin.log('No row exist in: ', tablePart);
-								return;
-							}
-
-							// locked div container
-							var lockLeft = $('<div/>').addClass(pfx + 'datatable__lock ' + pfx + 'datatable__lock--left');
-							var lockScroll = $('<div/>').addClass(pfx + 'datatable__lock ' + pfx + 'datatable__lock--scroll');
-							var lockRight = $('<div/>').addClass(pfx + 'datatable__lock ' + pfx + 'datatable__lock--right');
-
-							$(tablePart).find('.' + pfx + 'datatable__row').each(function() {
-								// create new row for lock columns and pass the data
-								var rowLeft = $('<tr/>').addClass(pfx + 'datatable__row').data('obj', $(this).data('obj')).appendTo(lockLeft);
-								var rowScroll = $('<tr/>').addClass(pfx + 'datatable__row').data('obj', $(this).data('obj')).appendTo(lockScroll);
-								var rowRight = $('<tr/>').addClass(pfx + 'datatable__row').data('obj', $(this).data('obj')).appendTo(lockRight);
-								$(this).find('.' + pfx + 'datatable__cell').each(function() {
-									var locked = $(this).data('locked');
-									if (typeof locked !== 'undefined') {
-										if (typeof locked.left !== 'undefined' || locked === true) {
-											// default locked to left
-											$(this).appendTo(rowLeft);
-										}
-										if (typeof locked.right !== 'undefined') {
-											$(this).appendTo(rowRight);
-										}
-									} else {
-										$(this).appendTo(rowScroll);
-									}
-								});
-								// remove old row
-								$(this).remove();
-							});
-
-							if (lock.lockEnabled.left.length > 0) {
-								$(datatable.wrap).addClass(pfx + 'datatable--lock');
-								$(lockLeft).appendTo(tablePart);
-							}
-							if (lock.lockEnabled.left.length > 0 || lock.lockEnabled.right.length > 0) {
-								$(lockScroll).appendTo(tablePart);
-							}
-							if (lock.lockEnabled.right.length > 0) {
-								$(datatable.wrap).addClass(pfx + 'datatable--lock');
-								$(lockRight).appendTo(tablePart);
-							}
-						};
-
-						$(datatable.table).find('thead,tbody,tfoot').each(function() {
-							var tablePart = this;
-							if ($(this).find('.' + pfx + 'datatable__lock').length === 0) {
-								$(this).ready(function() {
-									enableLock(tablePart);
-								});
-							}
-						});
-					},
-				};
-				lock.init();
-				return lock;
-			},
-
-			/**
-			 * Render everything for resize
-			 */
-			fullRender: function() {
-				$(datatable.tableHead).empty();
-				Plugin.setHeadTitle();
-				if (Plugin.getOption('layout.footer')) {
-					$(datatable.tableFoot).empty();
-					Plugin.setHeadTitle(datatable.tableFoot);
-				}
-
-				Plugin.spinnerCallback(true);
-				$(datatable.wrap).removeClass(pfx + 'datatable--loaded');
-
-				Plugin.insertData();
-			},
-
-			lockEnabledColumns: function() {
-				var screen = $(window).width();
-				var columns = options.columns;
-				var enabled = {left: [], right: []};
-				$.each(columns, function(i, column) {
-					if (typeof column.locked !== 'undefined') {
-						if (typeof column.locked.left !== 'undefined') {
-							if (util.getBreakpoint(column.locked.left) <= screen) {
-								enabled['left'].push(column.locked.left);
-							}
-						}
-						if (typeof column.locked.right !== 'undefined') {
-							if (util.getBreakpoint(column.locked.right) <= screen) {
-								enabled['right'].push(column.locked.right);
-							}
-						}
-					}
-				});
-				return enabled;
-			},
-
-			/**
-			 * After render event, called by
-			 * '+pfx+'-datatable--on-layout-updated
-			 * @param e
-			 * @param args
-			 */
-			afterRender: function(e, args) {
-				$(datatable).ready(function() {
-					// redraw locked columns table
-					if (Plugin.isLocked()) {
-						Plugin.redraw();
-					}
-
-					$(datatable.tableBody).css('visibility', '');
-					$(datatable.wrap).addClass(pfx + 'datatable--loaded');
-
-					Plugin.spinnerCallback(false);
-				});
-			},
-
-			dropdownFix: function() {
-				var dropdownMenu;
-				$('body').on('show.bs.dropdown', '.' + pfx + 'datatable .' + pfx + 'datatable__body', function(e) {
-					dropdownMenu = $(e.target).find('.dropdown-menu');
-					$('body').append(dropdownMenu.detach());
-					dropdownMenu.css('display', 'block');
-					dropdownMenu.position({
-						'my': 'right top',
-						'at': 'right bottom',
-						'of': $(e.relatedTarget),
-					});
-					// if datatable is inside modal
-					if (datatable.closest('.modal').length) {
-						// increase dropdown z-index
-						dropdownMenu.css('z-index', '2000');
-					}
-				}).on('hide.bs.dropdown', '.' + pfx + 'datatable .' + pfx + 'datatable__body', function(e) {
-					$(e.target).append(dropdownMenu.detach());
-					dropdownMenu.hide();
-				});
-			},
-
-			hoverTimer: 0,
-			isScrolling: false,
-			setupHover: function() {
-				$(window).scroll(function(e) {
-					// stop hover when scrolling
-					clearTimeout(Plugin.hoverTimer);
-					Plugin.isScrolling = true;
-				});
-
-				$(datatable.tableBody).find('.' + pfx + 'datatable__cell').off('mouseenter', 'mouseleave').on('mouseenter', function() {
-					// reset scroll timer to hover class
-					Plugin.hoverTimer = setTimeout(function() {
-						Plugin.isScrolling = false;
-					}, 200);
-					if (Plugin.isScrolling) return;
-
-					// normal table
-					var row = $(this).closest('.' + pfx + 'datatable__row').addClass(pfx + 'datatable__row--hover');
-					var index = $(row).index() + 1;
-
-					// lock table
-					$(row).closest('.' + pfx + 'datatable__lock').parent().find('.' + pfx + 'datatable__row:nth-child(' + index + ')').addClass(pfx + 'datatable__row--hover');
-				}).on('mouseleave', function() {
-					// normal table
-					var row = $(this).closest('.' + pfx + 'datatable__row').removeClass(pfx + 'datatable__row--hover');
-					var index = $(row).index() + 1;
-
-					// look table
-					$(row).closest('.' + pfx + 'datatable__lock').parent().find('.' + pfx + 'datatable__row:nth-child(' + index + ')').removeClass(pfx + 'datatable__row--hover');
-				});
-			},
-
-			/**
-			 * Adjust width of locked table containers by resize handler
-			 * @returns {number}
-			 */
-			adjustLockContainer: function() {
-				if (!Plugin.isLocked()) return 0;
-
-				// refer to head dimension
-				var containerWidth = $(datatable.tableHead).width();
-				var lockLeft = $(datatable.tableHead).find('.' + pfx + 'datatable__lock--left').width();
-				var lockRight = $(datatable.tableHead).find('.' + pfx + 'datatable__lock--right').width();
-
-				if (typeof lockLeft === 'undefined') lockLeft = 0;
-				if (typeof lockRight === 'undefined') lockRight = 0;
-
-				var lockScroll = Math.floor(containerWidth - lockLeft - lockRight);
-				$(datatable.table).find('.' + pfx + 'datatable__lock--scroll').css('width', lockScroll);
-
-				return lockScroll;
-			},
-
-			/**
-			 * todo; not in use
-			 */
-			dragResize: function() {
-				var pressed = false;
-				var start = undefined;
-				var startX, startWidth;
-				$(datatable.tableHead).find('.' + pfx + 'datatable__cell').mousedown(function(e) {
-					start = $(this);
-					pressed = true;
-					startX = e.pageX;
-					startWidth = $(this).width();
-					$(start).addClass(pfx + 'datatable__cell--resizing');
-
-				}).mousemove(function(e) {
-					if (pressed) {
-						var i = $(start).index();
-						var tableBody = $(datatable.tableBody);
-						var ifLocked = $(start).closest('.' + pfx + 'datatable__lock');
-
-						if (ifLocked) {
-							var lockedIndex = $(ifLocked).index();
-							tableBody = $(datatable.tableBody).find('.' + pfx + 'datatable__lock').eq(lockedIndex);
-						}
-
-						$(tableBody).find('.' + pfx + 'datatable__row').each(function(tri, tr) {
-							$(tr).find('.' + pfx + 'datatable__cell').eq(i).width(startWidth + (e.pageX - startX)).children().width(startWidth + (e.pageX - startX));
-						});
-
-						$(start).children().css('width', startWidth + (e.pageX - startX));
-					}
-
-				}).mouseup(function() {
-					$(start).removeClass(pfx + 'datatable__cell--resizing');
-					pressed = false;
-				});
-
-				$(document).mouseup(function() {
-					$(start).removeClass(pfx + 'datatable__cell--resizing');
-					pressed = false;
-				});
-			},
-
-			/**
-			 * To prepare placeholder for table before content is loading
-			 */
-			initHeight: function() {
-				if (options.layout.height && options.layout.scroll) {
-					var theadHeight = $(datatable.tableHead).find('.' + pfx + 'datatable__row').outerHeight();
-					var tfootHeight = $(datatable.tableFoot).find('.' + pfx + 'datatable__row').outerHeight();
-					var bodyHeight = options.layout.height;
-					if (theadHeight > 0) {
-						bodyHeight -= theadHeight;
-					}
-					if (tfootHeight > 0) {
-						bodyHeight -= tfootHeight;
-					}
-
-					// scrollbar offset
-					bodyHeight -= 2;
-
-					$(datatable.tableBody).css('max-height', bodyHeight);
-
-					// set scrollable area fixed height
-					$(datatable.tableBody).find('.' + pfx + 'datatable__lock--scroll').css('height', bodyHeight);
-				}
-			},
-
-			/**
-			 * Setup base DOM (table, thead, tbody, tfoot) and create if not
-			 * exist.
-			 */
-			setupBaseDOM: function() {
-				// keep original state before datatable initialize
-				datatable.initialDatatable = $(datatable).clone();
-
-				// main element
-				if ($(datatable).prop('tagName') === 'TABLE') {
-					// if main init element is <table>, wrap with div
-					datatable.table = $(datatable).removeClass(pfx + 'datatable').addClass(pfx + 'datatable__table');
-					if ($(datatable.table).parents('.' + pfx + 'datatable').length === 0) {
-						datatable.table.wrap($('<div/>').addClass(pfx + 'datatable').addClass(pfx + 'datatable--' + options.layout.theme));
-						datatable.wrap = $(datatable.table).parent();
-					}
-				} else {
-					// create table
-					datatable.wrap = $(datatable).addClass(pfx + 'datatable').addClass(pfx + 'datatable--' + options.layout.theme);
-					datatable.table = $('<table/>').addClass(pfx + 'datatable__table').appendTo(datatable);
-				}
-
-				if (typeof options.layout.class !== 'undefined') {
-					$(datatable.wrap).addClass(options.layout.class);
-				}
-
-				$(datatable.table).removeClass(pfx + 'datatable--destroyed').css('display', 'block');
-
-				// force disable save state
-				if (typeof $(datatable).attr('id') === 'undefined') {
-					Plugin.setOption('data.saveState', false);
-					$(datatable.table).attr('id', util.getUniqueID(pfx + 'datatable--'));
-				}
-
-				// predefine table height
-				if (Plugin.getOption('layout.minHeight'))
-					$(datatable.table).css('min-height', Plugin.getOption('layout.minHeight'));
-
-				if (Plugin.getOption('layout.height'))
-					$(datatable.table).css('max-height', Plugin.getOption('layout.height'));
-
-				// for normal table load
-				if (options.data.type === null) {
-					$(datatable.table).css('width', '').css('display', '');
-				}
-
-				// create table head element
-				datatable.tableHead = $(datatable.table).find('thead');
-				if ($(datatable.tableHead).length === 0) {
-					datatable.tableHead = $('<thead/>').prependTo(datatable.table);
-				}
-
-				// create table head element
-				datatable.tableBody = $(datatable.table).find('tbody');
-				if ($(datatable.tableBody).length === 0) {
-					datatable.tableBody = $('<tbody/>').appendTo(datatable.table);
-				}
-
-				if (typeof options.layout.footer !== 'undefined' &&
-					options.layout.footer) {
-					// create table foot element
-					datatable.tableFoot = $(datatable.table).find('tfoot');
-					if ($(datatable.tableFoot).length === 0) {
-						datatable.tableFoot = $('<tfoot/>').appendTo(datatable.table);
-					}
-				}
-			},
-
-			/**
-			 * Set column data before table manipulation.
-			 */
-			setupCellField: function(tableParts) {
-				if (typeof tableParts === 'undefined') tableParts = $(datatable.table).children();
-				var columns = options.columns;
-				$.each(tableParts, function(part, tablePart) {
-					$(tablePart).find('.' + pfx + 'datatable__row').each(function(tri, tr) {
-						// prepare data
-						$(tr).find('.' + pfx + 'datatable__cell').each(function(tdi, td) {
-							if (typeof columns[tdi] !== 'undefined') {
-								$(td).data(columns[tdi]);
-							}
-						});
-					});
-				});
-			},
-
-			/**
-			 * Set column template callback
-			 * @param tablePart
-			 */
-			setupTemplateCell: function(tablePart) {
-				if (typeof tablePart === 'undefined') tablePart = datatable.tableBody;
-				var columns = options.columns;
-				$(tablePart).find('.' + pfx + 'datatable__row').each(function(tri, tr) {
-					// row data object, if any
-					var obj = $(tr).data('obj');
-					if (typeof obj === 'undefined') {
-						return;
-					}
-
-					// @deprecated in v5.0.6
-					// obj['getIndex'] = function() {
-					// 	return tri;
-					// };
-					// @deprecated in v5.0.6
-					// obj['getDatatable'] = function() {
-					// 	return datatable;
-					// };
-
-					// @deprecated in v5.0.6
-					var rowCallback = Plugin.getOption('rows.callback');
-					if (typeof rowCallback === 'function') {
-						rowCallback($(tr), obj, tri);
-					}
-					// before template row callback
-					var beforeTemplate = Plugin.getOption('rows.beforeTemplate');
-					if (typeof beforeTemplate === 'function') {
-						beforeTemplate($(tr), obj, tri);
-					}
-					// if data object is undefined, collect from table
-					if (typeof obj === 'undefined') {
-						obj = {};
-						$(tr).find('.' + pfx + 'datatable__cell').each(function(tdi, td) {
-							// get column settings by field
-							var column = $.grep(columns, function(n, i) {
-								return $(td).data('field') === n.field;
-							})[0];
-							if (typeof column !== 'undefined') {
-								obj[column['field']] = $(td).text();
-							}
-						});
-					}
-
-					$(tr).find('.' + pfx + 'datatable__cell').each(function(tdi, td) {
-						// get column settings by field
-						var column = $.grep(columns, function(n, i) {
-							return $(td).data('field') === n.field;
-						})[0];
-						if (typeof column !== 'undefined') {
-							// column template
-							if (typeof column.template !== 'undefined') {
-								var finalValue = '';
-								// template string
-								if (typeof column.template === 'string') {
-									finalValue = Plugin.dataPlaceholder(column.template, obj);
-								}
-								// template callback function
-								if (typeof column.template === 'function') {
-									finalValue = column.template(obj, tri, datatable);
-								}
-
-								// sanitize using DOMPurify if installed
-								if (typeof DOMPurify !== 'undefined') {
-									finalValue = DOMPurify.sanitize(finalValue);
-								}
-
-								var span = document.createElement('span');
-								span.innerHTML = finalValue;
-
-								// insert to cell, wrap with span
-								$(td).html(span);
-
-								// set span overflow
-								if (typeof column.overflow !== 'undefined') {
-									$(span).css('overflow', column.overflow);
-									$(span).css('position', 'relative');
-								}
-							}
-						}
-					});
-
-					// after template row callback
-					var afterTemplate = Plugin.getOption('rows.afterTemplate');
-					if (typeof afterTemplate === 'function') {
-						afterTemplate($(tr), obj, tri);
-					}
-				});
-			},
-
-			/**
-			 * Setup extra system column properties
-			 * Note: selector checkbox, subtable toggle
-			 */
-			setupSystemColumn: function() {
-				datatable.dataSet = datatable.dataSet || [];
-				// no records available
-				if (datatable.dataSet.length === 0) return;
-
-				var columns = options.columns;
-				$(datatable.tableBody).find('.' + pfx + 'datatable__row').each(function(tri, tr) {
-					$(tr).find('.' + pfx + 'datatable__cell').each(function(tdi, td) {
-						// get column settings by field
-						var column = $.grep(columns, function(n, i) {
-							return $(td).data('field') === n.field;
-						})[0];
-						if (typeof column !== 'undefined') {
-							var value = $(td).text();
-
-							// enable column selector
-							if (typeof column.selector !== 'undefined' && column.selector !== false) {
-								// check if checkbox exist
-								if ($(td).find('.' + pfx + 'checkbox [type="checkbox"]').length > 0) return;
-
-								$(td).addClass(pfx + 'datatable__cell--check');
-
-								// append checkbox
-								var chk = $('<label/>').
-									addClass(pfx + 'checkbox ' + pfx + 'checkbox--single').
-									append($('<input/>').attr('type', 'checkbox').attr('value', value).on('click', function() {
-										if ($(this).is(':checked')) {
-											// add checkbox active row class
-											Plugin.setActive(this);
-										} else {
-											// add checkbox active row class
-											Plugin.setInactive(this);
-										}
-									})).
-									append('&nbsp;<span></span>');
-
-								// checkbox selector has outline style
-								if (typeof column.selector.class !== 'undefined') {
-									$(chk).addClass(column.selector.class);
-								}
-
-								$(td).children().html(chk);
-							}
-
-							// enable column subtable toggle
-							if (typeof column.subtable !== 'undefined' && column.subtable) {
-								// check if subtable toggle exist
-								if ($(td).find('.' + pfx + 'datatable__toggle-subtable').length > 0) return;
-								// append subtable toggle
-								$(td).
-									children().
-									html($('<a/>').
-										addClass(pfx + 'datatable__toggle-subtable').
-										attr('href', '#').
-										attr('data-value', value).
-										append($('<i/>').addClass(Plugin.getOption('layout.icons.rowDetail.collapse'))));
-							}
-						}
-					});
-				});
-
-				// init checkbox for header/footer
-				var initCheckbox = function(tr) {
-					// get column settings by field
-					var column = $.grep(columns, function(n, i) {
-						return typeof n.selector !== 'undefined' && n.selector !== false;
-					})[0];
-
-					if (typeof column !== 'undefined') {
-						// enable column selector
-						if (typeof column.selector !== 'undefined' && column.selector !== false) {
-							var td = $(tr).find('[data-field="' + column.field + '"]');
-							// check if checkbox exist
-							if ($(td).find('.' + pfx + 'checkbox [type="checkbox"]').length > 0) return;
-
-							$(td).addClass(pfx + 'datatable__cell--check');
-
-							// append checkbox
-							var chk = $('<label/>').
-								addClass(pfx + 'checkbox ' + pfx + 'checkbox--single ' + pfx + 'checkbox--all').
-								append($('<input/>').attr('type', 'checkbox').on('click', function() {
-									if ($(this).is(':checked')) {
-										Plugin.setActiveAll(true);
-									} else {
-										Plugin.setActiveAll(false);
-									}
-								})).
-								append('&nbsp;<span></span>');
-
-							// checkbox selector has outline style
-							if (typeof column.selector.class !== 'undefined') {
-								$(chk).addClass(column.selector.class);
-							}
-
-							$(td).children().html(chk);
-						}
-					}
-				};
-
-				if (options.layout.header) {
-					initCheckbox($(datatable.tableHead).find('.' + pfx + 'datatable__row').first());
-				}
-				if (options.layout.footer) {
-					initCheckbox($(datatable.tableFoot).find('.' + pfx + 'datatable__row').first());
-				}
-			},
-
-			/**
-			 * Adjust width to match container size
-			 */
-			adjustCellsWidth: function() {
-				// get table width
-				var containerWidth = $(datatable.tableBody).innerWidth() - Plugin.iconOffset;
-
-				// get total number of columns
-				var columns = $(datatable.tableBody).
-					find('.' + pfx + 'datatable__row:first-child').
-					find('.' + pfx + 'datatable__cell').
-					// exclude expand icon
-					not('.' + pfx + 'datatable__toggle-detail').
-					not(':hidden').length;
-
-				if (columns > 0) {
-					//  remove reserved sort icon width
-					containerWidth = containerWidth - (Plugin.iconOffset * columns);
-					var minWidth = Math.floor(containerWidth / columns);
-
-					// minimum width
-					if (minWidth <= Plugin.cellOffset) {
-						minWidth = Plugin.cellOffset;
-					}
-
-					var maxWidthList = {};
-					$(datatable.table).find('.' + pfx + 'datatable__row').
-							find('.' + pfx + 'datatable__cell').
-							// exclude expand icon
-							not('.' + pfx + 'datatable__toggle-detail').
-							not(':hidden').each(function(tdi, td) {
-
-						var width = minWidth;
-						var dataWidth = $(td).data('width');
-
-						if (typeof dataWidth !== 'undefined') {
-
-							if (dataWidth === 'auto') {
-								var field = $(td).data('field');
-								if (maxWidthList[field]) {
-									width = maxWidthList[field];
-								}
-								else {
-									var cells = $(datatable.table).find('.' + pfx + 'datatable__cell[data-field="' + field + '"]');
-									width = maxWidthList[field] = Math.max.apply(null,
-											$(cells).map(function() {
-												return $(this).outerWidth();
-											}).get());
-								}
-							}
-							else {
-								width = dataWidth;
-							}
-						}
-						$(td).children().css('width', Math.ceil(width));
-					});
-				}
-
-				return datatable;
-			},
-
-			/**
-			 * Adjust height to match container size
-			 */
-			adjustCellsHeight: function() {
-				$.each($(datatable.table).children(), function(part, tablePart) {
-					var totalRows = $(tablePart).find('.' + pfx + 'datatable__row').first().parent().find('.' + pfx + 'datatable__row').length;
-					for (var i = 1; i <= totalRows; i++) {
-						var rows = $(tablePart).find('.' + pfx + 'datatable__row:nth-child(' + i + ')');
-						if ($(rows).length > 0) {
-							var maxHeight = Math.max.apply(null, $(rows).map(function() {
-								return $(this).outerHeight();
-							}).get());
-							$(rows).css('height', Math.ceil(maxHeight));
-						}
-					}
-				});
-			},
-
-			/**
-			 * Setup table DOM and classes
-			 */
-			setupDOM: function(table) {
-				// set table classes
-				$(table).find('> thead').addClass(pfx + 'datatable__head');
-				$(table).find('> tbody').addClass(pfx + 'datatable__body');
-				$(table).find('> tfoot').addClass(pfx + 'datatable__foot');
-				$(table).find('tr').addClass(pfx + 'datatable__row');
-				$(table).find('tr > th, tr > td').addClass(pfx + 'datatable__cell');
-				$(table).find('tr > th, tr > td').each(function(i, td) {
-					if ($(td).find('span').length === 0) {
-						$(td).wrapInner($('<span/>').css('width', Plugin.cellOffset));
-					}
-				});
-			},
-
-			/**
-			 * Default scrollbar
-			 * @returns {{tableLocked: null, init: init, onScrolling:
-			 *     onScrolling}}
-			 */
-			scrollbar: function() {
-				var scroll = {
-					scrollable: null,
-					tableLocked: null,
-					initPosition: null,
-					init: function() {
-						var screen = util.getViewPort().width;
-						// setup scrollable datatable
-						if (options.layout.scroll) {
-							// add scrollable datatable class
-							$(datatable.wrap).addClass(pfx + 'datatable--scroll');
-
-							var scrollable = $(datatable.tableBody).find('.' + pfx + 'datatable__lock--scroll');
-
-							// check if scrollable area have rows
-							if ($(scrollable).find('.' + pfx + 'datatable__row').length > 0 && $(scrollable).length > 0) {
-								scroll.scrollHead = $(datatable.tableHead).find('> .' + pfx + 'datatable__lock--scroll > .' + pfx + 'datatable__row');
-								scroll.scrollFoot = $(datatable.tableFoot).find('> .' + pfx + 'datatable__lock--scroll > .' + pfx + 'datatable__row');
-								scroll.tableLocked = $(datatable.tableBody).find('.' + pfx + 'datatable__lock:not(.' + pfx + 'datatable__lock--scroll)');
-								if (Plugin.getOption('layout.customScrollbar') && util.detectIE() != 10 && screen > util.getBreakpoint('lg')) {
-									scroll.initCustomScrollbar(scrollable[0]);
-								} else {
-									scroll.initDefaultScrollbar(scrollable);
-								}
-							} else if ($(datatable.tableBody).find('.' + pfx + 'datatable__row').length > 0) {
-								scroll.scrollHead = $(datatable.tableHead).find('> .' + pfx + 'datatable__row');
-								scroll.scrollFoot = $(datatable.tableFoot).find('> .' + pfx + 'datatable__row');
-								if (Plugin.getOption('layout.customScrollbar') && util.detectIE() != 10 && screen > util.getBreakpoint('lg')) {
-									scroll.initCustomScrollbar(datatable.tableBody);
-								} else {
-									scroll.initDefaultScrollbar(datatable.tableBody);
-								}
-							}
-						}
-					},
-					initDefaultScrollbar: function(scrollable) {
-						// get initial scroll position
-						scroll.initPosition = $(scrollable).scrollLeft();
-						$(scrollable).css('overflow-y', 'auto').off().on('scroll', scroll.onScrolling);
-						if (Plugin.getOption('rows.autoHide') !== true) {
-							$(scrollable).css('overflow-x', 'auto');
-						}
-					},
-					onScrolling: function(e) {
-						var left = $(this).scrollLeft();
-						var top = $(this).scrollTop();
-						if (util.isRTL()) {
-							// deduct initial position for RTL
-							left = left - scroll.initPosition;
-						}
-						$(scroll.scrollHead).css('left', -left);
-						$(scroll.scrollFoot).css('left', -left);
-						$(scroll.tableLocked).each(function(i, table) {
-							if (Plugin.isLocked()) {
-								// scrollbar offset
-								top -= 1;
-							}
-							$(table).css('top', -top);
-						});
-					},
-					initCustomScrollbar: function(scrollable) {
-						scroll.scrollable = scrollable;
-						// create a new instance for table body with scrollbar
-						Plugin.initScrollbar(scrollable);
-						// get initial scroll position
-						scroll.initPosition = $(scrollable).scrollLeft();
-						$(scrollable).off().on('scroll', scroll.onScrolling);
-					},
-				};
-				scroll.init();
-				return scroll;
-			},
-
-			/**
-			 * Init custom scrollbar and reset position
-			 * @param element
-			 * @param options
-			 */
-			initScrollbar: function(element, options) {
-				if (!element || !element.nodeName) {
-					return;
-				}
-				$(datatable.tableBody).css('overflow', '');
-				if (util.hasClass(element, 'ps')) {
-					$(element).data('ps').update();
-				} else {
-					var ps = new PerfectScrollbar(element, Object.assign({}, {
-						wheelSpeed: 0.5,
-						swipeEasing: true,
-						// wheelPropagation: false,
-						minScrollbarLength: 40,
-						maxScrollbarLength: 300,
-						suppressScrollX: Plugin.getOption('rows.autoHide') && !Plugin.isLocked()
-					}, options));
-					$(element).data('ps', ps);
-
-					// reset perfect scrollbar on resize
-					$(window).resize(function() {
-						ps.update();
-					});
-				}
-			},
-
-			/**
-			 * Set column title from options.columns settings
-			 */
-			setHeadTitle: function(tablePart) {
-				if (typeof tablePart === 'undefined') tablePart = datatable.tableHead;
-				tablePart = $(tablePart)[0];
-				var columns = options.columns;
-				var row = tablePart.getElementsByTagName('tr')[0];
-				var ths = tablePart.getElementsByTagName('td');
-
-				if (typeof row === 'undefined') {
-					row = document.createElement('tr');
-					tablePart.appendChild(row);
-				}
-
-				$.each(columns, function(i, column) {
-					var th = ths[i];
-					if (typeof th === 'undefined') {
-						th = document.createElement('th');
-						row.appendChild(th);
-					}
-
-					// set column title
-					if (typeof column['title'] !== 'undefined') {
-						th.innerHTML = column.title;
-						th.setAttribute('data-field', column.field);
-						util.addClass(th, column.class);
-						// set disable autoHide or force enable
-						if (typeof column.autoHide !== 'undefined') {
-							if (column.autoHide !== true) {
-								th.setAttribute('data-autohide-disabled', column.autoHide);
-							} else {
-								th.setAttribute('data-autohide-enabled', column.autoHide);
-							}
-						}
-						$(th).data(column);
-					}
-
-					// set header attr option
-					if (typeof column.attr !== 'undefined') {
-						$.each(column.attr, function(key, val) {
-							th.setAttribute(key, val);
-						});
-					}
-
-					// apply text align to thead/tfoot
-					if (typeof column.textAlign !== 'undefined') {
-						var align = typeof datatable.textAlign[column.textAlign] !== 'undefined' ? datatable.textAlign[column.textAlign] : '';
-						util.addClass(th, align);
-					}
-				});
-				Plugin.setupDOM(tablePart);
-			},
-
-			/**
-			 * Initiate to get remote or local data via ajax
-			 */
-			dataRender: function(action) {
-				$(datatable.table).siblings('.' + pfx + 'datatable__pager').removeClass(pfx + 'datatable--paging-loaded');
-
-				var buildMeta = function() {
-					datatable.dataSet = datatable.dataSet || [];
-					Plugin.localDataUpdate();
-					// local pagination meta
-					var meta = Plugin.getDataSourceParam('pagination');
-					if (meta.perpage === 0) {
-						meta.perpage = options.data.pageSize || 10;
-					}
-					meta.total = datatable.dataSet.length;
-					var start = Math.max(meta.perpage * (meta.page - 1), 0);
-					var end = Math.min(start + meta.perpage, meta.total);
-					datatable.dataSet = $(datatable.dataSet).slice(start, end);
-					return meta;
-				};
-
-				var afterGetData = function(result) {
-					var localPagingCallback = function(ctx, meta) {
-						if (!$(ctx.pager).hasClass(pfx + 'datatable--paging-loaded')) {
-							$(ctx.pager).remove();
-							ctx.init(meta);
-						}
-						$(ctx.pager).off().on(pfx + 'datatable--on-goto-page', function(e) {
-							$(ctx.pager).remove();
-							ctx.init(meta);
-						});
-
-						var start = Math.max(meta.perpage * (meta.page - 1), 0);
-						var end = Math.min(start + meta.perpage, meta.total);
-
-						Plugin.localDataUpdate();
-						datatable.dataSet = $(datatable.dataSet).slice(start, end);
-
-						// insert data into table content
-						Plugin.insertData();
-					};
-
-					$(datatable.wrap).removeClass(pfx + 'datatable--error');
-					// pagination enabled
-					if (options.pagination) {
-						if (options.data.serverPaging && options.data.type !== 'local') {
-							// server pagination
-							var serverMeta = Plugin.getObject('meta', result || null);
-							if (serverMeta !== null) {
-								Plugin.pagingObject = Plugin.paging(serverMeta);
-							} else {
-								// no meta object from server response, fallback to local pagination
-								Plugin.pagingObject = Plugin.paging(buildMeta(), localPagingCallback);
-							}
-						} else {
-							// local pagination can be used by remote data also
-							Plugin.pagingObject = Plugin.paging(buildMeta(), localPagingCallback);
-						}
-					} else {
-						// pagination is disabled
-						Plugin.localDataUpdate();
-					}
-					// insert data into table content
-					Plugin.insertData();
-				};
-
-				// get local datasource
-				if (options.data.type === 'local'
-					// for remote json datasource
-					// || typeof options.data.source.read === 'undefined' && datatable.dataSet !== null
-					// for remote datasource, server sorting is disabled and data already received from remote
-					|| options.data.serverSorting === false && action === 'sort'
-					|| options.data.serverFiltering === false && action === 'search'
-				) {
-					setTimeout(function() {
-						afterGetData();
-						Plugin.setAutoColumns();
-					});
-					return;
-				}
-
-				// getting data from remote only
-				Plugin.getData().done(afterGetData);
-			},
-
-			/**
-			 * Process ajax data
-			 */
-			insertData: function() {
-				datatable.dataSet = datatable.dataSet || [];
-				var params = Plugin.getDataSourceParam();
-
-				// get row attributes
-				var pagination = params.pagination;
-				var start = (Math.max(pagination.page, 1) - 1) * pagination.perpage;
-				var end = Math.min(pagination.page, pagination.pages) * pagination.perpage;
-				var rowProps = {};
-				if (typeof options.data.attr.rowProps !== 'undefined' && options.data.attr.rowProps.length) {
-					rowProps = options.data.attr.rowProps.slice(start, end);
-				}
-
-				var tableBody = document.createElement('tbody');
-				tableBody.style.visibility = 'hidden';
-				var colLength = options.columns.length;
-
-				$.each(datatable.dataSet, function(rowIndex, row) {
-					var tr = document.createElement('tr');
-					tr.setAttribute('data-row', rowIndex);
-					// keep data object to row
-					$(tr).data('obj', row);
-
-					if (typeof rowProps[rowIndex] !== 'undefined') {
-						$.each(rowProps[rowIndex], function() {
-							tr.setAttribute(this.name, this.value);
-						});
-					}
-
-					var cellIndex = 0;
-					var tds = [];
-					for (var a = 0; a < colLength; a += 1) {
-						var column = options.columns[a];
-						var classes = [];
-						// add sorted class to cells
-						if (Plugin.getObject('sort.field', params) === column.field) {
-							classes.push(pfx + 'datatable__cell--sorted');
-						}
-
-						// apply text align
-						if (typeof column.textAlign !== 'undefined') {
-							var align = typeof datatable.textAlign[column.textAlign] !== 'undefined' ? datatable.textAlign[column.textAlign] : '';
-							classes.push(align);
-						}
-
-						// var classAttr = '';
-						if (typeof column.class !== 'undefined') {
-							classes.push(column.class);
-						}
-
-						var td = document.createElement('td');
-						util.addClass(td, classes.join(' '));
-						td.setAttribute('data-field', column.field);
-						// set disable autoHide or force enable
-						if (typeof column.autoHide !== 'undefined') {
-							if (column.autoHide !== true) {
-								td.setAttribute('data-autohide-disabled', column.autoHide);
-							} else {
-								td.setAttribute('data-autohide-enabled', column.autoHide);
-							}
-						}
-						td.innerHTML = Plugin.getObject(column.field, row);
-						tr.appendChild(td);
-					}
-
-					tableBody.appendChild(tr);
-				});
-
-				// display no records message
-				if (datatable.dataSet.length === 0) {
-					var errorSpan = document.createElement('span');
-					util.addClass(errorSpan, pfx + 'datatable--error');
-					errorSpan.innerHTML = Plugin.getOption('translate.records.noRecords');
-					tableBody.appendChild(errorSpan);
-					$(datatable.wrap).addClass(pfx + 'datatable--error ' + pfx + 'datatable--loaded');
-					Plugin.spinnerCallback(false);
-				}
-
-				// replace existing table body
-				$(datatable.tableBody).replaceWith(tableBody);
-				datatable.tableBody = tableBody;
-
-				// layout update
-				Plugin.setupDOM(datatable.table);
-				Plugin.setupCellField([datatable.tableBody]);
-				Plugin.setupTemplateCell(datatable.tableBody);
-				Plugin.layoutUpdate();
-			},
-
-			updateTableComponents: function() {
-				datatable.tableHead = $(datatable.table).children('thead');
-				datatable.tableBody = $(datatable.table).children('tbody');
-				datatable.tableFoot = $(datatable.table).children('tfoot');
-			},
-
-			/**
-			 * Call ajax for raw JSON data
-			 */
-			getData: function() {
-				// Plugin.spinnerCallback(true);
-
-				var ajaxParams = {
-					dataType: 'json',
-					method: 'POST',
-					data: {},
-					timeout: Plugin.getOption('data.source.read.timeout') || 30000,
-				};
-
-				if (options.data.type === 'local') {
-					ajaxParams.url = options.data.source;
-				}
-
-				if (options.data.type === 'remote') {
-					var data = Plugin.getDataSourceParam();
-					// remove if server params is not enabled
-					if (!Plugin.getOption('data.serverPaging')) {
-						delete data['pagination'];
-					}
-					if (!Plugin.getOption('data.serverSorting')) {
-						delete data['sort'];
-					}
-					ajaxParams.data = $.extend({}, ajaxParams.data, data, Plugin.getOption('data.source.read.params'));
-					ajaxParams = $.extend({}, ajaxParams, Plugin.getOption('data.source.read'));
-
-					if (typeof ajaxParams.url !== 'string') ajaxParams.url = Plugin.getOption('data.source.read');
-					if (typeof ajaxParams.url !== 'string') ajaxParams.url = Plugin.getOption('data.source');
-					// ajaxParams.data = $.extend(ajaxParams.data, data.pagination);
-				}
-
-				return $.ajax(ajaxParams).done(function(response, textStatus, jqXHR) {
-					datatable.lastResponse = response;
-					// extendible data map callback for custom datasource
-					datatable.dataSet = datatable.originalDataSet = Plugin.dataMapCallback(response);
-					Plugin.setAutoColumns();
-					$(datatable).trigger(pfx + 'datatable--on-ajax-done', [datatable.dataSet]);
-				}).fail(function(jqXHR, textStatus, errorThrown) {
-					$(datatable).trigger(pfx + 'datatable--on-ajax-fail', [jqXHR]);
-					$(datatable.tableBody).html($('<span/>').addClass(pfx + 'datatable--error').html(Plugin.getOption('translate.records.noRecords')));
-					$(datatable.wrap).addClass(pfx + 'datatable--error ' + pfx + 'datatable--loaded');
-					Plugin.spinnerCallback(false);
-				}).always(function() {
-				});
-			},
-
-			/**
-			 * Pagination object
-			 * @param meta if null, local pagination, otherwise remote
-			 *     pagination
-			 * @param callback for update data when navigating page
-			 */
-			paging: function(meta, callback) {
-				var pg = {
-					meta: null,
-					pager: null,
-					paginateEvent: null,
-					pagerLayout: {pagination: null, info: null},
-					callback: null,
-					init: function(meta) {
-						pg.meta = meta;
-
-						// parse pagination meta to integer
-						pg.meta.page = parseInt(pg.meta.page);
-						pg.meta.pages = parseInt(pg.meta.pages);
-						pg.meta.perpage = parseInt(pg.meta.perpage);
-						pg.meta.total = parseInt(pg.meta.total);
-
-						// always recount total pages
-						pg.meta.pages = Math.max(Math.ceil(pg.meta.total / pg.meta.perpage), 1);
-
-						// current page must be not over than total pages
-						if (pg.meta.page > pg.meta.pages) pg.meta.page = pg.meta.pages;
-
-						// set unique event name between tables
-						pg.paginateEvent = Plugin.getTablePrefix();
-
-						pg.pager = $(datatable.table).siblings('.' + pfx + 'datatable__pager');
-						if ($(pg.pager).hasClass(pfx + 'datatable--paging-loaded')) return;
-
-						// if class .'+pfx+'datatable--paging-loaded not exist, recreate pagination
-						$(pg.pager).remove();
-
-						// if no pages available
-						if (pg.meta.pages === 0) return;
-
-						// update datasource params
-						Plugin.setDataSourceParam('pagination', {
-							page: pg.meta.page,
-							pages: pg.meta.pages,
-							perpage: pg.meta.perpage,
-							total: pg.meta.total,
-						});
-
-						// default callback function, contains remote pagination handler
-						pg.callback = pg.serverCallback;
-						// custom callback function
-						if (typeof callback === 'function') pg.callback = callback;
-
-						pg.addPaginateEvent();
-						pg.populate();
-
-						pg.meta.page = Math.max(pg.meta.page || 1, pg.meta.page);
-
-						$(datatable).trigger(pg.paginateEvent, pg.meta);
-
-						pg.pagingBreakpoint.call();
-						$(window).resize(pg.pagingBreakpoint);
-					},
-					serverCallback: function(ctx, meta) {
-						Plugin.dataRender();
-					},
-					populate: function() {
-						var icons = Plugin.getOption('layout.icons.pagination');
-						var title = Plugin.getOption('translate.toolbar.pagination.items.default');
-						// pager root element
-						pg.pager = $('<div/>').addClass(pfx + 'datatable__pager ' + pfx + 'datatable--paging-loaded');
-						// numbering links
-						var pagerNumber = $('<ul/>').addClass(pfx + 'datatable__pager-nav');
-						pg.pagerLayout['pagination'] = pagerNumber;
-
-						// pager first/previous button
-						$('<li/>').
-							append($('<a/>').
-								attr('title', title.first).
-								addClass(pfx + 'datatable__pager-link ' + pfx + 'datatable__pager-link--first').
-								append($('<i/>').addClass(icons.first)).
-								on('click', pg.gotoMorePage).
-								attr('data-page', 1)).
-							appendTo(pagerNumber);
-						$('<li/>').
-							append($('<a/>').
-								attr('title', title.prev).
-								addClass(pfx + 'datatable__pager-link ' + pfx + 'datatable__pager-link--prev').
-								append($('<i/>').addClass(icons.prev)).
-								on('click', pg.gotoMorePage)).
-							appendTo(pagerNumber);
-
-						// more previous pages
-						$('<li/>').
-							append($('<a/>').
-								attr('title', title.more).
-								addClass(pfx + 'datatable__pager-link ' + pfx + 'datatable__pager-link--more-prev').
-								html($('<i/>').addClass(icons.more)).
-								on('click', pg.gotoMorePage)).
-							appendTo(pagerNumber);
-
-						$('<li/>').append($('<input/>').attr('type', 'text').addClass(pfx + 'pager-input form-control').attr('title', title.input).on('keyup', function() {
-							// on keyup update [data-page]
-							$(this).attr('data-page', Math.abs($(this).val()));
-						}).on('keypress', function(e) {
-							// on keypressed enter button
-							if (e.which === 13) pg.gotoMorePage(e);
-						})).appendTo(pagerNumber);
-
-						var pagesNumber = Plugin.getOption('toolbar.items.pagination.pages.desktop.pagesNumber');
-						var end = Math.ceil(pg.meta.page / pagesNumber) * pagesNumber;
-						var start = end - pagesNumber;
-						if (end > pg.meta.pages) {
-							end = pg.meta.pages;
-						}
-						for (var x = start; x < end; x++) {
-							var pageNumber = x + 1;
-							$('<li/>').
-								append($('<a/>').
-									addClass(pfx + 'datatable__pager-link ' + pfx + 'datatable__pager-link-number').
-									text(pageNumber).
-									attr('data-page', pageNumber).
-									attr('title', pageNumber).
-									on('click', pg.gotoPage)).
-								appendTo(pagerNumber);
-						}
-
-						// more next pages
-						$('<li/>').
-							append($('<a/>').
-								attr('title', title.more).
-								addClass(pfx + 'datatable__pager-link ' + pfx + 'datatable__pager-link--more-next').
-								html($('<i/>').addClass(icons.more)).
-								on('click', pg.gotoMorePage)).
-							appendTo(pagerNumber);
-
-						// pager next/last button
-						$('<li/>').
-							append($('<a/>').
-								attr('title', title.next).
-								addClass(pfx + 'datatable__pager-link ' + pfx + 'datatable__pager-link--next').
-								append($('<i/>').addClass(icons.next)).
-								on('click', pg.gotoMorePage)).
-							appendTo(pagerNumber);
-						$('<li/>').
-							append($('<a/>').
-								attr('title', title.last).
-								addClass(pfx + 'datatable__pager-link ' + pfx + 'datatable__pager-link--last').
-								append($('<i/>').addClass(icons.last)).
-								on('click', pg.gotoMorePage).
-								attr('data-page', pg.meta.pages)).
-							appendTo(pagerNumber);
-
-						// page info
-						if (Plugin.getOption('toolbar.items.info')) {
-							pg.pagerLayout['info'] = $('<div/>').addClass(pfx + 'datatable__pager-info').append($('<span/>').addClass(pfx + 'datatable__pager-detail'));
-						}
-
-						$.each(Plugin.getOption('toolbar.layout'), function(i, layout) {
-							$(pg.pagerLayout[layout]).appendTo(pg.pager);
-						});
-
-						// page size select
-						var pageSizeSelect = $('<select/>').
-							addClass('selectpicker ' + pfx + 'datatable__pager-size').
-							attr('title', Plugin.getOption('translate.toolbar.pagination.items.default.select')).
-							attr('data-width', '60px').
-							val(pg.meta.perpage).
-							on('change', pg.updatePerpage).
-							prependTo(pg.pagerLayout['info']);
-
-						var pageSizes = Plugin.getOption('toolbar.items.pagination.pageSizeSelect');
-						// default value here, to fix override option by user
-						if (pageSizes.length == 0) pageSizes = [10, 20, 30, 50, 100];
-						$.each(pageSizes, function(i, size) {
-							var display = size;
-							if (size === -1) display = Plugin.getOption('translate.toolbar.pagination.items.default.all');
-							$('<option/>').attr('value', size).html(display).appendTo(pageSizeSelect);
-						});
-
-						// init selectpicker to dropdown
-						$(datatable).ready(function() {
-							$('.selectpicker').
-								selectpicker().
-								on('hide.bs.select', function() {
-									// fix dropup arrow icon on hide
-									$(this).closest('.bootstrap-select').removeClass('dropup');
-								}).
-								siblings('.dropdown-toggle').
-								attr('title', Plugin.getOption('translate.toolbar.pagination.items.default.select'));
-						});
-
-						pg.paste();
-					},
-					paste: function() {
-						// insert pagination based on placement position, top|bottom
-						$.each($.unique(Plugin.getOption('toolbar.placement')),
-							function(i, position) {
-								if (position === 'bottom') {
-									$(pg.pager).clone(true).insertAfter(datatable.table);
-								}
-								if (position === 'top') {
-									// pager top need some extra space
-									$(pg.pager).clone(true).addClass(pfx + 'datatable__pager--top').insertBefore(datatable.table);
-								}
-							});
-					},
-					gotoMorePage: function(e) {
-						e.preventDefault();
-						// $(this) is a link of .'+pfx+'datatable__pager-link
-
-						if ($(this).attr('disabled') === 'disabled') return false;
-
-						var page = $(this).attr('data-page');
-
-						// event from text input
-						if (typeof page === 'undefined') {
-							page = $(e.target).attr('data-page');
-						}
-
-						pg.openPage(parseInt(page));
-						return false;
-					},
-					gotoPage: function(e) {
-						e.preventDefault();
-						// prevent from click same page number
-						if ($(this).hasClass(pfx + 'datatable__pager-link--active')) return;
-
-						pg.openPage(parseInt($(this).data('page')));
-					},
-					openPage: function(page) {
-						// currentPage is 1-based index
-						pg.meta.page = parseInt(page);
-
-						$(datatable).trigger(pg.paginateEvent, pg.meta);
-						pg.callback(pg, pg.meta);
-
-						// update page callback function
-						$(pg.pager).trigger(pfx + 'datatable--on-goto-page', pg.meta);
-					},
-					updatePerpage: function(e) {
-						e.preventDefault();
-						// if (Plugin.getOption('layout.height') === null) {
-						// fix white space, when perpage is set from many records to less records
-						// $('html, body').animate({scrollTop: $(datatable).position().top});
-						// }
-
-						pg.pager = $(datatable.table).siblings('.' + pfx + 'datatable__pager').removeClass(pfx + 'datatable--paging-loaded');
-
-						// on change select page size
-						if (e.originalEvent) {
-							pg.meta.perpage = parseInt($(this).val());
-						}
-
-						$(pg.pager).find('select.' + pfx + 'datatable__pager-size').val(pg.meta.perpage).attr('data-selected', pg.meta.perpage);
-
-						// update datasource params
-						Plugin.setDataSourceParam('pagination', {
-							page: pg.meta.page,
-							pages: pg.meta.pages,
-							perpage: pg.meta.perpage,
-							total: pg.meta.total,
-						});
-
-						// update page callback function
-						$(pg.pager).trigger(pfx + 'datatable--on-update-perpage', pg.meta);
-						$(datatable).trigger(pg.paginateEvent, pg.meta);
-						pg.callback(pg, pg.meta);
-
-						// update pagination info
-						pg.updateInfo.call();
-					},
-					addPaginateEvent: function(e) {
-						// pagination event
-						$(datatable).off(pg.paginateEvent).on(pg.paginateEvent, function(e, meta) {
-							Plugin.spinnerCallback(true);
-
-							pg.pager = $(datatable.table).siblings('.' + pfx + 'datatable__pager');
-							var pagerNumber = $(pg.pager).find('.' + pfx + 'datatable__pager-nav');
-
-							// set sync active page class
-							$(pagerNumber).find('.' + pfx + 'datatable__pager-link--active').removeClass(pfx + 'datatable__pager-link--active');
-							$(pagerNumber).find('.' + pfx + 'datatable__pager-link-number[data-page="' + meta.page + '"]').addClass(pfx + 'datatable__pager-link--active');
-
-							// set next and previous link page number
-							$(pagerNumber).find('.' + pfx + 'datatable__pager-link--prev').attr('data-page', Math.max(meta.page - 1, 1));
-							$(pagerNumber).find('.' + pfx + 'datatable__pager-link--next').attr('data-page', Math.min(meta.page + 1, meta.pages));
-
-							// current page input value sync
-							$(pg.pager).each(function() {
-								$(this).find('.' + pfx + 'pager-input[type="text"]').prop('value', meta.page);
-							});
-
-							$(pg.pager).find('.' + pfx + 'datatable__pager-nav').show();
-							if (meta.pages <= 1) {
-								// hide pager if has 1 page
-								$(pg.pager).find('.' + pfx + 'datatable__pager-nav').hide();
-							}
-
-							// update datasource params
-							Plugin.setDataSourceParam('pagination', {
-								page: pg.meta.page,
-								pages: pg.meta.pages,
-								perpage: pg.meta.perpage,
-								total: pg.meta.total,
-							});
-
-							$(pg.pager).find('select.' + pfx + 'datatable__pager-size').val(meta.perpage).attr('data-selected', meta.perpage);
-
-							// clear active rows
-							$(datatable.table).find('.' + pfx + 'checkbox > [type="checkbox"]').prop('checked', false);
-							$(datatable.table).find('.' + pfx + 'datatable__row--active').removeClass(pfx + 'datatable__row--active');
-
-							pg.updateInfo.call();
-							pg.pagingBreakpoint.call();
-							// Plugin.resetScroll();
-						});
-					},
-					updateInfo: function() {
-						var start = Math.max(pg.meta.perpage * (pg.meta.page - 1) + 1, 1);
-						var end = Math.min(start + pg.meta.perpage - 1, pg.meta.total);
-						// page info update
-						$(pg.pager).find('.' + pfx + 'datatable__pager-info').find('.' + pfx + 'datatable__pager-detail').html(Plugin.dataPlaceholder(
-							Plugin.getOption('translate.toolbar.pagination.items.info'), {
-								start: start,
-								end: pg.meta.perpage === -1 ? pg.meta.total : end,
-								pageSize: pg.meta.perpage === -1 ||
-								pg.meta.perpage >= pg.meta.total
-									? pg.meta.total
-									: pg.meta.perpage,
-								total: pg.meta.total,
-							}));
-					},
-
-					/**
-					 * Update pagination layout breakpoint
-					 */
-					pagingBreakpoint: function() {
-						// keep page links reference
-						var pagerNumber = $(datatable.table).siblings('.' + pfx + 'datatable__pager').find('.' + pfx + 'datatable__pager-nav');
-						if ($(pagerNumber).length === 0) return;
-
-						var currentPage = Plugin.getCurrentPage();
-						var pagerInput = $(pagerNumber).find('.' + pfx + 'pager-input').closest('li');
-
-						// reset
-						$(pagerNumber).find('li').show();
-
-						// pagination update
-						$.each(Plugin.getOption('toolbar.items.pagination.pages'),
-							function(mode, option) {
-								if (util.isInResponsiveRange(mode)) {
-									switch (mode) {
-										case 'desktop':
-										case 'tablet':
-											var end = Math.ceil(currentPage / option.pagesNumber) *
-												option.pagesNumber;
-											var start = end - option.pagesNumber;
-											$(pagerInput).hide();
-											pg.meta = Plugin.getDataSourceParam('pagination');
-											pg.paginationUpdate();
-											break;
-
-										case 'mobile':
-											$(pagerInput).show();
-											$(pagerNumber).find('.' + pfx + 'datatable__pager-link--more-prev').closest('li').hide();
-											$(pagerNumber).find('.' + pfx + 'datatable__pager-link--more-next').closest('li').hide();
-											$(pagerNumber).find('.' + pfx + 'datatable__pager-link-number').closest('li').hide();
-											break;
-									}
-
-									return false;
-								}
-							});
-					},
-
-					/**
-					 * Update pagination number and button display
-					 */
-					paginationUpdate: function() {
-						var pager = $(datatable.table).siblings('.' + pfx + 'datatable__pager').find('.' + pfx + 'datatable__pager-nav'),
-							pagerMorePrev = $(pager).find('.' + pfx + 'datatable__pager-link--more-prev'),
-							pagerMoreNext = $(pager).find('.' + pfx + 'datatable__pager-link--more-next'),
-							pagerFirst = $(pager).find('.' + pfx + 'datatable__pager-link--first'),
-							pagerPrev = $(pager).find('.' + pfx + 'datatable__pager-link--prev'),
-							pagerNext = $(pager).find('.' + pfx + 'datatable__pager-link--next'),
-							pagerLast = $(pager).find('.' + pfx + 'datatable__pager-link--last');
-
-						// get visible page
-						var pagerNumber = $(pager).find('.' + pfx + 'datatable__pager-link-number');
-						// get page before of first visible
-						var morePrevPage = Math.max($(pagerNumber).first().data('page') - 1,
-							1);
-						$(pagerMorePrev).each(function(i, prev) {
-							$(prev).attr('data-page', morePrevPage);
-						});
-						// show/hide <li>
-						if (morePrevPage === 1) {
-							$(pagerMorePrev).parent().hide();
-						} else {
-							$(pagerMorePrev).parent().show();
-						}
-
-						// get page after of last visible
-						var moreNextPage = Math.min($(pagerNumber).last().data('page') + 1,
-							pg.meta.pages);
-						$(pagerMoreNext).each(function(i, prev) {
-							$(pagerMoreNext).attr('data-page', moreNextPage).show();
-						});
-
-						// show/hide <li>
-						if (moreNextPage === pg.meta.pages
-							// missing dot fix when last hidden page is one left
-							&& moreNextPage === $(pagerNumber).last().data('page')) {
-							$(pagerMoreNext).parent().hide();
-						} else {
-							$(pagerMoreNext).parent().show();
-						}
-
-						// begin/end of pages
-						if (pg.meta.page === 1) {
-							$(pagerFirst).attr('disabled', true).addClass(pfx + 'datatable__pager-link--disabled');
-							$(pagerPrev).attr('disabled', true).addClass(pfx + 'datatable__pager-link--disabled');
-						} else {
-							$(pagerFirst).removeAttr('disabled').removeClass(pfx + 'datatable__pager-link--disabled');
-							$(pagerPrev).removeAttr('disabled').removeClass(pfx + 'datatable__pager-link--disabled');
-						}
-						if (pg.meta.page === pg.meta.pages) {
-							$(pagerNext).attr('disabled', true).addClass(pfx + 'datatable__pager-link--disabled');
-							$(pagerLast).attr('disabled', true).addClass(pfx + 'datatable__pager-link--disabled');
-						} else {
-							$(pagerNext).removeAttr('disabled').removeClass(pfx + 'datatable__pager-link--disabled');
-							$(pagerLast).removeAttr('disabled').removeClass(pfx + 'datatable__pager-link--disabled');
-						}
-
-						// display more buttons
-						var nav = Plugin.getOption('toolbar.items.pagination.navigation');
-						if (!nav.first) $(pagerFirst).remove();
-						if (!nav.prev) $(pagerPrev).remove();
-						if (!nav.next) $(pagerNext).remove();
-						if (!nav.last) $(pagerLast).remove();
-					},
-				};
-				pg.init(meta);
-				return pg;
-			},
-
-			/**
-			 * Hide/show table cell defined by
-			 * options[columns][i][responsive][visible/hidden]
-			 */
-			columnHide: function() {
-				var screen = util.getViewPort().width;
-				// foreach columns setting
-				$.each(options.columns, function(i, column) {
-					if (typeof column.responsive !== 'undefined') {
-						var field = column.field;
-						var tds = $.grep($(datatable.table).find('.' + pfx + 'datatable__cell'), function(n, i) {
-							return field === $(n).data('field');
-						});
-						if (util.getBreakpoint(column.responsive.hidden) >= screen) {
-							$(tds).hide();
-						} else {
-							$(tds).show();
-						}
-						if (util.getBreakpoint(column.responsive.visible) <= screen) {
-							$(tds).show();
-						} else {
-							$(tds).hide();
-						}
-					}
-				});
-			},
-
-			/**
-			 * Setup sub datatable
-			 */
-			setupSubDatatable: function() {
-				var subTableCallback = Plugin.getOption('detail.content');
-				if (typeof subTableCallback !== 'function') return;
-
-				// subtable already exist
-				if ($(datatable.table).find('.' + pfx + 'datatable__subtable').length > 0) return;
-
-				$(datatable.wrap).addClass(pfx + 'datatable--subtable');
-
-				options.columns[0]['subtable'] = true;
-
-				// toggle on open sub table
-				var toggleSubTable = function(e) {
-					e.preventDefault();
-					// get parent row of this subtable
-					var parentRow = $(this).closest('.' + pfx + 'datatable__row');
-
-					// get subtable row for sub table
-					var subTableRow = $(parentRow).next('.' + pfx + 'datatable__row-subtable');
-					if ($(subTableRow).length === 0) {
-						// prepare DOM for sub table, each <tr> as parent and add <tr> as child table
-						subTableRow = $('<tr/>').
-							addClass(pfx + 'datatable__row-subtable ' + pfx + 'datatable__row-loading').
-							hide().
-							append($('<td/>').addClass(pfx + 'datatable__subtable').attr('colspan', Plugin.getTotalColumns()));
-						$(parentRow).after(subTableRow);
-						// add class to even row
-						if ($(parentRow).hasClass(pfx + 'datatable__row--even')) {
-							$(subTableRow).addClass(pfx + 'datatable__row-subtable--even');
-						}
-					}
-
-					$(subTableRow).toggle();
-
-					var subTable = $(subTableRow).find('.' + pfx + 'datatable__subtable');
-
-					// get id from first column of parent row
-					var primaryKey = $(this).closest('[data-field]:first-child').find('.' + pfx + 'datatable__toggle-subtable').data('value');
-
-					var icon = $(this).find('i').removeAttr('class');
-
-					// prevent duplicate datatable init
-					if ($(parentRow).hasClass(pfx + 'datatable__row--subtable-expanded')) {
-						$(icon).addClass(Plugin.getOption('layout.icons.rowDetail.collapse'));
-						// remove expand class from parent row
-						$(parentRow).removeClass(pfx + 'datatable__row--subtable-expanded');
-						// trigger event on collapse
-						$(datatable).trigger(pfx + 'datatable--on-collapse-subtable', [parentRow]);
-					} else {
-						// expand and run callback function
-						$(icon).addClass(Plugin.getOption('layout.icons.rowDetail.expand'));
-						// add expand class to parent row
-						$(parentRow).addClass(pfx + 'datatable__row--subtable-expanded');
-						// trigger event on expand
-						$(datatable).trigger(pfx + 'datatable--on-expand-subtable', [parentRow]);
-					}
-
-					// prevent duplicate datatable init
-					if ($(subTable).find('.' + pfx + 'datatable').length === 0) {
-						// get data by primary id
-						$.map(datatable.dataSet, function(n, i) {
-							// primary id must be at the first column, otherwise e.data will be undefined
-							if (primaryKey === n[options.columns[0].field]) {
-								e.data = n;
-								return true;
-							}
-							return false;
-						});
-
-						// deprecated in v5.0.6
-						e.detailCell = subTable;
-
-						e.parentRow = parentRow;
-						e.subTable = subTable;
-
-						// run callback with event
-						subTableCallback(e);
-
-						$(subTable).children('.' + pfx + 'datatable').on(pfx + 'datatable--on-init', function(e) {
-							$(subTableRow).removeClass(pfx + 'datatable__row-loading');
-						});
-						if (Plugin.getOption('data.type') === 'local') {
-							$(subTableRow).removeClass(pfx + 'datatable__row-loading');
-						}
-					}
-				};
-
-				var columns = options.columns;
-				$(datatable.tableBody).find('.' + pfx + 'datatable__row').each(function(tri, tr) {
-					$(tr).find('.' + pfx + 'datatable__cell').each(function(tdi, td) {
-						// get column settings by field
-						var column = $.grep(columns, function(n, i) {
-							return $(td).data('field') === n.field;
-						})[0];
-						if (typeof column !== 'undefined') {
-							var value = $(td).text();
-							// enable column subtable toggle
-							if (typeof column.subtable !== 'undefined' && column.subtable) {
-								// check if subtable toggle exist
-								if ($(td).find('.' + pfx + 'datatable__toggle-subtable').length > 0) return;
-								// append subtable toggle
-								$(td).
-									html($('<a/>').
-										addClass(pfx + 'datatable__toggle-subtable').
-										attr('href', '#').
-										attr('data-value', value).
-										attr('title', Plugin.getOption('detail.title')).
-										on('click', toggleSubTable).
-										append($('<i/>').css('width', $(td).data('width')).addClass(Plugin.getOption('layout.icons.rowDetail.collapse'))));
-							}
-						}
-					});
-				});
-
-				// $(datatable.tableHead).find('.'+pfx+'-datatable__row').first()
-			},
-
-			/**
-			 * Datasource mapping callback
-			 */
-			dataMapCallback: function(raw) {
-				// static dataset array
-				var dataSet = raw;
-				// dataset mapping callback
-				if (typeof Plugin.getOption('data.source.read.map') === 'function') {
-					return Plugin.getOption('data.source.read.map')(raw);
-				} else {
-					// default data mapping fallback
-					if (typeof raw !== 'undefined' && typeof raw.data !== 'undefined') {
-						dataSet = raw.data;
-					}
-				}
-				return dataSet;
-			},
-
-			isSpinning: false,
-			/**
-			 * BlockUI spinner callback
-			 * @param block
-			 * @param target
-			 */
-			spinnerCallback: function(block, target) {
-				if (typeof target === 'undefined') target = datatable;
-				// get spinner options
-				var spinnerOptions = Plugin.getOption('layout.spinner');
-				// spinner is disabled
-				if (typeof spinnerOptions === 'undefined' || !spinnerOptions) {
-					return;
-				}
-				if (block) {
-					if (!Plugin.isSpinning) {
-						if (typeof spinnerOptions.message !== 'undefined' && spinnerOptions.message === true) {
-							// use default spinner message from translation
-							spinnerOptions.message = Plugin.getOption('translate.records.processing');
-						}
-						Plugin.isSpinning = true;
-						if (typeof app !== 'undefined') {
-							app.block(target, spinnerOptions);
-						}
-					}
-				} else {
-					Plugin.isSpinning = false;
-					if (typeof app !== 'undefined') {
-						app.unblock(target);
-					}
-				}
-			},
-
-			/**
-			 * Default sort callback function
-			 * @param data
-			 * @param sort
-			 * @param column
-			 * @returns {*|Array.<T>|{sort, field}|{asc, desc}}
-			 */
-			sortCallback: function(data, sort, column) {
-				var type = column['type'] || 'string';
-				var format = column['format'] || '';
-				var field = column['field'];
-
-				return $(data).sort(function(a, b) {
-					var aField = a[field];
-					var bField = b[field];
-
-					switch (type) {
-						case 'date':
-							if (typeof moment === 'undefined') {
-								throw new Error('Moment.js is required.');
-							}
-							var diff = moment(aField, format).diff(moment(bField, format));
-							if (sort === 'asc') {
-								return diff > 0 ? 1 : diff < 0 ? -1 : 0;
-							} else {
-								return diff < 0 ? 1 : diff > 0 ? -1 : 0;
-							}
-							break;
-
-						case 'number':
-							if (isNaN(parseFloat(aField)) && aField != null) {
-								aField = Number(aField.replace(/[^0-9\.-]+/g, ''));
-							}
-							if (isNaN(parseFloat(bField)) && bField != null) {
-								bField = Number(bField.replace(/[^0-9\.-]+/g, ''));
-							}
-							aField = parseFloat(aField);
-							bField = parseFloat(bField);
-							if (sort === 'asc') {
-								return aField > bField ? 1 : aField < bField ? -1 : 0;
-							} else {
-								return aField < bField ? 1 : aField > bField ? -1 : 0;
-							}
-							break;
-
-						case 'string':
-						default:
-							if (sort === 'asc') {
-								return aField > bField ? 1 : aField < bField ? -1 : 0;
-							} else {
-								return aField < bField ? 1 : aField > bField ? -1 : 0;
-							}
-							break;
-					}
-				});
-			},
-
-			/**
-			 * Custom debug log
-			 * @param text
-			 * @param obj
-			 */
-			log: function(text, obj) {
-				if (typeof obj === 'undefined') obj = '';
-				if (datatable.debug) {
-					console.log(text, obj);
-				}
-			},
-
-			/**
-			 * Auto hide columnds overflow in row
-			 */
-			autoHide: function() {
-				var hiddenExist = false;
-				// force hide enabled
-				var hidDefault = $(datatable.table).find('[data-autohide-enabled]');
-				if (hidDefault.length) {
-					hiddenExist = true;
-					hidDefault.hide();
-				}
-
-				var toggleHiddenColumns = function(e) {
-					e.preventDefault();
-
-					var row = $(this).closest('.' + pfx + 'datatable__row');
-					var detailRow = $(row).next();
-
-					if (!$(detailRow).hasClass(pfx + 'datatable__row-detail')) {
-						$(this).find('i').removeClass(Plugin.getOption('layout.icons.rowDetail.collapse')).addClass(Plugin.getOption('layout.icons.rowDetail.expand'));
-
-						var hiddenCells = $(row).find('.' + pfx + 'datatable__cell:hidden');
-						var clonedCells = hiddenCells.clone().show();
-
-						detailRow = $('<tr/>').addClass(pfx + 'datatable__row-detail').insertAfter(row);
-						var detailRowTd = $('<td/>').addClass(pfx + 'datatable__detail').attr('colspan', Plugin.getTotalColumns()).appendTo(detailRow);
-
-						var detailSubTable = $('<table/>');
-						$(clonedCells).each(function() {
-							var field = $(this).data('field');
-							var column = $.grep(options.columns, function(n, i) {
-								return field === n.field;
-							})[0];
-							$(detailSubTable).
-								append($('<tr class="' + pfx + 'datatable__row"></tr>').
-									append($('<td class="' + pfx + 'datatable__cell"></td>').append($('<span/>').append(column.title))).
-									append(this));
-						});
-						$(detailRowTd).append(detailSubTable);
-
-					} else {
-						$(this).find('i').removeClass(Plugin.getOption('layout.icons.rowDetail.expand')).addClass(Plugin.getOption('layout.icons.rowDetail.collapse'));
-						$(detailRow).remove();
-					}
-				};
-
-				setTimeout(function () {
-					$(datatable.table).find('.' + pfx + 'datatable__cell').show();
-					$(datatable.tableBody).each(function() {
-						var recursive = 0;
-						while ($(this)[0].offsetWidth < $(this)[0].scrollWidth && recursive < options.columns.length) {
-							$(datatable.table).find('.' + pfx + 'datatable__row').each(function(i) {
-								var cell = $(this).find('.' + pfx + 'datatable__cell:not(:hidden):not([data-autohide-disabled])').last();
-								$(cell).hide();
-								hiddenExist = true;
-							});
-							recursive++;
-						}
-					});
-
-					if (hiddenExist) {
-						// toggle show hidden columns
-						$(datatable.tableBody).find('.' + pfx + 'datatable__row').each(function() {
-							// if no toggle yet
-							if($(this).find('.' + pfx + 'datatable__toggle-detail').length === 0) {
-								// add toggle
-								$(this).prepend($('<td/>').
-										addClass(pfx + 'datatable__cell ' + pfx + 'datatable__toggle-detail').
-										append($('<a/>').
-											addClass(pfx + 'datatable__toggle-detail').
-											attr('href', '').
-											on('click', toggleHiddenColumns).
-											append('<i class="' + Plugin.getOption('layout.icons.rowDetail.collapse') + '"></i>')));
-							}
-
-							// check if subtable toggle exist
-							if ($(datatable.tableHead).find('.' + pfx + 'datatable__toggle-detail').length === 0) {
-								// add empty column to the header and footer
-								$(datatable.tableHead).
-									find('.' + pfx + 'datatable__row').
-									first().
-									prepend('<th class="' + pfx + 'datatable__cell ' + pfx + 'datatable__toggle-detail"><span></span></th>');
-								$(datatable.tableFoot).
-									find('.' + pfx + 'datatable__row').
-									first().
-									prepend('<th class="' + pfx + 'datatable__cell ' + pfx + 'datatable__toggle-detail"><span></span></th>');
-							} else {
-								$(datatable.tableHead).find('.' + pfx + 'datatable__toggle-detail').find('span');
-							}
-						});
-					}
-				});
-
-				Plugin.adjustCellsWidth.call();
-			},
-
-			/**
-			 * To enable auto columns features for remote data source
-			 */
-			setAutoColumns: function() {
-				if (Plugin.getOption('data.autoColumns')) {
-					$.each(datatable.dataSet[0], function(k, v) {
-						var found = $.grep(options.columns, function(n, i) {
-							return k === n.field;
-						});
-						if (found.length === 0) {
-							options.columns.push({field: k, title: k});
-						}
-					});
-					$(datatable.tableHead).find('.' + pfx + 'datatable__row').remove();
-					Plugin.setHeadTitle();
-					if (Plugin.getOption('layout.footer')) {
-						$(datatable.tableFoot).find('.' + pfx + 'datatable__row').remove();
-						Plugin.setHeadTitle(datatable.tableFoot);
-					}
-				}
-			},
-
-			/********************
-			 ** HELPERS
-			 ********************/
-
-			/**
-			 * Check if table is a locked colums table
-			 */
-			isLocked: function() {
-				var isLocked = Plugin.lockEnabledColumns();
-				return isLocked.left.length > 0 || isLocked.right.length > 0;
-			},
-
-			isSubtable: function() {
-				return util.hasClass(datatable.wrap[0], pfx + 'datatable--subtable') || false;
-			},
-
-			/**
-			 * Get total extra space of an element for width calculation,
-			 * including padding, margin, border
-			 * @param element
-			 * @returns {number}
-			 */
-			getExtraSpace: function(element) {
-				var padding = parseInt($(element).css('paddingRight')) +
-					parseInt($(element).css('paddingLeft'));
-				var margin = parseInt($(element).css('marginRight')) +
-					parseInt($(element).css('marginLeft'));
-				var border = Math.ceil(
-					$(element).css('border-right-width').replace('px', ''));
-				return padding + margin + border;
-			},
-
-			/**
-			 * Insert data of array into {{ }} template placeholder
-			 * @param template
-			 * @param data
-			 * @returns {*}
-			 */
-			dataPlaceholder: function(template, data) {
-				var result = template;
-				$.each(data, function(key, val) {
-					result = result.replace('{{' + key + '}}', val);
-				});
-				return result;
-			},
-
-			/**
-			 * Get table unique ID
-			 * Note: table unique change each time refreshed
-			 * @param suffix
-			 * @returns {*}
-			 */
-			getTableId: function(suffix) {
-				if (typeof suffix === 'undefined') suffix = '';
-				var id = $(datatable).attr('id');
-				if (typeof id === 'undefined') {
-					id = $(datatable).attr('class').split(' ')[0];
-				}
-				return id + suffix;
-			},
-
-			/**
-			 * Get table prefix with depth number
-			 */
-			getTablePrefix: function(suffix) {
-				if (typeof suffix !== 'undefined') suffix = '-' + suffix;
-				return Plugin.getTableId() + '-' + Plugin.getDepth() + suffix;
-			},
-
-			/**
-			 * Get current table depth of sub table
-			 * @returns {number}
-			 */
-			getDepth: function() {
-				var depth = 0;
-				var table = datatable.table;
-				do {
-					table = $(table).parents('.' + pfx + 'datatable__table');
-					depth++;
-				} while ($(table).length > 0);
-				return depth;
-			},
-
-			/**
-			 * Keep state item
-			 * @param key
-			 * @param value
-			 */
-			stateKeep: function(key, value) {
-				key = Plugin.getTablePrefix(key);
-				if (Plugin.getOption('data.saveState') === false) return;
-				if (Plugin.getOption('data.saveState.webstorage') && localStorage) {
-					localStorage.setItem(key, JSON.stringify(value));
-				}
-				if (Plugin.getOption('data.saveState.cookie')) {
-					Cookies.set(key, JSON.stringify(value));
-				}
-			},
-
-			/**
-			 * Get state item
-			 * @param key
-			 * @param defValue
-			 */
-			stateGet: function(key, defValue) {
-				key = Plugin.getTablePrefix(key);
-				if (Plugin.getOption('data.saveState') === false) return;
-				var value = null;
-				if (Plugin.getOption('data.saveState.webstorage') && localStorage) {
-					value = localStorage.getItem(key);
-				} else {
-					value = Cookies.get(key);
-				}
-				if (typeof value !== 'undefined' && value !== null) {
-					return JSON.parse(value);
-				}
-			},
-
-			/**
-			 * Update data in state without clear existing
-			 * @param key
-			 * @param value
-			 */
-			stateUpdate: function(key, value) {
-				var ori = Plugin.stateGet(key);
-				if (typeof ori === 'undefined' || ori === null) ori = {};
-				Plugin.stateKeep(key, $.extend({}, ori, value));
-			},
-
-			/**
-			 * Remove state item
-			 * @param key
-			 */
-			stateRemove: function(key) {
-				key = Plugin.getTablePrefix(key);
-				if (localStorage) {
-					localStorage.removeItem(key);
-				}
-				Cookies.remove(key);
-			},
-
-			/**
-			 * Get total columns.
-			 */
-			getTotalColumns: function(tablePart) {
-				if (typeof tablePart === 'undefined') tablePart = datatable.tableBody;
-				return $(tablePart).find('.' + pfx + 'datatable__row').first().find('.' + pfx + 'datatable__cell').length;
-			},
-
-			/**
-			 * Get table row. Useful to get row when current table is in lock
-			 * mode. Can be used for both lock and normal table mode. By
-			 * default, returning result will be in a list of <td>.
-			 * @param tablePart
-			 * @param row 1-based index
-			 * @param tdOnly Optional. Default true
-			 * @returns {*}
-			 */
-			getOneRow: function(tablePart, row, tdOnly) {
-				if (typeof tdOnly === 'undefined') tdOnly = true;
-				// get list of <tr>
-				var result = $(tablePart).find('.' + pfx + 'datatable__row:not(.' + pfx + 'datatable__row-detail):nth-child(' + row + ')');
-				if (tdOnly) {
-					// get list of <td> or <th>
-					result = result.find('.' + pfx + 'datatable__cell');
-				}
-				return result;
-			},
-
-			/**
-			 * Sort table row at HTML level by column index.
-			 * todo; Not in use.
-			 * @param header Header sort clicked
-			 * @param sort asc|desc. Optional. Default asc
-			 * @param int Boolean. Optional. Comparison value parse to integer.
-			 *     Default false
-			 */
-			sortColumn: function(header, sort, int) {
-				if (typeof sort === 'undefined') sort = 'asc'; // desc
-				if (typeof int === 'undefined') int = false;
-
-				var column = $(header).index();
-				var rows = $(datatable.tableBody).find('.' + pfx + 'datatable__row');
-				var hIndex = $(header).closest('.' + pfx + 'datatable__lock').index();
-				if (hIndex !== -1) {
-					rows = $(datatable.tableBody).find('.' + pfx + 'datatable__lock:nth-child(' + (hIndex + 1) + ')').find('.' + pfx + 'datatable__row');
-				}
-
-				var container = $(rows).parent();
-				$(rows).sort(function(a, b) {
-					var tda = $(a).find('td:nth-child(' + column + ')').text();
-					var tdb = $(b).find('td:nth-child(' + column + ')').text();
-
-					if (int) {
-						// useful for integer type sorting
-						tda = parseInt(tda);
-						tdb = parseInt(tdb);
-					}
-
-					if (sort === 'asc') {
-						return tda > tdb ? 1 : tda < tdb ? -1 : 0;
-					} else {
-						return tda < tdb ? 1 : tda > tdb ? -1 : 0;
-					}
-				}).appendTo(container);
-			},
-
-			/**
-			 * Perform sort remote and local
-			 */
-			sorting: function() {
-				var sortObj = {
-					init: function() {
-						if (options.sortable) {
-							$(datatable.tableHead).
-								find('.' + pfx + 'datatable__cell:not(.' + pfx + 'datatable__cell--check)').
-								addClass(pfx + 'datatable__cell--sort').
-								off('click').
-								on('click', sortObj.sortClick);
-							// first init
-							sortObj.setIcon();
-						}
-					},
-					setIcon: function() {
-						var meta = Plugin.getDataSourceParam('sort');
-						if ($.isEmptyObject(meta)) return;
-
-						var column = Plugin.getColumnByField(meta.field);
-						// sort is disabled for this column
-						if (typeof column !== 'undefined' && typeof column.sortable !== 'undefined' && column.sortable === false) return;
-
-						// sort icon beside column header
-						var td = $(datatable.tableHead).find('.' + pfx + 'datatable__cell[data-field="' + meta.field + '"]').attr('data-sort', meta.sort);
-						var sorting = $(td).find('span');
-						var icon = $(sorting).find('i');
-
-						var icons = Plugin.getOption('layout.icons.sort');
-						// update sort icon; desc & asc
-						if ($(icon).length > 0) {
-							$(icon).removeAttr('class').addClass(icons[meta.sort]);
-						} else {
-							$(sorting).append($('<i/>').addClass(icons[meta.sort]));
-						}
-
-						// set sorted class to header on init
-						$(td).addClass(pfx + 'datatable__cell--sorted');
-					},
-					sortClick: function(e) {
-						var meta = Plugin.getDataSourceParam('sort');
-						var field = $(this).data('field');
-						var column = Plugin.getColumnByField(field);
-						// sort is disabled for this column
-						if (typeof column.sortable !== 'undefined' && column.sortable === false) return;
-
-						// set sorted class to header
-						$(datatable.tableHead).find('th').removeClass(pfx + 'datatable__cell--sorted');
-						util.addClass(this, pfx + 'datatable__cell--sorted');
-
-						$(datatable.tableHead).find('.' + pfx + 'datatable__cell > span > i').remove();
-
-						if (options.sortable) {
-							Plugin.spinnerCallback(true);
-
-							var sort = 'desc';
-							if (Plugin.getObject('field', meta) === field) {
-								sort = Plugin.getObject('sort', meta);
-							}
-
-							// toggle sort
-							sort = typeof sort === 'undefined' || sort === 'desc'
-								? 'asc'
-								: 'desc';
-
-							// update field and sort params
-							meta = {field: field, sort: sort};
-							Plugin.setDataSourceParam('sort', meta);
-
-							sortObj.setIcon();
-
-							setTimeout(function() {
-								Plugin.dataRender('sort');
-								$(datatable).trigger(pfx + 'datatable--on-sort', meta);
-							}, 300);
-						}
-					},
-				};
-				sortObj.init();
-			},
-
-			/**
-			 * Update JSON data list linked with sort, filter and pagination.
-			 * Call this method, before using dataSet variable.
-			 * @returns {*|null}
-			 */
-			localDataUpdate: function() {
-				var params = Plugin.getDataSourceParam();
-				if (typeof datatable.originalDataSet === 'undefined') {
-					datatable.originalDataSet = datatable.dataSet;
-				}
-
-				var field = Plugin.getObject('sort.field', params);
-				var sort = Plugin.getObject('sort.sort', params);
-				var column = Plugin.getColumnByField(field);
-				if (typeof column !== 'undefined' && Plugin.getOption('data.serverSorting') !== true) {
-					if (typeof column.sortCallback === 'function') {
-						datatable.dataSet = column.sortCallback(datatable.originalDataSet, sort, column);
-					} else {
-						datatable.dataSet = Plugin.sortCallback(datatable.originalDataSet, sort, column);
-					}
-				} else {
-					datatable.dataSet = datatable.originalDataSet;
-				}
-
-				// if server filter enable, don't pass local filter
-				if (typeof params.query === 'object' && !Plugin.getOption('data.serverFiltering')) {
-					params.query = params.query || {};
-
-					var nestedSearch = function(obj) {
-						for (var field in obj) {
-							if (!obj.hasOwnProperty(field)) continue;
-							if (typeof obj[field] === 'string') {
-								if (obj[field].toLowerCase() == search || obj[field].toLowerCase().indexOf(search) !== -1) {
-									return true;
-								}
-							} else if (typeof obj[field] === 'number') {
-								if (obj[field] === search) {
-									return true;
-								}
-							} else if (typeof obj[field] === 'object') {
-								if (nestedSearch(obj[field])) {
-									return true;
-								}
-							}
-						}
-						return false;
-					};
-
-					var search = $(Plugin.getOption('search.input')).val();
-					if (typeof search !== 'undefined' && search !== '') {
-						search = search.toLowerCase();
-						datatable.dataSet = $.grep(datatable.dataSet, nestedSearch);
-						// remove generalSearch as we don't need this for next columns filter
-						delete params.query[Plugin.getGeneralSearchKey()];
-					}
-
-					// remove empty element from array
-					$.each(params.query, function(k, v) {
-						if (v === '') {
-							delete params.query[k];
-						}
-					});
-
-					// filter array by query
-					datatable.dataSet = Plugin.filterArray(datatable.dataSet, params.query);
-
-					// reset array index
-					datatable.dataSet = datatable.dataSet.filter(function() {
-						return true;
-					});
-				}
-
-				return datatable.dataSet;
-			},
-
-			/**
-			 * Utility helper to filter array by object pair of {key:value}
-			 * @param list
-			 * @param args
-			 * @param operator
-			 * @returns {*}
-			 */
-			filterArray: function(list, args, operator) {
-				if (typeof list !== 'object') {
-					return [];
-				}
-
-				if (typeof operator === 'undefined') operator = 'AND';
-
-				if (typeof args !== 'object') {
-					return list;
-				}
-
-				operator = operator.toUpperCase();
-
-				if ($.inArray(operator, ['AND', 'OR', 'NOT']) === -1) {
-					return [];
-				}
-
-				var count = Object.keys(args).length;
-				var filtered = [];
-
-				$.each(list, function(key, obj) {
-					var to_match = obj;
-
-					var matched = 0;
-					$.each(args, function(m_key, m_value) {
-						m_value = m_value instanceof Array ? m_value : [m_value];
-						var match_property = Plugin.getObject(m_key, to_match);
-						if (typeof match_property !== 'undefined' && match_property) {
-							var lhs = match_property.toString().toLowerCase();
-							m_value.forEach(function(item, index) {
-								if (item.toString().toLowerCase() == lhs || lhs.indexOf(item.toString().toLowerCase()) !== -1) {
-									matched++;
-								}
-							});
-						}
-					});
-
-					if (('AND' == operator && matched == count) ||
-						('OR' == operator && matched > 0) ||
-						('NOT' == operator && 0 == matched)) {
-						filtered[key] = obj;
-					}
-				});
-
-				list = filtered;
-
-				return list;
-			},
-
-			/**
-			 * Reset lock column scroll to 0 when resize
-			 */
-			resetScroll: function() {
-				if (typeof options.detail === 'undefined' && Plugin.getDepth() === 1) {
-					$(datatable.table).find('.' + pfx + 'datatable__row').css('left', 0);
-					$(datatable.table).find('.' + pfx + 'datatable__lock').css('top', 0);
-					$(datatable.tableBody).scrollTop(0);
-				}
-			},
-
-			/**
-			 * Get column options by field
-			 * @param field
-			 * @returns {boolean}
-			 */
-			getColumnByField: function(field) {
-				if (typeof field === 'undefined') return;
-				var result;
-				$.each(options.columns, function(i, column) {
-					if (field === column.field) {
-						result = column;
-						return false;
-					}
-				});
-				return result;
-			},
-
-			/**
-			 * Get default sort column
-			 */
-			getDefaultSortColumn: function() {
-				var result;
-				$.each(options.columns, function(i, column) {
-					if (typeof column.sortable !== 'undefined'
-						&& $.inArray(column.sortable, ['asc', 'desc']) !== -1) {
-						result = {sort: column.sortable, field: column.field};
-						return false;
-					}
-				});
-				return result;
-			},
-
-			/**
-			 * Helper to get element dimensions, when the element is hidden
-			 * @param element
-			 * @param includeMargin
-			 * @returns {{width: number, height: number, innerWidth: number,
-			 *     innerHeight: number, outerWidth: number, outerHeight:
-			 *     number}}
-			 */
-			getHiddenDimensions: function(element, includeMargin) {
-				var props = {
-						position: 'absolute',
-						visibility: 'hidden',
-						display: 'block',
-					},
-					dim = {
-						width: 0,
-						height: 0,
-						innerWidth: 0,
-						innerHeight: 0,
-						outerWidth: 0,
-						outerHeight: 0,
-					},
-					hiddenParents = $(element).parents().addBack().not(':visible');
-				includeMargin = (typeof includeMargin === 'boolean')
-					? includeMargin
-					: false;
-
-				var oldProps = [];
-				hiddenParents.each(function() {
-					var old = {};
-
-					for (var name in props) {
-						old[name] = this.style[name];
-						this.style[name] = props[name];
-					}
-
-					oldProps.push(old);
-				});
-
-				dim.width = $(element).width();
-				dim.outerWidth = $(element).outerWidth(includeMargin);
-				dim.innerWidth = $(element).innerWidth();
-				dim.height = $(element).height();
-				dim.innerHeight = $(element).innerHeight();
-				dim.outerHeight = $(element).outerHeight(includeMargin);
-
-				hiddenParents.each(function(i) {
-					var old = oldProps[i];
-					for (var name in props) {
-						this.style[name] = old[name];
-					}
-				});
-
-				return dim;
-			},
-
-			getGeneralSearchKey: function() {
-				var searchInput = $(Plugin.getOption('search.input'));
-				return $(searchInput).prop('name') || $(searchInput).prop('id');
-			},
-
-			/**
-			 * Get value by dot notation path string and to prevent undefined
-			 * errors
-			 * @param path String Dot notation path in string
-			 * @param object Object to iterate
-			 * @returns {*}
-			 */
-			getObject: function(path, object) {
-				return path.split('.').reduce(function(obj, i) {
-					return obj !== null && typeof obj[i] !== 'undefined' ? obj[i] : null;
-				}, object);
-			},
-
-			/**
-			 * Extend object
-			 * @param obj
-			 * @param path
-			 * @param value
-			 * @returns {*}
-			 */
-			extendObj: function(obj, path, value) {
-				var levels = path.split('.'),
-					i = 0;
-
-				function createLevel(child) {
-					var name = levels[i++];
-					if (typeof child[name] !== 'undefined' && child[name] !== null) {
-						if (typeof child[name] !== 'object' &&
-							typeof child[name] !== 'function') {
-							child[name] = {};
-						}
-					} else {
-						child[name] = {};
-					}
-					if (i === levels.length) {
-						child[name] = value;
-					} else {
-						createLevel(child[name]);
-					}
-				}
-
-				createLevel(obj);
-				return obj;
-			},
-
-			rowEvenOdd: function() {
-				// row even class
-				$(datatable.tableBody).find('.' + pfx + 'datatable__row').removeClass(pfx + 'datatable__row--even');
-				if ($(datatable.wrap).hasClass(pfx + 'datatable--subtable')) {
-					$(datatable.tableBody).find('.' + pfx + 'datatable__row:not(.' + pfx + 'datatable__row-detail):even').addClass(pfx + 'datatable__row--even');
-				} else {
-					$(datatable.tableBody).find('.' + pfx + 'datatable__row:nth-child(even)').addClass(pfx + 'datatable__row--even');
-				}
-			},
-
-			/********************
-			 ** PUBLIC API METHODS
-			 ********************/
-
-			// delay timer
-			timer: 0,
-
-			/**
-			 * Redraw datatable by recalculating its DOM elements, etc.
-			 * @returns {jQuery}
-			 */
-			redraw: function() {
-				Plugin.adjustCellsWidth.call();
-				if (Plugin.isLocked()) {
-					// fix hiding cell width issue
-					Plugin.scrollbar();
-					Plugin.resetScroll();
-					Plugin.adjustCellsHeight.call();
-				}
-				Plugin.adjustLockContainer.call();
-				Plugin.initHeight.call();
-				return datatable;
-			},
-
-			/**
-			 * Shortcode to reload
-			 * @returns {jQuery}
-			 */
-			load: function() {
-				Plugin.reload();
-				return datatable;
-			},
-
-			/**
-			 * Datasource reload
-			 * @returns {jQuery}
-			 */
-			reload: function() {
-				var delay = (function() {
-					return function(callback, ms) {
-						clearTimeout(Plugin.timer);
-						Plugin.timer = setTimeout(callback, ms);
-					};
-				})();
-				delay(function() {
-					// local only. remote pagination will skip this block
-					if (!options.data.serverFiltering) {
-						Plugin.localDataUpdate();
-					}
-					Plugin.dataRender();
-					$(datatable).trigger(pfx + 'datatable--on-reloaded');
-				}, Plugin.getOption('search.delay'));
-				return datatable;
-			},
-
-			/**
-			 * Get record by record ID
-			 * @param id
-			 * @returns {jQuery}
-			 */
-			getRecord: function(id) {
-				if (typeof datatable.tableBody === 'undefined') datatable.tableBody = $(datatable.table).children('tbody');
-				$(datatable.tableBody).find('.' + pfx + 'datatable__cell:first-child').each(function(i, cell) {
-					if (id == $(cell).text()) {
-						var rowNumber = $(cell).closest('.' + pfx + 'datatable__row').index() + 1;
-						datatable.API.record = datatable.API.value = Plugin.getOneRow(datatable.tableBody, rowNumber);
-						return datatable;
-					}
-				});
-				return datatable;
-			},
-
-			/**
-			 * @deprecated in v5.0.6
-			 * Get column of current record ID
-			 * @param columnName
-			 * @returns {jQuery}
-			 */
-			getColumn: function(columnName) {
-				Plugin.setSelectedRecords();
-				datatable.API.value = $(datatable.API.record).find('[data-field="' + columnName + '"]');
-				return datatable;
-			},
-
-			/**
-			 * Destroy datatable to original DOM state before datatable was
-			 * initialized
-			 * @returns {jQuery}
-			 */
-			destroy: function() {
-				$(datatable).parent().find('.' + pfx + 'datatable__pager').remove();
-				var initialDatatable = $(datatable.initialDatatable).addClass(pfx + 'datatable--destroyed').show();
-				$(datatable).replaceWith(initialDatatable);
-				datatable = initialDatatable;
-				$(datatable).trigger(pfx + 'datatable--on-destroy');
-				Plugin.isInit = false;
-				initialDatatable = null;
-				return initialDatatable;
-			},
-
-			/**
-			 * Sort by column field
-			 * @param field
-			 * @param sort
-			 */
-			sort: function(field, sort) {
-				// toggle sort
-				sort = typeof sort === 'undefined' ? 'asc' : sort;
-
-				Plugin.spinnerCallback(true);
-
-				// update field and sort params
-				var meta = {field: field, sort: sort};
-				Plugin.setDataSourceParam('sort', meta);
-
-				setTimeout(function() {
-					Plugin.dataRender('sort');
-					$(datatable).trigger(pfx + 'datatable--on-sort', meta);
-					$(datatable.tableHead).find('.' + pfx + 'datatable__cell > span > i').remove();
-				}, 300);
-
-				return datatable;
-			},
-
-			/**
-			 * @deprecated in v5.0.6
-			 * Get current selected column value
-			 * @returns {jQuery}
-			 */
-			getValue: function() {
-				return $(datatable.API.value).text();
-			},
-
-			/**
-			 * Set checkbox active
-			 * @param cell JQuery selector or checkbox ID
-			 */
-			setActive: function(cell) {
-				if (typeof cell === 'string') {
-					// set by checkbox id
-					cell = $(datatable.tableBody).find('.' + pfx + 'checkbox--single > [type="checkbox"][value="' + cell + '"]');
-				}
-
-				$(cell).prop('checked', true);
-
-				var ids = [];
-				$(cell).each(function(i, td) {
-					// normal table
-					var row = $(td).closest('tr').addClass(pfx + 'datatable__row--active');
-					var colIndex = $(row).index() + 1;
-
-					// lock table
-					$(row).closest('tbody').find('tr:nth-child(' + colIndex + ')').not('.' + pfx + 'datatable__row-subtable').addClass(pfx + 'datatable__row--active');
-
-					var id = $(td).attr('value');
-					if (typeof id !== 'undefined') {
-						ids.push(id);
-					}
-				});
-
-				$(datatable).trigger(pfx + 'datatable--on-check', [ids]);
-			},
-
-			/**
-			 * Set checkbox inactive
-			 * @param cell JQuery selector or checkbox ID
-			 */
-			setInactive: function(cell) {
-				if (typeof cell === 'string') {
-					// set by checkbox id
-					cell = $(datatable.tableBody).find('.' + pfx + 'checkbox--single > [type="checkbox"][value="' + cell + '"]');
-				}
-
-				$(cell).prop('checked', false);
-
-				var ids = [];
-				$(cell).each(function(i, td) {
-					// normal table
-					var row = $(td).closest('tr').removeClass(pfx + 'datatable__row--active');
-					var colIndex = $(row).index() + 1;
-
-					// lock table
-					$(row).closest('tbody').find('tr:nth-child(' + colIndex + ')').not('.' + pfx + 'datatable__row-subtable').removeClass(pfx + 'datatable__row--active');
-
-					var id = $(td).attr('value');
-					if (typeof id !== 'undefined') {
-						ids.push(id);
-					}
-				});
-
-				$(datatable).trigger(pfx + 'datatable--on-uncheck', [ids]);
-			},
-
-			/**
-			 * Set all checkboxes active or inactive
-			 * @param active
-			 */
-			setActiveAll: function(active) {
-				var checkboxes = $(datatable.table).
-					find('> tbody, > thead').
-					find('tr').not('.' + pfx + 'datatable__row-subtable').
-					find('.' + pfx + 'datatable__cell--check [type="checkbox"]');
-				if (active) {
-					Plugin.setActive(checkboxes);
-				} else {
-					Plugin.setInactive(checkboxes);
-				}
-			},
-
-			/**
-			 * @deprecated in v5.0.6
-			 * Get selected rows which are active
-			 * @returns {jQuery}
-			 */
-			setSelectedRecords: function() {
-				datatable.API.record = $(datatable.tableBody).find('.' + pfx + 'datatable__row--active');
-				return datatable;
-			},
-
-			/**
-			 * Get selected records
-			 * @returns {null}
-			 */
-			getSelectedRecords: function() {
-				// support old method
-				Plugin.setSelectedRecords();
-				datatable.API.record = datatable.rows('.' + pfx + 'datatable__row--active').nodes();
-				return datatable.API.record;
-			},
-
-			/**
-			 * Get options by dots notation path
-			 * @param path String Dot notation path in string
-			 * @returns {*}
-			 */
-			getOption: function(path) {
-				return Plugin.getObject(path, options);
-			},
-
-			/**
-			 * Set global options nodes by dots notation path
-			 * @param path
-			 * @param object
-			 */
-			setOption: function(path, object) {
-				options = Plugin.extendObj(options, path, object);
-			},
-
-			/**
-			 * Search filter for local & remote
-			 * @param value
-			 * @param columns. Optional list of columns to be filtered.
-			 */
-			search: function(value, columns) {
-				if (typeof columns !== 'undefined') columns = $.makeArray(columns);
-				var delay = (function() {
-					return function(callback, ms) {
-						clearTimeout(Plugin.timer);
-						Plugin.timer = setTimeout(callback, ms);
-					};
-				})();
-
-				delay(function() {
-					// get query parameters
-					var query = Plugin.getDataSourceQuery();
-
-					// search not by columns
-					if (typeof columns === 'undefined' && typeof value !== 'undefined') {
-						var key = Plugin.getGeneralSearchKey();
-						query[key] = value;
-					}
-
-					// search by columns, support multiple columns
-					if (typeof columns === 'object') {
-						$.each(columns, function(k, column) {
-							query[column] = value;
-						});
-						// remove empty element from arrays
-						$.each(query, function(k, v) {
-							if (v === '' || $.isEmptyObject(v)) {
-								delete query[k];
-							}
-						});
-					}
-
-					Plugin.setDataSourceQuery(query);
-
-					// local filter only. remote pagination will skip this block
-					if (!options.data.serverFiltering) {
-						Plugin.localDataUpdate();
-					}
-					Plugin.dataRender('search');
-				}, Plugin.getOption('search.delay'));
-			},
-
-			/**
-			 * Set datasource params extract
-			 * @param param
-			 * @param value
-			 */
-			setDataSourceParam: function(param, value) {
-				datatable.API.params = $.extend({}, {
-					pagination: {page: 1, perpage: Plugin.getOption('data.pageSize')},
-					sort: Plugin.getDefaultSortColumn(),
-					query: {},
-				}, datatable.API.params, Plugin.stateGet(Plugin.stateId));
-
-				datatable.API.params = Plugin.extendObj(datatable.API.params, param, value);
-
-				Plugin.stateKeep(Plugin.stateId, datatable.API.params);
-			},
-
-			/**
-			 * Get datasource params
-			 * @param param
-			 */
-			getDataSourceParam: function(param) {
-				datatable.API.params = $.extend({}, {
-					pagination: {page: 1, perpage: Plugin.getOption('data.pageSize')},
-					sort: Plugin.getDefaultSortColumn(),
-					query: {},
-				}, datatable.API.params, Plugin.stateGet(Plugin.stateId));
-
-				if (typeof param === 'string') {
-					return Plugin.getObject(param, datatable.API.params);
-				}
-
-				return datatable.API.params;
-			},
-
-			/**
-			 * Shortcode to datatable.getDataSourceParam('query');
-			 * @returns {*}
-			 */
-			getDataSourceQuery: function() {
-				return Plugin.getDataSourceParam('query') || {};
-			},
-
-			/**
-			 * Shortcode to datatable.setDataSourceParam('query', query);
-			 * @param query
-			 */
-			setDataSourceQuery: function(query) {
-				Plugin.setDataSourceParam('query', query);
-			},
-
-			/**
-			 * Get current page number
-			 * @returns {number}
-			 */
-			getCurrentPage: function() {
-				return $(datatable.table).
-					siblings('.' + pfx + 'datatable__pager').
-					last().
-					find('.' + pfx + 'datatable__pager-nav').
-					find('.' + pfx + 'datatable__pager-link.' + pfx + 'datatable__pager-link--active').
-					data('page') || 1;
-			},
-
-			/**
-			 * Get selected dropdown page size
-			 * @returns {*|number}
-			 */
-			getPageSize: function() {
-				return $(datatable.table).siblings('.' + pfx + 'datatable__pager').last().find('select.' + pfx + 'datatable__pager-size').val() || 10;
-			},
-
-			/**
-			 * Get total rows
-			 */
-			getTotalRows: function() {
-				return datatable.API.params.pagination.total;
-			},
-
-			/**
-			 * Get full dataset in grid
-			 * @returns {*|null|Array}
-			 */
-			getDataSet: function() {
-				return datatable.originalDataSet;
-			},
-
-			/**
-			 * @deprecated in v5.0.6
-			 * Hide column by column's field name
-			 * @param fieldName
-			 */
-			hideColumn: function(fieldName) {
-				// add hide option for this column
-				$.map(options.columns, function(column) {
-					if (fieldName === column.field) {
-						column.responsive = {hidden: 'xl'};
-					}
-					return column;
-				});
-				// hide current displayed column
-				var tds = $.grep($(datatable.table).find('.' + pfx + 'datatable__cell'), function(n, i) {
-					return fieldName === $(n).data('field');
-				});
-				$(tds).hide();
-			},
-
-			/**
-			 * @deprecated in v5.0.6
-			 * Show column by column's field name
-			 * @param fieldName
-			 */
-			showColumn: function(fieldName) {
-				// add hide option for this column
-				$.map(options.columns, function(column) {
-					if (fieldName === column.field) {
-						delete column.responsive;
-					}
-					return column;
-				});
-				// hide current displayed column
-				var tds = $.grep($(datatable.table).find('.' + pfx + 'datatable__cell'), function(n, i) {
-					return fieldName === $(n).data('field');
-				});
-				$(tds).show();
-			},
-
-			nodeTr: [],
-			nodeTd: [],
-			nodeCols: [],
-			recentNode: [],
-
-			table: function() {
-				if (typeof datatable.table !== 'undefined') {
-					return datatable.table;
-				}
-			},
-
-			/**
-			 * Select a single row from the table
-			 * @param selector
-			 * @returns {jQuery}
-			 */
-			row: function(selector) {
-				Plugin.rows(selector);
-				Plugin.nodeTr = Plugin.recentNode = $(Plugin.nodeTr).first();
-				return datatable;
-			},
-
-			/**
-			 * Select multiple rows from the table
-			 * @param selector
-			 * @returns {jQuery}
-			 */
-			rows: function(selector) {
-				if (Plugin.isLocked()) {
-					Plugin.nodeTr = Plugin.recentNode = t(datatable.tableBody).find(selector).filter('.' + pfx + 'datatable__lock--scroll > .' + pfx + 'datatable__row');
-				} else {
-					Plugin.nodeTr = Plugin.recentNode = t(datatable.tableBody).find(selector).filter('.' + pfx + 'datatable__row');
-				}
-				return datatable;
-			},
-
-			/**
-			 * Select a single column from the table
-			 * @param index zero-based index
-			 * @returns {jQuery}
-			 */
-			column: function(index) {
-				Plugin.nodeCols = Plugin.recentNode = $(datatable.tableBody).find('.' + pfx + 'datatable__cell:nth-child(' + (index + 1) + ')');
-				return datatable;
-			},
-
-			/**
-			 * Select multiple columns from the table
-			 * @param selector
-			 * @returns {jQuery}
-			 */
-			columns: function(selector) {
-				var context = datatable.table;
-				if (Plugin.nodeTr === Plugin.recentNode) {
-					context = Plugin.nodeTr;
-				}
-				var columns = $(context).find('.' + pfx + 'datatable__cell[data-field="' + selector + '"]');
-				if (columns.length > 0) {
-					Plugin.nodeCols = Plugin.recentNode = columns;
-				} else {
-					Plugin.nodeCols = Plugin.recentNode = $(context).find(selector).filter('.' + pfx + 'datatable__cell');
-				}
-				return datatable;
-			},
-
-			cell: function(selector) {
-				Plugin.cells(selector);
-				Plugin.nodeTd = Plugin.recentNode = $(Plugin.nodeTd).first();
-				return datatable;
-			},
-
-			cells: function(selector) {
-				var cells = $(datatable.tableBody).find('.' + pfx + 'datatable__cell');
-				if (typeof selector !== 'undefined') {
-					cells = $(cells).filter(selector);
-				}
-				Plugin.nodeTd = Plugin.recentNode = cells;
-				return datatable;
-			},
-
-			/**
-			 * Delete the selected row from the table
-			 * @returns {jQuery}
-			 */
-			remove: function() {
-				if ($(Plugin.nodeTr.length) && Plugin.nodeTr === Plugin.recentNode) {
-					$(Plugin.nodeTr).remove();
-				}
-				Plugin.layoutUpdate();
-				return datatable;
-			},
-
-			/**
-			 * Show or hide the columns or rows
-			 */
-			visible: function(bool) {
-				if ($(Plugin.recentNode.length)) {
-					var locked = Plugin.lockEnabledColumns();
-					if (Plugin.recentNode === Plugin.nodeCols) {
-						var index = Plugin.recentNode.index();
-
-						if (Plugin.isLocked()) {
-							var scrollColumns = $(Plugin.recentNode).closest('.' + pfx + 'datatable__lock--scroll').length;
-							if (scrollColumns) {
-								// is at center of scrollable area
-								index += locked.left.length + 1;
-							} else if ($(Plugin.recentNode).closest('.' + pfx + 'datatable__lock--right').length) {
-								// is at the right locked table
-								index += locked.left.length + scrollColumns + 1;
-							}
-						}
-					}
-
-					if (bool) {
-						if (Plugin.recentNode === Plugin.nodeCols) {
-							delete options.columns[index].responsive;
-						}
-						$(Plugin.recentNode).show();
-					} else {
-						if (Plugin.recentNode === Plugin.nodeCols) {
-							Plugin.setOption('columns.' + index + '.responsive', {hidden: 'xl'});
-						}
-						$(Plugin.recentNode).hide();
-					}
-					Plugin.redraw();
-				}
-			},
-
-			/**
-			 * Get the the DOM element for the selected rows or columns
-			 * @returns {Array}
-			 */
-			nodes: function() {
-				return Plugin.recentNode;
-			},
-
-			/**
-			 * will be implemented soon
-			 * @returns {jQuery}
-			 */
-			dataset: function() {
-				return datatable;
-			},
-
-			/**
-			 * Open page by number
-			 * @param page number
-			 */
-			gotoPage: function (page) {
-				Plugin.pagingObject.openPage(page);
-			},
-
-		};
-
-		/**
-		 * Public API methods can be used directly by datatable
-		 */
-		$.each(Plugin, function(funcName, func) {
-			datatable[funcName] = func;
-		});
-
-		// initialize main datatable plugin
-		if (typeof options !== 'undefined') {
-			if (typeof options === 'string') {
-				var method = options;
-				datatable = $(this).data(pluginName);
-				if (typeof datatable !== 'undefined') {
-					options = datatable.options;
-					Plugin[method].apply(this, Array.prototype.slice.call(arguments, 1));
-				}
-			} else {
-				if (!datatable.data(pluginName) && !$(this).hasClass(pfx + 'datatable--loaded')) {
-					datatable.dataSet = null;
-					datatable.textAlign = {
-						left: pfx + 'datatable__cell--left',
-						center: pfx + 'datatable__cell--center',
-						right: pfx + 'datatable__cell--right',
-					};
-
-					// merge default and user defined options
-					options = $.extend(true, {}, $.fn[pluginName].defaults, options);
-
-					datatable.options = options;
-
-					// init plugin process
-					Plugin.init.apply(this, [options]);
-
-					$(datatable.wrap).data(pluginName, datatable);
-				}
-			}
-		} else {
-			// get existing instance datatable
-			datatable = $(this).data(pluginName);
-			if (typeof datatable === 'undefined') {
-				$.error(pluginName + ' not initialized');
-			}
-			options = datatable.options;
-		}
-
-		return datatable;
-	};
-
-	// default options
-	$.fn[pluginName].defaults = {
-		// datasource definition
-		data: {
-			type: 'local',
-			source: null,
-			pageSize: 10, // display records per page
-			saveState: {
-				// save datatable state(pagination, filtering, sorting, etc) in cookie or browser webstorage
-				cookie: false,
-				webstorage: true,
-			},
-
-			serverPaging: false,
-			serverFiltering: false,
-			serverSorting: false,
-
-			autoColumns: false,
-			attr: {
-				rowProps: [],
-			},
-		},
-
-		// layout definition
-		layout: {
-			theme: 'default', // datatable will support multiple themes and designs
-			class: pfx + 'datatable--brand', // custom wrapper class
-			scroll: false, // enable/disable datatable scroll both horizontal and vertical when needed.
-			height: null, // datatable's body's fixed height
-			minHeight: 300,
-			footer: false, // display/hide footer
-			header: true, // display/hide header
-			customScrollbar: true, // set false to disable custom scrollbar
-
-			// datatable spinner
-			spinner: {
-				overlayColor: '#000000',
-				opacity: 0,
-				type: 'loader',
-				state: 'brand',
-				message: true,
-			},
-
-			// datatable UI icons
-			icons: {
-				sort: {asc: 'flaticon2-arrow-up', desc: 'flaticon2-arrow-down'},
-				pagination: {
-					next: 'flaticon2-next',
-					prev: 'flaticon2-back',
-					first: 'flaticon2-fast-back',
-					last: 'flaticon2-fast-next',
-					more: 'flaticon-more-1',
-				},
-				rowDetail: {expand: 'fa fa-caret-down', collapse: 'fa fa-caret-right'},
-			},
-		},
-
-		// column sorting
-		sortable: true,
-
-		// resize column size with mouse drag coming soon)
-		resizable: false,
-
-		// column based filtering (coming soon)
-		filterable: false,
-
-		pagination: true,
-
-		// inline and bactch editing (cooming soon)
-		editable: false,
-
-		// columns definition
-		columns: [],
-
-		search: {
-			// enable trigger search by keyup enter
-			onEnter: false,
-			// input text for search
-			input: null,
-			// search delay in milliseconds
-			delay: 400,
-		},
-
-		rows: {
-			// deprecated
-			callback: function() {
-			},
-			// call before row template
-			beforeTemplate: function() {
-			},
-			// call after row template
-			afterTemplate: function() {
-			},
-			autoHide: true,
-		},
-
-		// toolbar
-		toolbar: {
-			// place pagination and displayInfo blocks according to the array order
-			layout: ['pagination', 'info'],
-
-			// toolbar placement can be at top or bottom or both top and bottom repeated
-			placement: ['bottom'],  //'top', 'bottom'
-
-			// toolbar items
-			items: {
-				// pagination
-				pagination: {
-					// pagination type(default or scroll)
-					type: 'default',
-
-					// number of pages to display by breakpoints
-					pages: {
-						desktop: {
-							layout: 'default',
-							pagesNumber: 5,
-						},
-						tablet: {
-							layout: 'default',
-							pagesNumber: 3,
-						},
-						mobile: {
-							layout: 'compact',
-						},
-					},
-
-					// navigation buttons
-					navigation: {
-						prev: true, // display prev link
-						next: true, // display next link
-						first: true, // display first link
-						last: true, // display last link
-					},
-
-					// page size select
-					pageSizeSelect: [], // display dropdown to select pagination size. -1 is used for "ALl" option
-				},
-
-				// records info
-				info: true,
-			},
-		},
-
-		// here we will keep all strings and message used by datatable UI so developer can easiliy translate to any language.
-		// By default the stirngs will be in the plugin source and here can override it
-		translate: {
-			records: {
-				processing: 'Please wait...',
-				noRecords: 'No records found',
-			},
-			toolbar: {
-				pagination: {
-					items: {
-						default: {
-							first: 'First',
-							prev: 'Previous',
-							next: 'Next',
-							last: 'Last',
-							more: 'More pages',
-							input: 'Page number',
-							select: 'Select page size',
-							all: 'all',
-						},
-						info: 'Showing {{start}} - {{end}} of {{total}}',
-					},
-				},
-			},
-		},
-
-		extensions: {},
-	};
+        return datatable;
+    };
+
+    // default options
+    $.fn[pluginName].defaults = {
+        // datasource definition
+        data: {
+            type: 'local',
+            source: null,
+            pageSize: 10, // display records per page
+            saveState: {
+                // save datatable state(pagination, filtering, sorting, etc) in cookie or browser webstorage
+                cookie: false,
+                webstorage: true,
+            },
+
+            serverPaging: false,
+            serverFiltering: false,
+            serverSorting: false,
+
+            autoColumns: false,
+            attr: {
+                rowProps: [],
+            },
+        },
+
+        // layout definition
+        layout: {
+            theme: 'default', // datatable will support multiple themes and designs
+            class: pfx + 'datatable--brand', // custom wrapper class
+            scroll: false, // enable/disable datatable scroll both horizontal and vertical when needed.
+            height: null, // datatable's body's fixed height
+            minHeight: 300,
+            footer: false, // display/hide footer
+            header: true, // display/hide header
+            customScrollbar: true, // set false to disable custom scrollbar
+
+            // datatable spinner
+            spinner: {
+                overlayColor: '#000000',
+                opacity: 0,
+                type: 'loader',
+                state: 'brand',
+                message: true,
+            },
+
+            // datatable UI icons
+            icons: {
+                sort: { asc: 'flaticon2-arrow-up', desc: 'flaticon2-arrow-down' },
+                pagination: {
+                    next: 'flaticon2-next',
+                    prev: 'flaticon2-back',
+                    first: 'flaticon2-fast-back',
+                    last: 'flaticon2-fast-next',
+                    more: 'flaticon-more-1',
+                },
+                rowDetail: { expand: 'fa fa-caret-down', collapse: 'fa fa-caret-right' },
+            },
+        },
+
+        // column sorting
+        sortable: true,
+
+        // resize column size with mouse drag coming soon)
+        resizable: false,
+
+        // column based filtering (coming soon)
+        filterable: false,
+
+        pagination: true,
+
+        // inline and bactch editing (cooming soon)
+        editable: false,
+
+        // columns definition
+        columns: [],
+
+        search: {
+            // enable trigger search by keyup enter
+            onEnter: false,
+            // input text for search
+            input: null,
+            // search delay in milliseconds
+            delay: 400,
+        },
+
+        rows: {
+            // deprecated
+            callback: function() {},
+            // call before row template
+            beforeTemplate: function() {},
+            // call after row template
+            afterTemplate: function() {},
+            autoHide: true,
+        },
+
+        // toolbar
+        toolbar: {
+            // place pagination and displayInfo blocks according to the array order
+            layout: ['pagination', 'info'],
+
+            // toolbar placement can be at top or bottom or both top and bottom repeated
+            placement: ['bottom'], //'top', 'bottom'
+
+            // toolbar items
+            items: {
+                // pagination
+                pagination: {
+                    // pagination type(default or scroll)
+                    type: 'default',
+
+                    // number of pages to display by breakpoints
+                    pages: {
+                        desktop: {
+                            layout: 'default',
+                            pagesNumber: 5,
+                        },
+                        tablet: {
+                            layout: 'default',
+                            pagesNumber: 3,
+                        },
+                        mobile: {
+                            layout: 'compact',
+                        },
+                    },
+
+                    // navigation buttons
+                    navigation: {
+                        prev: true, // display prev link
+                        next: true, // display next link
+                        first: true, // display first link
+                        last: true, // display last link
+                    },
+
+                    // page size select
+                    pageSizeSelect: [], // display dropdown to select pagination size. -1 is used for "ALl" option
+                },
+
+                // records info
+                info: true,
+            },
+        },
+
+        // here we will keep all strings and message used by datatable UI so developer can easiliy translate to any language.
+        // By default the stirngs will be in the plugin source and here can override it
+        translate: {
+            records: {
+                processing: 'Please wait...',
+                noRecords: 'No records found',
+            },
+            toolbar: {
+                pagination: {
+                    items: {
+                        default: {
+                            first: 'First',
+                            prev: 'Previous',
+                            next: 'Next',
+                            last: 'Last',
+                            more: 'More pages',
+                            input: 'Page number',
+                            select: 'Select page size',
+                            all: 'all',
+                        },
+                        info: 'Showing {{start}} - {{end}} of {{total}}',
+                    },
+                },
+            },
+        },
+
+        extensions: {},
+    };
 
 }(jQuery));
 "use strict";
 (function($) {
 
-	var pluginName = 'KTDatatable';
-	var pfx = 'kt-';
+    var pluginName = 'KTDatatable';
+    var pfx = 'kt-';
 
-	$.fn[pluginName] = $.fn[pluginName] || {};
+    $.fn[pluginName] = $.fn[pluginName] || {};
 
-	/**
-	 * @param datatable Main datatable plugin instance
-	 * @param options Extension options
-	 * @returns {*}
-	 */
-	$.fn[pluginName].checkbox = function(datatable, options) {
-		var Extension = {
-			selectedAllRows: false,
-			selectedRows: [],
-			unselectedRows: [],
+    /**
+     * @param datatable Main datatable plugin instance
+     * @param options Extension options
+     * @returns {*}
+     */
+    $.fn[pluginName].checkbox = function(datatable, options) {
+        var Extension = {
+            selectedAllRows: false,
+            selectedRows: [],
+            unselectedRows: [],
 
-			init: function() {
-				if (Extension.selectorEnabled()) {
-					// reset
-					datatable.setDataSourceParam(options.vars.selectedAllRows, false);
-					datatable.stateRemove('checkbox');
+            init: function() {
+                if (Extension.selectorEnabled()) {
+                    // reset
+                    datatable.setDataSourceParam(options.vars.selectedAllRows, false);
+                    datatable.stateRemove('checkbox');
 
-					// requestIds is not null
-					if (options.vars.requestIds) {
-						// request ids in response
-						datatable.setDataSourceParam(options.vars.requestIds, true);
-					}
+                    // requestIds is not null
+                    if (options.vars.requestIds) {
+                        // request ids in response
+                        datatable.setDataSourceParam(options.vars.requestIds, true);
+                    }
 
-					// remove selected checkbox on datatable reload
-					$(datatable).on(pfx + 'datatable--on-reloaded', function() {
-						datatable.stateRemove('checkbox');
-						datatable.setDataSourceParam(options.vars.selectedAllRows, false);
-						Extension.selectedAllRows = false;
-						Extension.selectedRows = [];
-						Extension.unselectedRows = [];
-					});
+                    // remove selected checkbox on datatable reload
+                    $(datatable).on(pfx + 'datatable--on-reloaded', function() {
+                        datatable.stateRemove('checkbox');
+                        datatable.setDataSourceParam(options.vars.selectedAllRows, false);
+                        Extension.selectedAllRows = false;
+                        Extension.selectedRows = [];
+                        Extension.unselectedRows = [];
+                    });
 
-					// select all on extension init
-					Extension.selectedAllRows = datatable.getDataSourceParam(options.vars.selectedAllRows);
+                    // select all on extension init
+                    Extension.selectedAllRows = datatable.getDataSourceParam(options.vars.selectedAllRows);
 
-					$(datatable).on(pfx + 'datatable--on-layout-updated', function(e, args) {
-						if (args.table != $(datatable.wrap).attr('id')) {
-							return;
-						}
-						datatable.ready(function() {
-							Extension.initVars();
-							Extension.initEvent();
-							Extension.initSelect();
-						});
-					});
+                    $(datatable).on(pfx + 'datatable--on-layout-updated', function(e, args) {
+                        if (args.table != $(datatable.wrap).attr('id')) {
+                            return;
+                        }
+                        datatable.ready(function() {
+                            Extension.initVars();
+                            Extension.initEvent();
+                            Extension.initSelect();
+                        });
+                    });
 
-					$(datatable).on(pfx + 'datatable--on-check', function(e, ids) {
-						ids.forEach(function(id) {
-							Extension.selectedRows.push(id);
-							// // remove from unselected rows
-							Extension.unselectedRows = Extension.remove(Extension.unselectedRows, id);
-						});
-						var storage = {};
-						storage['selectedRows'] = $.unique(Extension.selectedRows);
-						storage['unselectedRows'] = $.unique(Extension.unselectedRows);
-						datatable.stateKeep('checkbox', storage);
-					});
-					$(datatable).on(pfx + 'datatable--on-uncheck', function(e, ids) {
-						ids.forEach(function(id) {
-							Extension.unselectedRows.push(id);
-							// // remove from selected rows
-							Extension.selectedRows = Extension.remove(Extension.selectedRows, id);
-						});
-						var storage = {};
-						storage['selectedRows'] = $.unique(Extension.selectedRows);
-						storage['unselectedRows'] = $.unique(Extension.unselectedRows);
-						datatable.stateKeep('checkbox', storage);
-					});
-				}
-			},
+                    $(datatable).on(pfx + 'datatable--on-check', function(e, ids) {
+                        ids.forEach(function(id) {
+                            Extension.selectedRows.push(id);
+                            // // remove from unselected rows
+                            Extension.unselectedRows = Extension.remove(Extension.unselectedRows, id);
+                        });
+                        var storage = {};
+                        storage['selectedRows'] = $.unique(Extension.selectedRows);
+                        storage['unselectedRows'] = $.unique(Extension.unselectedRows);
+                        datatable.stateKeep('checkbox', storage);
+                    });
+                    $(datatable).on(pfx + 'datatable--on-uncheck', function(e, ids) {
+                        ids.forEach(function(id) {
+                            Extension.unselectedRows.push(id);
+                            // // remove from selected rows
+                            Extension.selectedRows = Extension.remove(Extension.selectedRows, id);
+                        });
+                        var storage = {};
+                        storage['selectedRows'] = $.unique(Extension.selectedRows);
+                        storage['unselectedRows'] = $.unique(Extension.unselectedRows);
+                        datatable.stateKeep('checkbox', storage);
+                    });
+                }
+            },
 
-			/**
-			 * Init checkbox clicks event
-			 */
-			initEvent: function() {
-				// select all checkbox click
-				$(datatable.tableHead).find('.' + pfx + 'checkbox--all > [type="checkbox"]').click(function(e) {
-					// clear selected and unselected rows
-					Extension.selectedRows = Extension.unselectedRows = [];
-					datatable.stateRemove('checkbox');
+            /**
+             * Init checkbox clicks event
+             */
+            initEvent: function() {
+                // select all checkbox click
+                $(datatable.tableHead).find('.' + pfx + 'checkbox--all > [type="checkbox"]').click(function(e) {
+                    // clear selected and unselected rows
+                    Extension.selectedRows = Extension.unselectedRows = [];
+                    datatable.stateRemove('checkbox');
 
-					// select all rows
-					if ($(this).is(':checked')) {
-						Extension.selectedAllRows = true;
-					}
-					else {
-						Extension.selectedAllRows = false;
-					}
+                    // select all rows
+                    if ($(this).is(':checked')) {
+                        Extension.selectedAllRows = true;
+                    } else {
+                        Extension.selectedAllRows = false;
+                    }
 
-					// local select all current page rows
-					if (!options.vars.requestIds) {
-						if ($(this).is(':checked')) {
-							Extension.selectedRows = $.makeArray($(datatable.tableBody).find('.' + pfx + 'checkbox--single > [type="checkbox"]').map(function(i, chk) {
-								return $(chk).val();
-							}));
-						}
-						var storage = {};
-						storage['selectedRows'] = $.unique(Extension.selectedRows);
-						datatable.stateKeep('checkbox', storage);
-					}
+                    // local select all current page rows
+                    if (!options.vars.requestIds) {
+                        if ($(this).is(':checked')) {
+                            Extension.selectedRows = $.makeArray($(datatable.tableBody).find('.' + pfx + 'checkbox--single > [type="checkbox"]').map(function(i, chk) {
+                                return $(chk).val();
+                            }));
+                        }
+                        var storage = {};
+                        storage['selectedRows'] = $.unique(Extension.selectedRows);
+                        datatable.stateKeep('checkbox', storage);
+                    }
 
-					// keep selectedAllRows in datasource params
-					datatable.setDataSourceParam(options.vars.selectedAllRows, Extension.selectedAllRows);
+                    // keep selectedAllRows in datasource params
+                    datatable.setDataSourceParam(options.vars.selectedAllRows, Extension.selectedAllRows);
 
-					$(datatable).trigger(pfx + 'datatable--on-click-checkbox', [$(this)]);
-				});
+                    $(datatable).trigger(pfx + 'datatable--on-click-checkbox', [$(this)]);
+                });
 
-				// single row checkbox click
-				$(datatable.tableBody).find('.' + pfx + 'checkbox--single > [type="checkbox"]').click(function(e) {
-					var id = $(this).val();
-					if ($(this).is(':checked')) {
-						Extension.selectedRows.push(id);
-						// remove from unselected rows
-						Extension.unselectedRows = Extension.remove(Extension.unselectedRows, id);
-					}
-					else {
-						Extension.unselectedRows.push(id);
-						// remove from selected rows
-						Extension.selectedRows = Extension.remove(Extension.selectedRows, id);
-					}
+                // single row checkbox click
+                $(datatable.tableBody).find('.' + pfx + 'checkbox--single > [type="checkbox"]').click(function(e) {
+                    var id = $(this).val();
+                    if ($(this).is(':checked')) {
+                        Extension.selectedRows.push(id);
+                        // remove from unselected rows
+                        Extension.unselectedRows = Extension.remove(Extension.unselectedRows, id);
+                    } else {
+                        Extension.unselectedRows.push(id);
+                        // remove from selected rows
+                        Extension.selectedRows = Extension.remove(Extension.selectedRows, id);
+                    }
 
-					// local checkbox header check
-					if (!options.vars.requestIds && Extension.selectedRows.length < 1) {
-						// remove select all checkbox, if there is no checked checkbox left
-						$(datatable.tableHead).find('.' + pfx + 'checkbox--all > [type="checkbox"]').prop('checked', false);
-					}
+                    // local checkbox header check
+                    if (!options.vars.requestIds && Extension.selectedRows.length < 1) {
+                        // remove select all checkbox, if there is no checked checkbox left
+                        $(datatable.tableHead).find('.' + pfx + 'checkbox--all > [type="checkbox"]').prop('checked', false);
+                    }
 
-					var storage = {};
-					storage['selectedRows'] = $.unique(Extension.selectedRows);
-					storage['unselectedRows'] = $.unique(Extension.unselectedRows);
-					datatable.stateKeep('checkbox', storage);
+                    var storage = {};
+                    storage['selectedRows'] = $.unique(Extension.selectedRows);
+                    storage['unselectedRows'] = $.unique(Extension.unselectedRows);
+                    datatable.stateKeep('checkbox', storage);
 
-					$(datatable).trigger(pfx + 'datatable--on-click-checkbox', [$(this)]);
-				});
-			},
+                    $(datatable).trigger(pfx + 'datatable--on-click-checkbox', [$(this)]);
+                });
+            },
 
-			initSelect: function() {
-				// selected all rows from server
-				if (Extension.selectedAllRows && options.vars.requestIds) {
-					if (!datatable.hasClass(pfx + 'datatable--error')) {
-						// set header select all checkbox checked
-						$(datatable.tableHead).find('.' + pfx + 'checkbox--all > [type="checkbox"]').prop('checked', true);
-					}
+            initSelect: function() {
+                // selected all rows from server
+                if (Extension.selectedAllRows && options.vars.requestIds) {
+                    if (!datatable.hasClass(pfx + 'datatable--error')) {
+                        // set header select all checkbox checked
+                        $(datatable.tableHead).find('.' + pfx + 'checkbox--all > [type="checkbox"]').prop('checked', true);
+                    }
 
-					// set all checkbox in table body
-					datatable.setActiveAll(true);
+                    // set all checkbox in table body
+                    datatable.setActiveAll(true);
 
-					// remove unselected rows
-					Extension.unselectedRows.forEach(function(id) {
-						datatable.setInactive(id);
-					});
+                    // remove unselected rows
+                    Extension.unselectedRows.forEach(function(id) {
+                        datatable.setInactive(id);
+                    });
 
-				}
-				else {
-					// single check for server and local
-					Extension.selectedRows.forEach(function(id) {
-						datatable.setActive(id);
-					});
+                } else {
+                    // single check for server and local
+                    Extension.selectedRows.forEach(function(id) {
+                        datatable.setActive(id);
+                    });
 
-					// local checkbox; check if all checkboxes of currect page are checked
-					if (!datatable.hasClass(pfx + 'datatable--error') && $(datatable.tableBody).find('.' + pfx + 'checkbox--single > [type="checkbox"]').not(':checked').length < 1) {
-						// set header select all checkbox checked
-						$(datatable.tableHead).find('.' + pfx + 'checkbox--all > [type="checkbox"]').prop('checked', true);
-					}
-				}
-			},
+                    // local checkbox; check if all checkboxes of currect page are checked
+                    if (!datatable.hasClass(pfx + 'datatable--error') && $(datatable.tableBody).find('.' + pfx + 'checkbox--single > [type="checkbox"]').not(':checked').length < 1) {
+                        // set header select all checkbox checked
+                        $(datatable.tableHead).find('.' + pfx + 'checkbox--all > [type="checkbox"]').prop('checked', true);
+                    }
+                }
+            },
 
-			/**
-			 * Check if selector is enabled from options
-			 */
-			selectorEnabled: function() {
-				return $.grep(datatable.options.columns, function(n, i) {
-					return n.selector || false;
-				})[0];
-			},
+            /**
+             * Check if selector is enabled from options
+             */
+            selectorEnabled: function() {
+                return $.grep(datatable.options.columns, function(n, i) {
+                    return n.selector || false;
+                })[0];
+            },
 
-			initVars: function() {
-				// get single select/unselect from localstorage
-				var storage = datatable.stateGet('checkbox');
-				if (typeof storage !== 'undefined') {
-					Extension.selectedRows = storage['selectedRows'] || [];
-					Extension.unselectedRows = storage['unselectedRows'] || [];
-				}
-			},
+            initVars: function() {
+                // get single select/unselect from localstorage
+                var storage = datatable.stateGet('checkbox');
+                if (typeof storage !== 'undefined') {
+                    Extension.selectedRows = storage['selectedRows'] || [];
+                    Extension.unselectedRows = storage['unselectedRows'] || [];
+                }
+            },
 
-			getSelectedId: function(path) {
-				Extension.initVars();
+            getSelectedId: function(path) {
+                Extension.initVars();
 
-				// server selected all rows
-				if (Extension.selectedAllRows && options.vars.requestIds) {
-					if (typeof path === 'undefined') {
-						path = options.vars.rowIds;
-					}
+                // server selected all rows
+                if (Extension.selectedAllRows && options.vars.requestIds) {
+                    if (typeof path === 'undefined') {
+                        path = options.vars.rowIds;
+                    }
 
-					// if selected all rows, return id from response meta
-					var selectedAllRows = datatable.getObject(path, datatable.lastResponse) || [];
+                    // if selected all rows, return id from response meta
+                    var selectedAllRows = datatable.getObject(path, datatable.lastResponse) || [];
 
-					if (selectedAllRows.length > 0) {
-						// remove single unselected rows from selectedAllRows ids from server response emta
-						Extension.unselectedRows.forEach(function(id) {
-							selectedAllRows = Extension.remove(selectedAllRows, parseInt(id));
-						});
-					}
-					return selectedAllRows;
-				}
+                    if (selectedAllRows.length > 0) {
+                        // remove single unselected rows from selectedAllRows ids from server response emta
+                        Extension.unselectedRows.forEach(function(id) {
+                            selectedAllRows = Extension.remove(selectedAllRows, parseInt(id));
+                        });
+                    }
+                    return selectedAllRows;
+                }
 
-				// else return single checked selected rows
-				return Extension.selectedRows;
-			},
+                // else return single checked selected rows
+                return Extension.selectedRows;
+            },
 
-			remove: function(array, element) {
-				return array.filter(function(e) {
-					return e !== element;
-				});
-			},
-		};
+            remove: function(array, element) {
+                return array.filter(function(e) {
+                    return e !== element;
+                });
+            },
+        };
 
-		// make the extension accessible from datatable init
-		datatable.checkbox = function() {
-			return Extension;
-		};
+        // make the extension accessible from datatable init
+        datatable.checkbox = function() {
+            return Extension;
+        };
 
-		if (typeof options === 'object') {
-			options = $.extend(true, {}, $.fn[pluginName].checkbox.default, options);
-			Extension.init.apply(this, [options]);
-		}
+        if (typeof options === 'object') {
+            options = $.extend(true, {}, $.fn[pluginName].checkbox.default, options);
+            Extension.init.apply(this, [options]);
+        }
 
-		return datatable;
-	};
+        return datatable;
+    };
 
-	$.fn[pluginName].checkbox.default = {
-		vars: {
-			// select all rows flag to be sent to the server
-			selectedAllRows: 'selectedAllRows',
-			// request id parameter's name
-			requestIds: 'requestIds',
-			// response path to all rows id
-			rowIds: 'meta.rowIds',
-		},
-	};
+    $.fn[pluginName].checkbox.default = {
+        vars: {
+            // select all rows flag to be sent to the server
+            selectedAllRows: 'selectedAllRows',
+            // request id parameter's name
+            requestIds: 'requestIds',
+            // response path to all rows id
+            rowIds: 'meta.rowIds',
+        },
+    };
 
 }(jQuery));
 var defaults = {
-	layout: {
-		icons: {
-			pagination: {
-				next: 'flaticon2-next',
-				prev: 'flaticon2-back',
-				first: 'flaticon2-fast-back',
-				last: 'flaticon2-fast-next',
-				more: 'flaticon-more-1',
-			},
-			rowDetail: {expand: 'fa fa-caret-down', collapse: 'fa fa-caret-right'},
-		}
-	}
+    layout: {
+        icons: {
+            pagination: {
+                next: 'flaticon2-next',
+                prev: 'flaticon2-back',
+                first: 'flaticon2-fast-back',
+                last: 'flaticon2-fast-next',
+                more: 'flaticon-more-1',
+            },
+            rowDetail: { expand: 'fa fa-caret-down', collapse: 'fa fa-caret-right' },
+        }
+    }
 };
 
 if (KTUtil.isRTL()) {
-	defaults = {
-		layout: {
-			icons: {
-				pagination: {
-					next: 'flaticon2-back',
-					prev: 'flaticon2-next',
-					first: 'flaticon2-fast-next',
-					last: 'flaticon2-fast-back',
-				},
-				rowDetail: {collapse: 'fa fa-caret-down', expand: 'fa fa-caret-right'},
-			}
-		}
-	}
+    defaults = {
+        layout: {
+            icons: {
+                pagination: {
+                    next: 'flaticon2-back',
+                    prev: 'flaticon2-next',
+                    first: 'flaticon2-fast-next',
+                    last: 'flaticon2-fast-back',
+                },
+                rowDetail: { collapse: 'fa fa-caret-down', expand: 'fa fa-caret-right' },
+            }
+        }
+    }
 }
 
 $.extend(true, $.fn.KTDatatable.defaults, defaults);
@@ -5626,16 +5572,16 @@ var KTDialog = function(options) {
 
     // Get element object
     var element;
-    var body = KTUtil.get('body');  
+    var body = KTUtil.get('body');
 
     // Default options
     var defaultOptions = {
-        'placement' : 'top center',
-        'type'  : 'loader',
-        'width' : 100,
-        'state' : 'default',
-        'message' : 'Loading...' 
-    };    
+        'placement': 'top center',
+        'type': 'loader',
+        'width': 100,
+        'state': 'default',
+        'message': 'Loading...'
+    };
 
     ////////////////////////////
     // ** Private Methods  ** //
@@ -5672,10 +5618,10 @@ var KTDialog = function(options) {
 
             element = document.createElement("DIV");
             KTUtil.setHTML(element, the.options.message);
-            
+
             KTUtil.addClass(element, 'kt-dialog kt-dialog--shown');
             KTUtil.addClass(element, 'kt-dialog--' + the.options.state);
-            KTUtil.addClass(element, 'kt-dialog--' + the.options.type); 
+            KTUtil.addClass(element, 'kt-dialog--' + the.options.type);
 
             if (the.options.placement == 'top center') {
                 KTUtil.addClass(element, 'kt-dialog--top-center');
@@ -5716,7 +5662,7 @@ var KTDialog = function(options) {
                 if (event.name == name) {
                     if (event.one == true) {
                         if (event.fired == false) {
-                            the.events[i].fired = true;                            
+                            the.events[i].fired = true;
                             event.handler.call(this, the);
                         }
                     } else {
@@ -5743,7 +5689,7 @@ var KTDialog = function(options) {
     //////////////////////////
 
     /**
-     * Set default options 
+     * Set default options
      */
 
     the.setDefaults = function(options) {
@@ -5751,21 +5697,21 @@ var KTDialog = function(options) {
     };
 
     /**
-     * Check shown state 
+     * Check shown state
      */
     the.shown = function() {
         return the.state == 'shown';
     };
 
     /**
-     * Check hidden state 
+     * Check hidden state
      */
     the.hidden = function() {
         return the.state == 'hidden';
     };
 
     /**
-     * Show dialog 
+     * Show dialog
      */
     the.show = function() {
         return Plugin.show();
@@ -5876,7 +5822,8 @@ var KTHeader = function(elementId, options) {
             }
 
             window.addEventListener('scroll', function() {
-                var offset = 0, on, off, st;
+                var offset = 0,
+                    on, off, st;
 
                 if (KTUtil.isInResponsiveRange('desktop')) {
                     offset = the.options.offset.desktop;
@@ -5898,7 +5845,7 @@ var KTHeader = function(elementId, options) {
                     if (st > offset) { // down scroll mode
                         KTUtil.addClass(body, on);
                         KTUtil.removeClass(body, off);
-                        
+
                         if (eventTriggerState) {
                             Plugin.eventTrigger('minimizeOn', the);
                             eventTriggerState = false;
@@ -5909,7 +5856,7 @@ var KTHeader = function(elementId, options) {
 
                         if (eventTriggerState == false) {
                             Plugin.eventTrigger('minimizeOff', the);
-                            eventTriggerState = true; 
+                            eventTriggerState = true;
                         }
                     }
                 } else {
@@ -5970,7 +5917,7 @@ var KTHeader = function(elementId, options) {
     //////////////////////////
 
     /**
-     * Set default options 
+     * Set default options
      */
 
     the.setDefaults = function(options) {
@@ -6025,7 +5972,7 @@ var KTOffcanvas = function(elementId, options) {
             } else {
                 // reset offcanvas
                 Plugin.init(options);
-                
+
                 // build offcanvas
                 Plugin.build();
 
@@ -6052,24 +5999,24 @@ var KTOffcanvas = function(elementId, options) {
         build: function() {
             // offcanvas toggle
             if (the.options.toggleBy) {
-                if (typeof the.options.toggleBy === 'string') { 
-                    KTUtil.addEvent( the.options.toggleBy, 'click', function(e) {
+                if (typeof the.options.toggleBy === 'string') {
+                    KTUtil.addEvent(the.options.toggleBy, 'click', function(e) {
                         e.preventDefault();
                         Plugin.toggle();
-                    }); 
+                    });
                 } else if (the.options.toggleBy && the.options.toggleBy[0] && the.options.toggleBy[0].target) {
-                    for (var i in the.options.toggleBy) { 
-                        KTUtil.addEvent( the.options.toggleBy[i].target, 'click', function(e) {
+                    for (var i in the.options.toggleBy) {
+                        KTUtil.addEvent(the.options.toggleBy[i].target, 'click', function(e) {
                             e.preventDefault();
                             Plugin.toggle();
-                        }); 
+                        });
                     }
                 } else if (the.options.toggleBy && the.options.toggleBy.target) {
-                    KTUtil.addEvent( the.options.toggleBy.target, 'click', function(e) {
+                    KTUtil.addEvent(the.options.toggleBy.target, 'click', function(e) {
                         e.preventDefault();
                         Plugin.toggle();
-                    }); 
-                } 
+                    });
+                }
             }
 
             // offcanvas close
@@ -6087,7 +6034,7 @@ var KTOffcanvas = function(elementId, options) {
         },
 
         toggle: function() {;
-            Plugin.eventTrigger('toggle'); 
+            Plugin.eventTrigger('toggle');
 
             if (the.state == 'shown') {
                 Plugin.hide(this);
@@ -6112,12 +6059,12 @@ var KTOffcanvas = function(elementId, options) {
             the.state = 'shown';
 
             if (the.options.overlay) {
-                the.overlay = KTUtil.insertAfter(document.createElement('DIV') , element );
+                the.overlay = KTUtil.insertAfter(document.createElement('DIV'), element);
                 KTUtil.addClass(the.overlay, the.classOverlay);
                 KTUtil.addEvent(the.overlay, 'click', function(e) {
                     e.stopPropagation();
                     e.preventDefault();
-                    Plugin.hide(target);       
+                    Plugin.hide(target);
                 });
             }
 
@@ -6154,15 +6101,15 @@ var KTOffcanvas = function(elementId, options) {
                 for (var i in the.options.toggleBy) {
                     if (the.options.toggleBy[i].target === id) {
                         toggleBy = the.options.toggleBy[i];
-                    }        
+                    }
                 }
             } else if (the.options.toggleBy && the.options.toggleBy.target) {
                 toggleBy = the.options.toggleBy;
             }
 
-            if (toggleBy) {                
+            if (toggleBy) {
                 var el = KTUtil.get(toggleBy.target);
-                
+
                 if (mode === 'show') {
                     KTUtil.addClass(el, toggleBy.state);
                 }
@@ -6247,14 +6194,14 @@ var KTMenu = function(elementId, options) {
 
     // Get element object
     var element = KTUtil.get(elementId);
-    var body = KTUtil.get('body');  
+    var body = KTUtil.get('body');
 
     if (!element) {
         return;
     }
 
     // Default options
-    var defaultOptions = {       
+    var defaultOptions = {
         // accordion submenu mode
         accordion: {
             slideSpeed: 200, // accordion toggle slide speed in milliseconds
@@ -6322,7 +6269,7 @@ var KTMenu = function(elementId, options) {
             // pause menu
             the.pauseDropdownHoverTime = 0;
 
-             // reset menu
+            // reset menu
             Plugin.reset();
 
             the.eventHandlers = {};
@@ -6334,7 +6281,7 @@ var KTMenu = function(elementId, options) {
         },
 
         reload: function() {
-             // reset menu
+            // reset menu
             Plugin.reset();
 
             // build menu
@@ -6350,17 +6297,17 @@ var KTMenu = function(elementId, options) {
          */
         build: function() {
             // General accordion submenu toggle
-            the.eventHandlers['event_1'] = KTUtil.on( element, '.kt-menu__toggle', 'click', Plugin.handleSubmenuAccordion);
+            the.eventHandlers['event_1'] = KTUtil.on(element, '.kt-menu__toggle', 'click', Plugin.handleSubmenuAccordion);
 
             // Dropdown mode(hoverable)
             if (Plugin.getSubmenuMode() === 'dropdown' || Plugin.isConditionalSubmenuDropdown()) {
                 // dropdown submenu - hover toggle
-                the.eventHandlers['event_2'] = KTUtil.on( element, '[data-ktmenu-submenu-toggle="hover"]', 'mouseover', Plugin.handleSubmenuDrodownHoverEnter);
-                the.eventHandlers['event_3'] = KTUtil.on( element, '[data-ktmenu-submenu-toggle="hover"]', 'mouseout', Plugin.handleSubmenuDrodownHoverExit);
+                the.eventHandlers['event_2'] = KTUtil.on(element, '[data-ktmenu-submenu-toggle="hover"]', 'mouseover', Plugin.handleSubmenuDrodownHoverEnter);
+                the.eventHandlers['event_3'] = KTUtil.on(element, '[data-ktmenu-submenu-toggle="hover"]', 'mouseout', Plugin.handleSubmenuDrodownHoverExit);
 
                 // dropdown submenu - click toggle
-                the.eventHandlers['event_4'] = KTUtil.on( element, '[data-ktmenu-submenu-toggle="click"] > .kt-menu__toggle, [data-ktmenu-submenu-toggle="click"] > .kt-menu__link .kt-menu__toggle', 'click', Plugin.handleSubmenuDropdownClick);
-                the.eventHandlers['event_5'] = KTUtil.on( element, '[data-ktmenu-submenu-toggle="tab"] > .kt-menu__toggle, [data-ktmenu-submenu-toggle="tab"] > .kt-menu__link .kt-menu__toggle', 'click', Plugin.handleSubmenuDropdownTabClick);
+                the.eventHandlers['event_4'] = KTUtil.on(element, '[data-ktmenu-submenu-toggle="click"] > .kt-menu__toggle, [data-ktmenu-submenu-toggle="click"] > .kt-menu__link .kt-menu__toggle', 'click', Plugin.handleSubmenuDropdownClick);
+                the.eventHandlers['event_5'] = KTUtil.on(element, '[data-ktmenu-submenu-toggle="tab"] > .kt-menu__toggle, [data-ktmenu-submenu-toggle="tab"] > .kt-menu__link .kt-menu__toggle', 'click', Plugin.handleSubmenuDropdownTabClick);
             }
 
             // General link click
@@ -6376,47 +6323,47 @@ var KTMenu = function(elementId, options) {
          * Reset menu
          * @returns {KTMenu}
          */
-        reset: function() { 
-            KTUtil.off( element, 'click', the.eventHandlers['event_1']);
+        reset: function() {
+            KTUtil.off(element, 'click', the.eventHandlers['event_1']);
 
             // dropdown submenu - hover toggle
-            KTUtil.off( element, 'mouseover', the.eventHandlers['event_2']);
-            KTUtil.off( element, 'mouseout', the.eventHandlers['event_3']);
+            KTUtil.off(element, 'mouseover', the.eventHandlers['event_2']);
+            KTUtil.off(element, 'mouseout', the.eventHandlers['event_3']);
 
             // dropdown submenu - click toggle
-            KTUtil.off( element, 'click', the.eventHandlers['event_4']);
-            KTUtil.off( element, 'click', the.eventHandlers['event_5']);
-            
+            KTUtil.off(element, 'click', the.eventHandlers['event_4']);
+            KTUtil.off(element, 'click', the.eventHandlers['event_5']);
+
             KTUtil.off(element, 'click', the.eventHandlers['event_6']);
         },
 
         /**
          * Init scroll menu
          *
-        */
+         */
         scrollInit: function() {
-            if ( the.options.scroll && the.options.scroll.height ) {
+            if (the.options.scroll && the.options.scroll.height) {
                 KTUtil.scrollDestroy(element);
-                KTUtil.scrollInit(element, {disableForMobile: true, resetHeightOnDestroy: true, handleWindowResize: true, height: the.options.scroll.height});
+                KTUtil.scrollInit(element, { disableForMobile: true, resetHeightOnDestroy: true, handleWindowResize: true, height: the.options.scroll.height });
             } else {
                 KTUtil.scrollDestroy(element);
-            }           
+            }
         },
 
         /**
          * Update scroll menu
-        */
+         */
         scrollUpdate: function() {
-            if ( the.options.scroll && the.options.scroll.height ) {
+            if (the.options.scroll && the.options.scroll.height) {
                 KTUtil.scrollUpdate(element);
             }
         },
 
         /**
          * Scroll top
-        */
+         */
         scrollTop: function() {
-            if ( the.options.scroll && the.options.scroll.height ) {
+            if (the.options.scroll && the.options.scroll.height) {
                 KTUtil.scrollTop(element);
             }
         },
@@ -6426,23 +6373,23 @@ var KTMenu = function(elementId, options) {
          * @returns {KTMenu}
          */
         getSubmenuMode: function(el) {
-            if ( KTUtil.isInResponsiveRange('desktop') ) {
+            if (KTUtil.isInResponsiveRange('desktop')) {
                 if (el && KTUtil.hasAttr(el, 'data-ktmenu-submenu-toggle')) {
                     return KTUtil.attr(el, 'data-ktmenu-submenu-toggle');
                 }
 
-                if ( KTUtil.isset(the.options.submenu, 'desktop.state.body') ) {
-                    if ( KTUtil.hasClasses(body, the.options.submenu.desktop.state.body) ) {
+                if (KTUtil.isset(the.options.submenu, 'desktop.state.body')) {
+                    if (KTUtil.hasClasses(body, the.options.submenu.desktop.state.body)) {
                         return the.options.submenu.desktop.state.mode;
                     } else {
                         return the.options.submenu.desktop.default;
                     }
-                } else if ( KTUtil.isset(the.options.submenu, 'desktop') ) {
+                } else if (KTUtil.isset(the.options.submenu, 'desktop')) {
                     return the.options.submenu.desktop;
                 }
-            } else if ( KTUtil.isInResponsiveRange('tablet') && KTUtil.isset(the.options.submenu, 'tablet') ) {
+            } else if (KTUtil.isInResponsiveRange('tablet') && KTUtil.isset(the.options.submenu, 'tablet')) {
                 return the.options.submenu.tablet;
-            } else if ( KTUtil.isInResponsiveRange('mobile') && KTUtil.isset(the.options.submenu, 'mobile') ) {
+            } else if (KTUtil.isInResponsiveRange('mobile') && KTUtil.isset(the.options.submenu, 'mobile')) {
                 return the.options.submenu.mobile;
             } else {
                 return false;
@@ -6454,7 +6401,7 @@ var KTMenu = function(elementId, options) {
          * @returns {KTMenu}
          */
         isConditionalSubmenuDropdown: function() {
-            if ( KTUtil.isInResponsiveRange('desktop') && KTUtil.isset(the.options.submenu, 'desktop.state.body') ) {
+            if (KTUtil.isInResponsiveRange('desktop') && KTUtil.isset(the.options.submenu, 'desktop.state.body')) {
                 return true;
             } else {
                 return false;
@@ -6468,10 +6415,10 @@ var KTMenu = function(elementId, options) {
          */
         resetSubmenuProps: function(e) {
             var submenus = KTUtil.findAll(element, '.kt-menu__submenu');
-            if ( submenus ) {
+            if (submenus) {
                 for (var i = 0, len = submenus.length; i < len; i++) {
                     KTUtil.css(submenus[0], 'display', '');
-                    KTUtil.css(submenus[0], 'overflow', '');                                        
+                    KTUtil.css(submenus[0], 'overflow', '');
                 }
             }
         },
@@ -6481,19 +6428,19 @@ var KTMenu = function(elementId, options) {
          * @returns {KTMenu}
          */
         handleSubmenuDrodownHoverEnter: function(e) {
-            if ( Plugin.getSubmenuMode(this) === 'accordion' ) {
+            if (Plugin.getSubmenuMode(this) === 'accordion') {
                 return;
             }
 
-            if ( the.resumeDropdownHover() === false ) {
+            if (the.resumeDropdownHover() === false) {
                 return;
             }
 
             var item = this;
 
-            if ( item.getAttribute('data-hover') == '1' ) {
+            if (item.getAttribute('data-hover') == '1') {
                 item.removeAttribute('data-hover');
-                clearTimeout( item.getAttribute('data-timeout') );
+                clearTimeout(item.getAttribute('data-timeout'));
                 item.removeAttribute('data-timeout');
                 //Plugin.hideSubmenuDropdown(item, false);
             }
@@ -6508,11 +6455,11 @@ var KTMenu = function(elementId, options) {
          * @returns {KTMenu}
          */
         handleSubmenuDrodownHoverExit: function(e) {
-            if ( the.resumeDropdownHover() === false ) {
+            if (the.resumeDropdownHover() === false) {
                 return;
             }
 
-            if ( Plugin.getSubmenuMode(this) === 'accordion' ) {
+            if (Plugin.getSubmenuMode(this) === 'accordion') {
                 return;
             }
 
@@ -6520,13 +6467,13 @@ var KTMenu = function(elementId, options) {
             var time = the.options.dropdown.timeout;
 
             var timeout = setTimeout(function() {
-                if ( item.getAttribute('data-hover') == '1' ) {
+                if (item.getAttribute('data-hover') == '1') {
                     Plugin.hideSubmenuDropdown(item, true);
-                } 
+                }
             }, time);
 
             item.setAttribute('data-hover', '1');
-            item.setAttribute('data-timeout', timeout);  
+            item.setAttribute('data-timeout', timeout);
         },
 
         /**
@@ -6534,21 +6481,21 @@ var KTMenu = function(elementId, options) {
          * @returns {KTMenu}
          */
         handleSubmenuDropdownClick: function(e) {
-            if ( Plugin.getSubmenuMode(this) === 'accordion' ) {
+            if (Plugin.getSubmenuMode(this) === 'accordion') {
                 return;
             }
- 
+
             var item = this.closest('.kt-menu__item');
 
-            if ( item.getAttribute('data-ktmenu-submenu-mode') == 'accordion' ) {
+            if (item.getAttribute('data-ktmenu-submenu-mode') == 'accordion') {
                 return;
             }
 
-            if ( KTUtil.hasClass(item, 'kt-menu__item--hover') === false ) {
+            if (KTUtil.hasClass(item, 'kt-menu__item--hover') === false) {
                 KTUtil.addClass(item, 'kt-menu__item--open-dropdown');
                 Plugin.showSubmenuDropdown(item);
             } else {
-                KTUtil.removeClass(item, 'kt-menu__item--open-dropdown' );
+                KTUtil.removeClass(item, 'kt-menu__item--open-dropdown');
                 Plugin.hideSubmenuDropdown(item, true);
             }
 
@@ -6607,8 +6554,8 @@ var KTMenu = function(elementId, options) {
             var query;
             var item = el ? el : this;
 
-            if ( Plugin.getSubmenuMode(el) === 'dropdown' && (query = item.closest('.kt-menu__item') ) ) {
-                if (query.getAttribute('data-ktmenu-submenu-mode') != 'accordion' ) {
+            if (Plugin.getSubmenuMode(el) === 'dropdown' && (query = item.closest('.kt-menu__item'))) {
+                if (query.getAttribute('data-ktmenu-submenu-mode') != 'accordion') {
                     e.preventDefault();
                     return;
                 }
@@ -6621,26 +6568,26 @@ var KTMenu = function(elementId, options) {
                 return;
             }
 
-            if ( li && submenu ) {
+            if (li && submenu) {
                 e.preventDefault();
                 var speed = the.options.accordion.slideSpeed;
                 var hasClosables = false;
 
-                if ( KTUtil.hasClass(li, 'kt-menu__item--open') === false ) {
-                    // hide other accordions                    
-                    if ( the.options.accordion.expandAll === false ) {
+                if (KTUtil.hasClass(li, 'kt-menu__item--open') === false) {
+                    // hide other accordions
+                    if (the.options.accordion.expandAll === false) {
                         var subnav = item.closest('.kt-menu__nav, .kt-menu__subnav');
                         var closables = KTUtil.children(subnav, '.kt-menu__item.kt-menu__item--open.kt-menu__item--submenu:not(.kt-menu__item--here):not(.kt-menu__item--open-always)');
 
-                        if ( subnav && closables ) {
+                        if (subnav && closables) {
                             for (var i = 0, len = closables.length; i < len; i++) {
                                 var el_ = closables[0];
                                 var submenu_ = KTUtil.child(el_, '.kt-menu__submenu');
-                                if ( submenu_ ) {
+                                if (submenu_) {
                                     KTUtil.slideUp(submenu_, speed, function() {
                                         Plugin.scrollUpdate();
                                         KTUtil.removeClass(el_, 'kt-menu__item--open');
-                                    });                    
+                                    });
                                 }
                             }
                         }
@@ -6649,10 +6596,10 @@ var KTMenu = function(elementId, options) {
                     KTUtil.slideDown(submenu, speed, function() {
                         Plugin.scrollToItem(item);
                         Plugin.scrollUpdate();
-                        
+
                         Plugin.eventTrigger('submenuToggle', submenu);
                     });
-                
+
                     KTUtil.addClass(li, 'kt-menu__item--open');
 
                 } else {
@@ -6672,7 +6619,7 @@ var KTMenu = function(elementId, options) {
          */
         scrollToItem: function(item) {
             // handle auto scroll for accordion submenus
-            if ( KTUtil.isInResponsiveRange('desktop') && the.options.accordion.autoScroll && element.getAttribute('data-ktmenu-scroll') !== '1' ) {
+            if (KTUtil.isInResponsiveRange('desktop') && the.options.accordion.autoScroll && element.getAttribute('data-ktmenu-scroll') !== '1') {
                 KTUtil.scrollTo(item, the.options.accordion.autoScrollSpeed);
             }
         },
@@ -6683,7 +6630,7 @@ var KTMenu = function(elementId, options) {
          */
         hideSubmenuDropdown: function(item, classAlso) {
             // remove submenu activation class
-            if ( classAlso ) {
+            if (classAlso) {
                 KTUtil.removeClass(item, 'kt-menu__item--hover');
                 KTUtil.removeClass(item, 'kt-menu__item--active-tab');
             }
@@ -6691,7 +6638,7 @@ var KTMenu = function(elementId, options) {
             // clear timeout
             item.removeAttribute('data-hover');
 
-            if ( item.getAttribute('data-ktmenu-dropdown-toggle-class') ) {
+            if (item.getAttribute('data-ktmenu-dropdown-toggle-class')) {
                 KTUtil.removeClass(body, item.getAttribute('data-ktmenu-dropdown-toggle-class'));
             }
 
@@ -6708,19 +6655,19 @@ var KTMenu = function(elementId, options) {
             // close active submenus
             var list = element.querySelectorAll('.kt-menu__item--submenu.kt-menu__item--hover, .kt-menu__item--submenu.kt-menu__item--active-tab');
 
-            if ( list ) {
+            if (list) {
                 for (var i = 0, len = list.length; i < len; i++) {
                     var el = list[i];
-                    if ( item !== el && el.contains(item) === false && item.contains(el) === false ) {
+                    if (item !== el && el.contains(item) === false && item.contains(el) === false) {
                         Plugin.hideSubmenuDropdown(el, true);
                     }
                 }
-            } 
+            }
 
             // add submenu activation class
             KTUtil.addClass(item, 'kt-menu__item--hover');
-            
-            if ( item.getAttribute('data-ktmenu-dropdown-toggle-class') ) {
+
+            if (item.getAttribute('data-ktmenu-dropdown-toggle-class')) {
                 KTUtil.addClass(body, item.getAttribute('data-ktmenu-dropdown-toggle-class'));
             }
         },
@@ -6774,23 +6721,23 @@ var KTMenu = function(elementId, options) {
             var parents;
 
             list = element.querySelectorAll('.kt-menu__item--active');
-            
+
             for (var i = 0, len = list.length; i < len; i++) {
                 var el = list[0];
                 KTUtil.removeClass(el, 'kt-menu__item--active');
-                KTUtil.hide( KTUtil.child(el, '.kt-menu__submenu') );
+                KTUtil.hide(KTUtil.child(el, '.kt-menu__submenu'));
                 parents = KTUtil.parents(el, '.kt-menu__item--submenu');
 
                 for (var i_ = 0, len_ = parents.length; i_ < len_; i_++) {
                     var el_ = parents[i];
                     KTUtil.removeClass(el_, 'kt-menu__item--open');
-                    KTUtil.hide( KTUtil.child(el_, '.kt-menu__submenu') );
+                    KTUtil.hide(KTUtil.child(el_, '.kt-menu__submenu'));
                 }
             }
 
             // close open submenus
-            if ( the.options.accordion.expandAll === false ) {
-                if ( list = element.querySelectorAll('.kt-menu__item--open') ) {
+            if (the.options.accordion.expandAll === false) {
+                if (list = element.querySelectorAll('.kt-menu__item--open')) {
                     for (var i = 0, len = list.length; i < len; i++) {
                         KTUtil.removeClass(parents[0], 'kt-menu__item--open');
                     }
@@ -6807,7 +6754,7 @@ var KTMenu = function(elementId, options) {
             Plugin.resetActiveItem();
 
             KTUtil.addClass(item, 'kt-menu__item--active');
-            
+
             var parents = KTUtil.parents(item, '.kt-menu__item--submenu');
             for (var i = 0, len = parents.length; i < len; i++) {
                 KTUtil.addClass(parents[i], 'kt-menu__item--open');
@@ -6840,7 +6787,7 @@ var KTMenu = function(elementId, options) {
                 });
             }
 
-            return  breadcrumbs.reverse();
+            return breadcrumbs.reverse();
         },
 
         /**
@@ -6857,11 +6804,11 @@ var KTMenu = function(elementId, options) {
          * Trigger events
          */
         eventTrigger: function(name, args) {
-            for (var i = 0; i < the.events.length; i++ ) {
+            for (var i = 0; i < the.events.length; i++) {
                 var event = the.events[i];
-                if ( event.name == name ) {
-                    if ( event.one == true ) {
-                        if ( event.fired == false ) {
+                if (event.name == name) {
+                    if (event.one == true) {
+                        if (event.fired == false) {
                             the.events[i].fired = true;
                             event.handler.call(this, the, args);
                         }
@@ -6893,7 +6840,7 @@ var KTMenu = function(elementId, options) {
     //////////////////////////
 
     /**
-     * Set default options 
+     * Set default options
      */
 
     the.setDefaults = function(options) {
@@ -7007,7 +6954,7 @@ var KTMenu = function(elementId, options) {
     KTUtil.addResizeHandler(function() {
         if (init) {
             the.reload();
-        }  
+        }
     });
 
     // Init done
@@ -7018,35 +6965,35 @@ var KTMenu = function(elementId, options) {
 };
 
 // Plugin global lazy initialization
-document.addEventListener("click", function (e) {
+document.addEventListener("click", function(e) {
     var body = KTUtil.get('body');
     var query;
-    if ( query = body.querySelectorAll('.kt-menu__nav .kt-menu__item.kt-menu__item--submenu.kt-menu__item--hover:not(.kt-menu__item--tabs)[data-ktmenu-submenu-toggle="click"]') ) {
+    if (query = body.querySelectorAll('.kt-menu__nav .kt-menu__item.kt-menu__item--submenu.kt-menu__item--hover:not(.kt-menu__item--tabs)[data-ktmenu-submenu-toggle="click"]')) {
         for (var i = 0, len = query.length; i < len; i++) {
             var element = query[i].closest('.kt-menu__nav').parentNode;
 
-            if ( element ) {
+            if (element) {
                 var the = KTUtil.data(element).get('menu');
 
-                if ( !the ) {
+                if (!the) {
                     break;
                 }
 
-                if ( !the || the.getSubmenuMode() !== 'dropdown' ) {
+                if (!the || the.getSubmenuMode() !== 'dropdown') {
                     break;
                 }
 
-                if ( e.target !== element && element.contains(e.target) === false ) {
+                if (e.target !== element && element.contains(e.target) === false) {
                     var items;
-                    if ( items = element.querySelectorAll('.kt-menu__item--submenu.kt-menu__item--hover:not(.kt-menu__item--tabs)[data-ktmenu-submenu-toggle="click"]') ) {
+                    if (items = element.querySelectorAll('.kt-menu__item--submenu.kt-menu__item--hover:not(.kt-menu__item--tabs)[data-ktmenu-submenu-toggle="click"]')) {
                         for (var j = 0, cnt = items.length; j < cnt; j++) {
                             the.hideDropdown(items[j]);
                         }
                     }
                 }
-            }            
+            }
         }
-    } 
+    }
 });
 "use strict";
 // plugin setup
@@ -7183,36 +7130,36 @@ var KTPortlet = function(elementId, options) {
                 return;
             }
 
-	        window.addEventListener('scroll', Plugin.onScrollSticky);
+            window.addEventListener('scroll', Plugin.onScrollSticky);
         },
 
-	    /**
-	     * Window scroll handle event for sticky portlet
-	     */
-	    onScrollSticky: function(e) {
-		    var offset = the.options.sticky.offset;
-		    if(isNaN(offset)) return;
+        /**
+         * Window scroll handle event for sticky portlet
+         */
+        onScrollSticky: function(e) {
+            var offset = the.options.sticky.offset;
+            if (isNaN(offset)) return;
 
-		    var st = document.documentElement.scrollTop;
+            var st = document.documentElement.scrollTop;
 
-		    if (st >= offset && KTUtil.hasClass(body, 'kt-portlet--sticky') === false) {
-			    Plugin.eventTrigger('stickyOn');
+            if (st >= offset && KTUtil.hasClass(body, 'kt-portlet--sticky') === false) {
+                Plugin.eventTrigger('stickyOn');
 
-			    KTUtil.addClass(body, 'kt-portlet--sticky');
-			    KTUtil.addClass(element, 'kt-portlet--sticky');
+                KTUtil.addClass(body, 'kt-portlet--sticky');
+                KTUtil.addClass(element, 'kt-portlet--sticky');
 
-			    Plugin.updateSticky();
+                Plugin.updateSticky();
 
-		    } else if ((st*1.5) <= offset && KTUtil.hasClass(body, 'kt-portlet--sticky')) {
-			    // back scroll mode
-			    Plugin.eventTrigger('stickyOff');
+            } else if ((st * 1.5) <= offset && KTUtil.hasClass(body, 'kt-portlet--sticky')) {
+                // back scroll mode
+                Plugin.eventTrigger('stickyOff');
 
-			    KTUtil.removeClass(body, 'kt-portlet--sticky');
-			    KTUtil.removeClass(element, 'kt-portlet--sticky');
+                KTUtil.removeClass(body, 'kt-portlet--sticky');
+                KTUtil.removeClass(element, 'kt-portlet--sticky');
 
-			    Plugin.resetSticky();
-		    }
-	    },
+                Plugin.resetSticky();
+            }
+        },
 
         updateSticky: function() {
             if (!the.head) {
@@ -7595,13 +7542,13 @@ var KTPortlet = function(elementId, options) {
         return Plugin.resetSticky();
     };
 
-	/**
-	 * Destroy sticky portlet
-	 */
-	the.destroySticky = function() {
-		Plugin.resetSticky();
-		window.removeEventListener('scroll', Plugin.onScrollSticky);
-	};
+    /**
+     * Destroy sticky portlet
+     */
+    the.destroySticky = function() {
+        Plugin.resetSticky();
+        window.removeEventListener('scroll', Plugin.onScrollSticky);
+    };
 
     /**
      * Reload portlet
@@ -7766,12 +7713,12 @@ var KTScrolltop = function(elementId, options) {
                     Plugin.handle();
                 });
             } else {
-                window.addEventListener('scroll', function() { 
+                window.addEventListener('scroll', function() {
                     Plugin.handle();
                 });
             }
 
-            // handle button click 
+            // handle button click
             KTUtil.addEvent(element, 'click', Plugin.scroll);
         },
 
@@ -7831,7 +7778,7 @@ var KTScrolltop = function(elementId, options) {
     //////////////////////////
 
     /**
-     * Set default options 
+     * Set default options
      */
 
     the.setDefaults = function(options) {
@@ -7876,7 +7823,7 @@ var KTToggle = function(elementId, options) {
 
     // Get element object
     var element = KTUtil.get(elementId);
-    var body = KTUtil.get('body');  
+    var body = KTUtil.get('body');
 
     if (!element) {
         return;
@@ -7886,7 +7833,7 @@ var KTToggle = function(elementId, options) {
     var defaultOptions = {
         togglerState: '',
         targetState: ''
-    };    
+    };
 
     ////////////////////////////
     // ** Private Methods  ** //
@@ -7936,7 +7883,7 @@ var KTToggle = function(elementId, options) {
         build: function() {
             KTUtil.addEvent(element, 'mouseup', Plugin.toggle);
         },
-        
+
         /**
          * Handles offcanvas click toggle
          */
@@ -8008,7 +7955,7 @@ var KTToggle = function(elementId, options) {
                 if (event.name == name) {
                     if (event.one == true) {
                         if (event.fired == false) {
-                            the.events[i].fired = true;                            
+                            the.events[i].fired = true;
                             event.handler.call(this, the);
                         }
                     } else {
@@ -8035,7 +7982,7 @@ var KTToggle = function(elementId, options) {
     //////////////////////////
 
     /**
-     * Set default options 
+     * Set default options
      */
 
     the.setDefaults = function(options) {
@@ -8043,28 +7990,28 @@ var KTToggle = function(elementId, options) {
     };
 
     /**
-     * Get toggle state 
+     * Get toggle state
      */
     the.getState = function() {
         return the.state;
     };
 
     /**
-     * Toggle 
+     * Toggle
      */
     the.toggle = function() {
         return Plugin.toggle();
     };
 
     /**
-     * Toggle on 
+     * Toggle on
      */
     the.toggleOn = function() {
         return Plugin.toggleOn();
     };
 
     /**
-     * Toggle off 
+     * Toggle off
      */
     the.toggleOff = function() {
         return Plugin.toggleOff();
@@ -8102,7 +8049,7 @@ var KTWizard = function(elementId, options) {
     var body = KTUtil.get('body');
 
     if (!element) {
-        return; 
+        return;
     }
 
     // Default options
@@ -8202,7 +8149,7 @@ var KTWizard = function(elementId, options) {
                 var index = KTUtil.index(this) + 1;
                 if (index !== the.currentStep) {
                     Plugin.goTo(index);
-                }                
+                }
             });
         },
 
@@ -8230,7 +8177,7 @@ var KTWizard = function(elementId, options) {
             } else {
                 callback = Plugin.eventTrigger('beforePrev');
             }
-            
+
             // Skip if stopped
             if (the.stopped === true) {
                 the.stopped = false;
@@ -8242,7 +8189,7 @@ var KTWizard = function(elementId, options) {
                 // Before change
                 Plugin.eventTrigger('beforeChange');
 
-                // Set current step 
+                // Set current step
                 the.currentStep = number;
 
                 Plugin.updateUI();
@@ -8360,7 +8307,7 @@ var KTWizard = function(elementId, options) {
 
             // Steps Info
             var stepsInfo = KTUtil.findAll(the.element, '[data-ktwizard-type="step-info"]');
-            if (stepsInfo &&stepsInfo.length > 0) {
+            if (stepsInfo && stepsInfo.length > 0) {
                 for (var i = 0, len = stepsInfo.length; i < len; i++) {
                     if (i == index) {
                         KTUtil.attr(stepsInfo[i], 'data-ktwizard-state', 'current');
@@ -8368,11 +8315,11 @@ var KTWizard = function(elementId, options) {
                         KTUtil.removeAttr(stepsInfo[i], 'data-ktwizard-state');
                     }
                 }
-            }  
+            }
 
             // Steps Content
             var stepsContent = KTUtil.findAll(the.element, '[data-ktwizard-type="step-content"]');
-            if (stepsContent&& stepsContent.length > 0) {
+            if (stepsContent && stepsContent.length > 0) {
                 for (var i = 0, len = stepsContent.length; i < len; i++) {
                     if (i == index) {
                         KTUtil.attr(stepsContent[i], 'data-ktwizard-state', 'current');
@@ -8380,7 +8327,7 @@ var KTWizard = function(elementId, options) {
                         KTUtil.removeAttr(stepsContent[i], 'data-ktwizard-state');
                     }
                 }
-            }            
+            }
         },
 
         /**
@@ -8442,7 +8389,7 @@ var KTWizard = function(elementId, options) {
     //////////////////////////
 
     /**
-     * Set default options 
+     * Set default options
      */
 
     the.setDefaults = function(options) {
@@ -8450,42 +8397,42 @@ var KTWizard = function(elementId, options) {
     };
 
     /**
-     * Go to the next step 
+     * Go to the next step
      */
     the.goNext = function() {
         return Plugin.goNext();
     };
 
     /**
-     * Go to the prev step 
+     * Go to the prev step
      */
     the.goPrev = function() {
         return Plugin.goPrev();
     };
 
     /**
-     * Go to the last step 
+     * Go to the last step
      */
     the.goLast = function() {
         return Plugin.goLast();
     };
 
     /**
-     * Cancel step 
+     * Cancel step
      */
     the.stop = function() {
         return Plugin.stop();
     };
 
     /**
-     * Resume step 
+     * Resume step
      */
     the.start = function() {
         return Plugin.start();
     };
 
     /**
-     * Go to the first step 
+     * Go to the first step
      */
     the.goFirst = function() {
         return Plugin.goFirst();
@@ -8499,26 +8446,26 @@ var KTWizard = function(elementId, options) {
     };
 
     /**
-     * Get current step number 
+     * Get current step number
      */
     the.getStep = function() {
         return the.currentStep;
     };
 
     /**
-     * Check last step 
+     * Check last step
      */
     the.isLastStep = function() {
         return Plugin.isLastStep();
     };
 
     /**
-     * Check first step 
+     * Check first step
      */
     the.isFirstStep = function() {
         return Plugin.isFirstStep();
     };
-    
+
     /**
      * Attach event
      */
@@ -8549,12 +8496,11 @@ var KTAvatar = function(elementId, options) {
     var body = KTUtil.get('body');
 
     if (!element) {
-        return; 
+        return;
     }
 
     // Default options
-    var defaultOptions = {
-    };
+    var defaultOptions = {};
 
     ////////////////////////////
     // ** Private Methods  ** //
@@ -8605,24 +8551,24 @@ var KTAvatar = function(elementId, options) {
             KTUtil.addEvent(the.input, 'change', function(e) {
                 e.preventDefault();
 
-	            if (the.input && the.input.files && the.input.files[0]) {
-	                var reader = new FileReader();
-	                reader.onload = function(e) {
-	                    KTUtil.css(the.holder, 'background-image', 'url('+e.target.result +')');
-	                }
-	                reader.readAsDataURL(the.input.files[0]);
+                if (the.input && the.input.files && the.input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        KTUtil.css(the.holder, 'background-image', 'url(' + e.target.result + ')');
+                    }
+                    reader.readAsDataURL(the.input.files[0]);
 
-	                KTUtil.addClass(the.element, 'kt-avatar--changed');
-	            }
+                    KTUtil.addClass(the.element, 'kt-avatar--changed');
+                }
             });
 
             // Handle avatar cancel
             KTUtil.addEvent(the.cancel, 'click', function(e) {
                 e.preventDefault();
 
-	            KTUtil.removeClass(the.element, 'kt-avatar--changed');
-	            KTUtil.css(the.holder, 'background-image', the.src);
-	            the.input.value = "";
+                KTUtil.removeClass(the.element, 'kt-avatar--changed');
+                KTUtil.css(the.holder, 'background-image', the.src);
+                the.input.value = "";
             });
         },
 
@@ -8663,13 +8609,13 @@ var KTAvatar = function(elementId, options) {
     //////////////////////////
 
     /**
-     * Set default options 
+     * Set default options
      */
 
     the.setDefaults = function(options) {
         defaultOptions = options;
     };
-    
+
     /**
      * Attach event
      */
@@ -8810,7 +8756,7 @@ var KTLayout = function() {
                 insideTm = setTimeout(function() {
                     if (KTUtil.hasClass(body, 'kt-aside--minimize') && KTUtil.isInResponsiveRange('desktop')) {
                         KTUtil.removeClass(body, 'kt-aside--minimize');
-                        
+
                         // Minimizing class
                         KTUtil.addClass(body, 'kt-aside--minimizing');
                         KTUtil.transitionEnd(body, function() {
@@ -8870,13 +8816,13 @@ var KTLayout = function() {
                     var height;
 
                     if (KTUtil.isInResponsiveRange('desktop')) {
-                        height =  
-                            parseInt(KTUtil.getViewPort().height) - 
+                        height =
+                            parseInt(KTUtil.getViewPort().height) -
                             parseInt(KTUtil.actualHeight('kt_aside_brand')) -
                             parseInt(KTUtil.getByID('kt_aside_footer') ? KTUtil.actualHeight('kt_aside_footer') : 0);
                     } else {
-                        height =  
-                            parseInt(KTUtil.getViewPort().height) - 
+                        height =
+                            parseInt(KTUtil.getViewPort().height) -
                             parseInt(KTUtil.getByID('kt_aside_footer') ? KTUtil.actualHeight('kt_aside_footer') : 0);
                     }
 
@@ -8915,14 +8861,14 @@ var KTLayout = function() {
             target: 'body',
             targetState: 'kt-aside--minimize',
             togglerState: 'kt-aside__brand-aside-toggler--active'
-        }); 
+        });
 
-        asideToggler.on('toggle', function(toggle) {  
+        asideToggler.on('toggle', function(toggle) {
             KTUtil.addClass(body, 'kt-aside--minimizing');
 
             if (KTUtil.get('kt_page_portlet')) {
-                pageStickyPortlet.updateSticky();      
-            } 
+                pageStickyPortlet.updateSticky();
+            }
 
             KTUtil.transitionEnd(body, function() {
                 KTUtil.removeClass(body, 'kt-aside--minimizing');
@@ -8933,13 +8879,13 @@ var KTLayout = function() {
 
             // Remember state in cookie
             Cookies.set('kt_aside_toggle_state', toggle.getState());
-            // to set default minimized left aside use this cookie value in your 
+            // to set default minimized left aside use this cookie value in your
             // server side code and add "kt-brand--minimize kt-aside--minimize" classes to
             // the body tag in order to initialize the minimized left aside mode during page loading.
         });
 
-        asideToggler.on('beforeToggle', function(toggle) {   
-            var body = KTUtil.get('body'); 
+        asideToggler.on('beforeToggle', function(toggle) {
+            var body = KTUtil.get('body');
             if (KTUtil.hasClass(body, 'kt-aside--minimize') === false && KTUtil.hasClass(body, 'kt-aside--minimize-hover')) {
                 KTUtil.removeClass(body, 'kt-aside--minimize-hover');
             }
@@ -8959,8 +8905,8 @@ var KTLayout = function() {
 
         asideSecondaryToggler.on('toggle', function(toggle) {
             if (KTUtil.get('kt_page_portlet')) {
-                pageStickyPortlet.updateSticky();      
-            } 
+                pageStickyPortlet.updateSticky();
+            }
         });
     }
 
@@ -8981,7 +8927,7 @@ var KTLayout = function() {
 
         return new KTPortlet('kt_page_portlet', {
             sticky: {
-                offset: parseInt(KTUtil.css( KTUtil.get('kt_header'), 'height')),
+                offset: parseInt(KTUtil.css(KTUtil.get('kt_header'), 'height')),
                 zIndex: 90,
                 position: {
                     top: function() {
@@ -8989,19 +8935,19 @@ var KTLayout = function() {
 
                         if (KTUtil.isInResponsiveRange('desktop')) {
                             if (KTUtil.hasClass(body, 'kt-header--fixed')) {
-                                h = h + parseInt(KTUtil.css( KTUtil.get('kt_header'), 'height') );
+                                h = h + parseInt(KTUtil.css(KTUtil.get('kt_header'), 'height'));
                             }
-                            
+
                             if (KTUtil.hasClass(body, 'kt-subheader--fixed') && KTUtil.get('kt_subheader')) {
-                                h = h + parseInt(KTUtil.css( KTUtil.get('kt_subheader'), 'height') );
+                                h = h + parseInt(KTUtil.css(KTUtil.get('kt_subheader'), 'height'));
                             }
                         } else {
                             if (KTUtil.hasClass(body, 'kt-header-mobile--fixed')) {
-                                h = h + parseInt(KTUtil.css( KTUtil.get('kt_header_mobile'), 'height') );
+                                h = h + parseInt(KTUtil.css(KTUtil.get('kt_header_mobile'), 'height'));
                             }
-                        }    
-                        
-                        return h;                        
+                        }
+
+                        return h;
                     },
                     left: function() {
                         var left = 0;
@@ -9014,27 +8960,27 @@ var KTLayout = function() {
                             }
                         }
 
-                        left += parseInt(KTUtil.css( KTUtil.get('kt_content'), 'paddingLeft'));
+                        left += parseInt(KTUtil.css(KTUtil.get('kt_content'), 'paddingLeft'));
 
-                        return left; 
+                        return left;
                     },
                     right: function() {
                         var right = 0;
 
-                        if (KTUtil.isInResponsiveRange('desktop')) {                            
+                        if (KTUtil.isInResponsiveRange('desktop')) {
                             if (KTUtil.hasClass(body, 'kt-aside-secondary--enabled')) {
                                 if (KTUtil.hasClass(body, 'kt-aside-secondary--expanded')) {
                                     right += asideSecondaryExpandedWidth + asideSecondaryWidth;
                                 } else {
-                                    right += asideSecondaryWidth; 
+                                    right += asideSecondaryWidth;
                                 }
                             } else {
-                                right += parseInt(KTUtil.css( KTUtil.get('kt_content'), 'paddingRight'));
+                                right += parseInt(KTUtil.css(KTUtil.get('kt_content'), 'paddingRight'));
                             }
                         }
 
                         if (KTUtil.get('kt_aside_secondary')) {
-                            right += parseInt(KTUtil.css( KTUtil.get('kt_content'), 'paddingRight') );
+                            right += parseInt(KTUtil.css(KTUtil.get('kt_content'), 'paddingRight'));
                         }
 
                         return right;
@@ -9068,11 +9014,11 @@ var KTLayout = function() {
             initScrolltop();
         },
 
-        initAside: function() { 
+        initAside: function() {
             initAside();
             initAsideMenu();
             initAsideToggler();
-            
+
             this.onAsideToggle(function(e) {
                 // Update sticky portlet
                 if (pageStickyPortlet) {
@@ -9085,11 +9031,11 @@ var KTLayout = function() {
                     datatables.each(function() {
                         $(this).KTDatatable('redraw');
                     });
-                }                
+                }
             });
         },
 
-        initAsideSecondary: function() { 
+        initAsideSecondary: function() {
             initAsideSecondary();
         },
 
@@ -9097,11 +9043,11 @@ var KTLayout = function() {
             if (!KTUtil.get('kt_page_portlet')) {
                 return;
             }
-            
+
             pageStickyPortlet = initPageStickyPortlet();
             pageStickyPortlet.initSticky();
-            
-            KTUtil.addResizeHandler(function(){
+
+            KTUtil.addResizeHandler(function() {
                 pageStickyPortlet.updateSticky();
             });
 
