@@ -177,6 +177,7 @@ def apply_config():
             admin = request.environ.get("beaker.session").get("username")
             configs.admins.append(admin)
         configs.configured = True
+        configs.save()
         return HTTPResponse("Configured", 200)
 
 
