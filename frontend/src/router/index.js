@@ -18,11 +18,12 @@ const router = new Router({
             path: '/initial_config',
             name: 'InitialConfig',
             component: InitialConfig,
-            beforeEnter(to, from, next) {
-                if (store.state.user == null) {
-                    next('/')
-                }
-            }
+            meta: { layout: "Config" },
+            // beforeEnter(to, from, next) {
+            //     if (store.state.user == null) {
+            //         next('/')
+            //     }
+            // }
         },
         {
             path: '/',

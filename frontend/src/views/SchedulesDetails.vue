@@ -91,7 +91,7 @@ export default {
     },
     connect() {
       this.socket = new WebSocket(
-        "wss://" + window.location.hostname + `/websocket/logs/${this.id}`
+        "ws://" + window.location.hostname + `/websocket/logs/${this.id}`
       );
       this.socket.onmessage = ({ data }) => {
         this.livelogs = data;

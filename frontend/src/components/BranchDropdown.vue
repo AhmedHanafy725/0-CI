@@ -14,7 +14,7 @@
           <a href="#" class="kt-nav__link">
             <span
               class="kt-nav__link-text"
-              @click.prevent="selectedBranch(existedBranch)"
+              @click.self="selectedBranch(existedBranch)"
             >{{ existedBranch }}</span>
           </a>
         </li>

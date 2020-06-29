@@ -2,24 +2,23 @@
   <div id="app">
     <v-app>
       <v-content>
-        <Header-Mobile />
-        <Main-Sec />
-        <Scroll-Btn />
+        <component :is="layout">
+          <router-view />
+        </component>
       </v-content>
     </v-app>
   </div>
 </template>
 
 <script>
-import HeaderMobile from "./components/HeaderMobile";
-import Main from "./components/Main";
-import Scroll from "./components/Scroll";
+const default_layout = "Default";
 export default {
   name: "App",
-  components: {
-    "Header-Mobile": HeaderMobile,
-    "Main-Sec": Main,
-    "Scroll-Btn": Scroll
+
+  computed: {
+    layout() {
+      return (this.$route.meta.layout || default_layout) + "-Layout";
+    }
   },
   mounted: function() {
     let elHtml = document.getElementsByTagName("html")[0];
