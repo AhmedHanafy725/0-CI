@@ -30,7 +30,7 @@ class ModelFactory:
     @classmethod
     def distinct(cls, field, **kwargs):
         if kwargs:
-            objects = cls._model.find_many(**kwargs)
+            _, _, objects = cls._model.find_many(**kwargs)
         else:
             objects = []
             objects_names = cls._model.list_all()
@@ -48,15 +48,15 @@ class ModelFactory:
     @classmethod
     def get_objects(cls, fields, order_by=None, asc=True, **kwargs):
         if kwargs:
-            objects = cls._model.find_many(**kwargs)
+            _, _, objects = cls._model.find_many(**kwargs)
         else:
             objects = []
             objects_names = cls._model.list_all()
             for name in objects_names:
                 objects.append(cls._model.find(name))
 
-        if order_by:
-            objects.sort(key=lambda x: getattr(x, order_by), reverse=not asc)
+        if order_by and order_by not in fields:
+            fields.append(order_by)
 
         results = []
         for obj in objects:
@@ -65,4 +65,7 @@ class ModelFactory:
                 obj_dict[field] = getattr(obj, field)
             obj_dict["id"] = obj.instance_name.strip("model")
             results.append(obj_dict)
+
+        if order_by:
+            results.sort(key=lambda x: x[order_by], reverse=not asc)
         return results

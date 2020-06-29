@@ -28,5 +28,5 @@ class InitialConfig(ModelFactory):
     _model = StoredFactory(InitialConfigModel)
 
     def __new__(self, **kwargs):
-        name = "Intial_config"
+        name = "Initial_config"
         return self._model.get(name=name, **kwargs)

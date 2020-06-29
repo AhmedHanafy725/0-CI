@@ -9,7 +9,6 @@ RUN poetry config virtualenvs.create false && poetry install
 RUN poetry shell
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
-RUN jsctl config update --name store --value whoosh
 WORKDIR /sandbox/code/github/threefoldtech/zeroCI
 RUN pip3 install -r install/requirement.txt
 RUN cd frontend && npm install

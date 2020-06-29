@@ -1,0 +1,44 @@
+debug = true
+ssh_key_path = ""
+private_key_path = "/root/.config/jumpscale/privatekey.priv"
+store = "whoosh"
+
+[logging]
+
+[logging.redis]
+enabled = true
+level = 15
+max_size = 1000
+dump = true
+dump_dir = "/root/.config/jumpscale/logs/redis"
+
+[logging.filesystem]
+enabled = true
+level = 15
+log_dir = "/root/.config/jumpscale/logs/fs/log.txt"
+rotation = "5 MB"
+
+[alerts]
+enabled = true
+level = 40
+
+[stores]
+
+[stores.redis]
+hostname = "localhost"
+port = 6379
+
+[stores.filesystem]
+path = "/root/.config/jumpscale/secureconfig"
+
+[stores.whoosh]
+path = "/root/.config/jumpscale/whoosh_indexes"
+
+[threebot]
+default = ""
+
+[explorer]
+default_url = "https://explorer.testnet.grid.tf/explorer"
+
+[factory]
+always_reload = true
