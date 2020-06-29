@@ -22,6 +22,8 @@ const router = new Router({
             beforeEnter(to, from, next) {
                 if (store.state.user == null) {
                     next('/')
+                } else {
+                    next()
                 }
             }
         },
