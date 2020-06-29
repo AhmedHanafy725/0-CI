@@ -1,10 +1,11 @@
 import json
 
-from apis.base import app, check_configs, configs
+from apis.base import app, check_configs
 from bottle import abort, redirect, request, static_file
+from models.initial_config import InitialConfig
+from models.schedule_info import ScheduleInfo
 from models.scheduler_run import SchedulerRun
 from models.trigger_run import TriggerRun
-from models.schedule_info import ScheduleInfo
 from packages.vcs.vcs import VCSFactory
 
 
@@ -13,6 +14,7 @@ from packages.vcs.vcs import VCSFactory
 def home():
     """Return repos and schedules which are running on the server.
     """
+    configs = InitialConfig()
     result = {"repos": [], "schedules": []}
     result["repos"] = configs.repos
     result["schedules"] = ScheduleInfo.distinct("name")
@@ -83,6 +85,7 @@ def status():
     branch = request.query.get("branch")
     result = request.query.get("result")  # to return the run result
     fields = ["status"]
+    configs = InitialConfig()
     if schedule:
         where = {"schedule_name": schedule, "status": "error OR failure OR success"}
         scheduler_run = SchedulerRun.get_objects(fields=fields, order_by="timestamp", asc=False, **where)

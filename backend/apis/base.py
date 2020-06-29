@@ -3,8 +3,6 @@ from models.initial_config import InitialConfig
 from functools import wraps
 
 app = Bottle()
-configs = InitialConfig()
-
 LOGIN_URL = "/auth/login?provider=3bot"
 
 
@@ -21,6 +19,7 @@ def login_required(func):
 
 
 def check_configs(func):
+    configs = InitialConfig()
     def wrapper(*args, **kwargs):
         if not configs.configured:
             return redirect("/initial_config")
@@ -32,6 +31,7 @@ def check_configs(func):
 def user(func):
     @login_required
     def wrapper(*args, **kwargs):
+        configs = InitialConfig()
         username = request.environ.get("beaker.session").get("username")
         if not (username in configs.users or (configs.admins and (username in configs.admins))):
             return abort(401)
@@ -43,6 +43,7 @@ def user(func):
 def admin(func):
     @login_required
     def wrapper(*args, **kwargs):
+        configs = InitialConfig()
         username = request.environ.get("beaker.session").get("username")
         if configs.admins and (not username in configs.admins):
             return abort(401)

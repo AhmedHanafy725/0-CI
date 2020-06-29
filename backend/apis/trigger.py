@@ -6,8 +6,9 @@ from redis import Redis
 from rq import Queue
 
 from actions.actions import Actions
-from apis.base import app, check_configs, configs, user
+from apis.base import app, check_configs, user
 from bottle import HTTPResponse, redirect, request
+from models.initial_config import InitialConfig
 from models.trigger_run import TriggerRun
 from packages.vcs.vcs import VCSFactory
 
@@ -17,6 +18,7 @@ q = Queue(connection=redis)
 
 
 def trigger(repo="", branch="", commit="", committer="", id=None, triggered=True):
+    configs = InitialConfig()
     status = "pending"
     timestamp = datetime.now().timestamp()
     if id:
@@ -81,6 +83,7 @@ def trigger(repo="", branch="", commit="", committer="", id=None, triggered=True
 def git_trigger():
     """Trigger the test when a post request is sent from a repo's webhook.
     """
+    configs = InitialConfig()
     if request.headers.get("Content-Type") == "application/json":
         # push case
         reference = request.json.get("ref")

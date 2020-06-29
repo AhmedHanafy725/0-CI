@@ -7,8 +7,9 @@ import requests
 from nacl.public import Box
 from nacl.signing import VerifyKey
 
-from apis.base import app, configs
+from apis.base import app
 from bottle import abort, redirect, request
+from models.initial_config import InitialConfig
 from utils.utils import Utils
 
 CALLBACK_URL = "/auth/3bot_callback"
@@ -139,6 +140,7 @@ def logout():
 def is_authenticated():
     session = request.environ.get("beaker.session", {})
     if session.get("authorized"):
+        configs = InitialConfig()
         username = session["username"]
         email = session["email"]
         if username in configs.admins:
