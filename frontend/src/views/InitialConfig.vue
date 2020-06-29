@@ -105,7 +105,7 @@
             multiple
             chips
             :loading="loading"
-            :disabled="disabled"
+            :disabled="selectedRepos > 0"
           ></v-combobox>
           <div class="error--text mb-2" v-if="!$v.selectedRepos.required">Repositories is required</div>
 
