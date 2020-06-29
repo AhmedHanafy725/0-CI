@@ -1,5 +1,4 @@
 from bottle import Bottle, abort, redirect, request, response
-from Jumpscale import j
 from models.initial_config import InitialConfig
 from functools import wraps
 
