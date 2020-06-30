@@ -20,10 +20,10 @@ const router = new Router({
             component: InitialConfig,
             meta: { layout: "Config" },
             beforeEnter(to, from, next) {
-                if (store.state.user == null) {
-                    next('/')
-                } else {
+                if (store.state.permission == '' || store.state.permission == 'admin') {
                     next()
+                } else if (store.state.user == null) {
+                    next('/')
                 }
             }
         },
