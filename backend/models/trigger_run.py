@@ -1,22 +1,16 @@
-from .base import Document, ModelFactory, fields, StoredFactory
+from mongoengine import fields, Document, connect
 
 
 class TriggerModel(Document):
-    timestamp = fields.Integer(required=True, indexed=True)
-    repo = fields.String(required=True)
-    branch = fields.String(required=True)
-    commit = fields.String(required=True)
-    committer = fields.String(required=True)
-    status = fields.String(required=True)
-    bin_release = fields.String()
-    triggered_by = fields.String(default="VCS Hook")
-    result = fields.List(field=fields.Typed(dict))
+    timestamp = fields.FloatField(required=True, indexed=True)
+    repo = fields.StringField(required=True)
+    branch = fields.StringField(required=True)
+    commit = fields.StringField(required=True)
+    committer = fields.StringField(required=True)
+    status = fields.StringField(required=True)
+    bin_release = fields.StringField()
+    triggered_by = fields.StringField(default="VCS Hook")
+    result = fields.ListField()
 
+    meta = {"collection": "schedule_info", "indexes": ["timestamp"]}
 
-class TriggerRun(ModelFactory):
-    _model = StoredFactory(TriggerModel)
-
-    def __new__(self, **kwargs):
-        name = "model" + str(int(kwargs["timestamp"] * 10 ** 6))
-        kwargs["timestamp"] = int(kwargs["timestamp"])
-        return self._model.new(name=name, **kwargs)

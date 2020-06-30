@@ -1,13 +1,8 @@
-from .base import fields, ModelFactory, Document, StoredFactory
+from mongoengine import fields, Document, connect
 
 
-class RunConfigModel(Document):
-    env = fields.Typed(dict, default={})
+class RunConfig(Document):
+    name = fields.StringField()
+    env = fields.DictField(default={})
 
-
-class RunConfig(ModelFactory):
-    _model = StoredFactory(RunConfigModel)
-
-    def __new__(self, **kwargs):
-        kwargs["name"] = kwargs["name"].replace("/", "_")
-        return self._model.get(**kwargs)
+    meta = {"collection": "run_config", "indexes": ["name"]}

@@ -1,17 +1,19 @@
-from .base import fields, ModelFactory, Document, StoredFactory
-
+from mongoengine import fields, Document, connect
+from .base import ModelFactory
 
 class InitialConfigModel(Document):
-    configured = fields.Boolean()
-    admins = fields.List(field=fields.String())
-    users = fields.List(field=fields.String())
-    repos = fields.List(field=fields.String())
-    domain = fields.String()
-    chat_id = fields.String()
-    bot_token = fields.String()
-    vcs_host = fields.String()
-    vcs_token = fields.String()
+    name = fields.StringField(default="Initial_config")
+    configured = fields.BooleanField()
+    admins = fields.ListField(default=[])
+    users = fields.ListField(default=[])
+    repos = fields.ListField(default=[])
+    domain = fields.StringField()
+    chat_id = fields.StringField()
+    bot_token = fields.StringField()
+    vcs_host = fields.StringField()
+    vcs_token = fields.StringField()
 
+    
     @property
     def vcs_type(self):
         return self._get_vcs_type(self.vcs_host)
@@ -23,10 +25,15 @@ class InitialConfigModel(Document):
             vcs_type = "gitea"
         return vcs_type
 
+    meta = {"collection": "initial_config"}
 
 class InitialConfig(ModelFactory):
-    _model = StoredFactory(InitialConfigModel)
+    _model = InitialConfigModel
 
     def __new__(self, **kwargs):
         name = "Initial_config"
-        return self._model.get(name=name, **kwargs)
+        objs = self._model.objects(name="Initial_config")
+        if objs:
+            return objs.first()
+        else:
+            return self._model(name=name, **kwargs)
