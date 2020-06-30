@@ -36,7 +36,8 @@ def branch(repo):
 
     if id:
         trigger_run = TriggerRun.get(id=id)
-        result = json.dumps(trigger_run.result)
+        live = True if trigger_run.status == "pending" else False
+        result = json.dumps({"live": live, "result": trigger_run.result})
         return result
     if branch:
         fields = ["status", "commit", "committer", "timestamp", "bin_release", "triggered_by"]
@@ -65,7 +66,8 @@ def schedules(schedule):
     id = request.query.get("id")
     if id:
         scheduler_run = SchedulerRun.get(id=id)
-        result = json.dumps(scheduler_run.result)
+        live = True if scheduler_run.status == "pending" else False
+        result = json.dumps({"live": live, "result": scheduler_run.result})
         return result
 
     fields = ["status", "timestamp", "bin_release", "triggered_by"]
