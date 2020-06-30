@@ -1,4 +1,5 @@
 set -ex
+mkdir /var/zeroci
 cd /sandbox/code/github/threefoldtech/zeroCI/install
 cp cron /var/spool/cron/crontabs/root
 cp nginx.conf /etc/nginx/sites-available/default
