@@ -246,13 +246,13 @@ export default {
       if (this.$store.state.user !== null) {
         EventService.restartBuild(this.fullRepoName, this.branch)
           .then(response => {
-            if (response) {
-              this.loading = false;
-              this.disabled = true;
-            }
+            this.loading = false;
+            this.disabled = true;
           })
           .catch(error => {
-            if (error.response.status == 401) {
+            if (error.response.status == 503) {
+              toastr.error(error.response.data);
+            } else if (error.response.status == 401) {
               toastr.error("Please contact Adminstrator");
             } else {
               console.log("Error! Could not reach the API. " + error);

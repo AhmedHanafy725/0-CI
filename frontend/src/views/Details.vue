@@ -76,9 +76,16 @@ export default {
   },
   methods: {
     connect() {
-      this.socket = new WebSocket(
-        "wss://" + window.location.hostname + `/websocket/logs/${this.id}`
-      );
+      if (process.env.NODE_ENV === "development") {
+        this.socket = new WebSocket(
+          "ws://" + window.location.hostname + `/websocket/logs/${this.id}`
+        );
+      } else {
+        this.socket = new WebSocket(
+          "wss://" + window.location.hostname + `/websocket/logs/${this.id}`
+        );
+      }
+
       this.socket.onopen = () => {
         console.log("connecting...");
         this.socket.onmessage = ({ data }) => {
@@ -87,6 +94,7 @@ export default {
       };
     },
     fetchBrancheIdDetails() {
+      this.loading = true;
       EventService.getBranchIdDetails(
         this.orgName + "/" + this.repoName,
         this.branch,
@@ -94,15 +102,17 @@ export default {
       )
         .then(response => {
           this.loading = false;
-          response.data.map((job, index) => {
-            if (job.type == "log") {
-              this.logs.push(job);
-            } else if (job.type == "testsuite") {
-              this.testsuites.push(job);
-            } else {
-              this.viewLogs();
-            }
-          });
+          if (response.data.live) {
+            this.viewLogs();
+          } else {
+            response.data.result.map((job, index) => {
+              if (job.type == "log") {
+                this.logs.push(job);
+              } else if (job.type == "testsuite") {
+                this.testsuites.push(job);
+              }
+            });
+          }
         })
         .catch(error => {
           console.log("Error! Could not reach the API. " + error);
