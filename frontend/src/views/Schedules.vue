@@ -269,8 +269,8 @@ export default {
     },
     runConfig() {
       if (
-        this.$store.state.user == "admin" ||
-        this.$store.state.user == "user"
+        this.$store.state.permission == "admin" ||
+        this.$store.state.permission == "user"
       ) {
         this.fireInput = false;
         this.model = 4;
