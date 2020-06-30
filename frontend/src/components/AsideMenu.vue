@@ -40,14 +40,14 @@
             <span class="kt-menu__link-text">Dashboard</span>
           </a>
         </li>
-        <li class="kt-menu__section" v-if="repos !== null">
+        <li class="kt-menu__section" v-if="repos.length > 0">
           <h4 class="kt-menu__section-text">Repos</h4>
           <i class="kt-menu__section-icon flaticon-more-v2"></i>
         </li>
 
         <Repos-Sec v-for="repo in repos" :key="repo.id" :repo="repo" />
 
-        <li class="kt-menu__section" v-if="schedules !== null">
+        <li class="kt-menu__section" v-if="schedules.length < 0">
           <h4 class="kt-menu__section-text">Schedules</h4>
           <i class="kt-menu__section-icon flaticon-more-v2"></i>
         </li>
@@ -71,8 +71,8 @@ export default {
   data() {
     return {
       url: "/",
-      repos: null,
-      schedules: null
+      repos: "",
+      schedules: ""
     };
   },
   methods: {

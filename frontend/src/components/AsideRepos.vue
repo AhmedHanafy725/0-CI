@@ -17,7 +17,7 @@
           </span>
         </li>
 
-        <li class="kt-menu__section">
+        <li class="kt-menu__section" v-if="existedBranches.length > 0">
           <h4 class="kt-menu__section-text">Existed</h4>
           <i class="kt-menu__section-icon flaticon-more-v2"></i>
         </li>
@@ -40,7 +40,7 @@
           </router-link>
         </li>
 
-        <li class="kt-menu__section">
+        <li class="kt-menu__section" v-if="deletedBranches.length > 0">
           <h4 class="kt-menu__section-text">Deleted</h4>
           <i class="kt-menu__section-icon flaticon-more-v2"></i>
         </li>
@@ -74,8 +74,8 @@ export default {
   props: ["repo"],
   data() {
     return {
-      existedBranches: null,
-      deletedBranches: null
+      existedBranches: "",
+      deletedBranches: ""
     };
   },
   computed: {
