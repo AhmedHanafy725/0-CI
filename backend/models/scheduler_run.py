@@ -1,77 +1,19 @@
-from Jumpscale import j
-
-from .bcdb import Base
+from .base import Document, ModelFactory, fields, StoredFactory
 
 
-class SchedulerRun(Base):
-    _bcdb = j.data.bcdb.get("zeroci")
-    _schema_text = """@url = zeroci.schedule
-    timestamp** = (F)
-    schedule_name** = (S)
-    status** = (S)
-    bin_release** = no (S)
-    triggered_by** = ZeroCI Scheduler (S)
-    result = (dict)
-    """
-    _schema = j.data.schema.get_from_text(_schema_text)
-    _model = _bcdb.model_get(schema=_schema)
+class ScheduleModel(Document):
+    timestamp = fields.Integer(required=True, indexed=True)
+    schedule_name = fields.String(required=True)
+    status = fields.String(required=True)
+    bin_release = fields.String()
+    triggered_by = fields.String(default="ZeroCI Scheduler")
+    result = fields.List(field=fields.Typed(dict))
 
-    def __init__(self, **kwargs):
-        if "id" in kwargs.keys():
-            self._model_obj = self._model.find(id=kwargs["id"])[0]
-        else:
-            self._model_obj = self._model.new()
-            self._model_obj.timestamp = kwargs["timestamp"]
-            self._model_obj.schedule_name = kwargs["schedule_name"]
-            self._model_obj.status = kwargs.get("status", "pending")
-            self._model_obj.triggered_by = kwargs.get("triggered_by", "no")
-            self._model_obj.result = {"result": []}
-            self._model_obj.result["result"] = kwargs.get("result", [])
 
-    @property
-    def timestamp(self):
-        return self._model_obj.timestamp
+class SchedulerRun(ModelFactory):
+    _model = StoredFactory(ScheduleModel)
 
-    @timestamp.setter
-    def timestamp(self, timestamp):
-        self._model_obj.timestamp = timestamp
-
-    @property
-    def status(self):
-        return self._model_obj.status
-
-    @status.setter
-    def status(self, status):
-        self._model_obj.status = status
-
-    @property
-    def result(self):
-        return self._model_obj.result["result"]
-
-    @result.setter
-    def result(self, result):
-        self._model_obj.result["result"] = result
-
-    @property
-    def schedule_name(self):
-        return self._model_obj.schedule_name
-
-    @schedule_name.setter
-    def schedule_name(self, schedule_name):
-        self._model_obj.schedule_name = schedule_name
-
-    @property
-    def bin_release(self):
-        return self._model_obj.bin_release
-
-    @bin_release.setter
-    def bin_release(self, bin_release):
-        self._model_obj.bin_release = bin_release
-
-    @property
-    def triggered_by(self):
-        return self._model_obj.triggered_by
-
-    @triggered_by.setter
-    def triggered_by(self, triggered_by):
-        self._model_obj.triggered_by = triggered_by
+    def __new__(self, **kwargs):
+        name = "model" + str(int(kwargs["timestamp"] * 10 ** 6))
+        kwargs["timestamp"] = int(kwargs["timestamp"])
+        return self._model.new(name=name, **kwargs)

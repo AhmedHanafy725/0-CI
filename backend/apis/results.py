@@ -1,10 +1,11 @@
 import json
 
-from apis.base import app, check_configs, configs
+from apis.base import app, check_configs
 from bottle import abort, redirect, request, static_file
+from models.initial_config import InitialConfig
+from models.schedule_info import ScheduleInfo
 from models.scheduler_run import SchedulerRun
 from models.trigger_run import TriggerRun
-from models.schedule_info import ScheduleInfo
 from packages.vcs.vcs import VCSFactory
 
 
@@ -13,6 +14,7 @@ from packages.vcs.vcs import VCSFactory
 def home():
     """Return repos and schedules which are running on the server.
     """
+    configs = InitialConfig()
     result = {"repos": [], "schedules": []}
     result["repos"] = configs.repos
     result["schedules"] = ScheduleInfo.distinct("name")
@@ -33,19 +35,19 @@ def branch(repo):
     id = request.query.get("id")
 
     if id:
-        trigger_run = TriggerRun(id=id)
+        trigger_run = TriggerRun.get(id=id)
         result = json.dumps(trigger_run.result)
         return result
     if branch:
         fields = ["status", "commit", "committer", "timestamp", "bin_release", "triggered_by"]
-        where = f'repo="{repo}" and branch="{branch}"'
-        trigger_runs = TriggerRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
+        where = {"repo": repo, "branch": branch}
+        trigger_runs = TriggerRun.get_objects(fields=fields, order_by="timestamp", asc=False, **where)
         result = json.dumps(trigger_runs)
         return result
 
     vcs_obj = VCSFactory().get_cvn(repo=repo)
     exist_branches = vcs_obj.get_branches()
-    all_branches = TriggerRun.distinct(field="branch", where=f"repo='{repo}'")
+    all_branches = TriggerRun.distinct(field="branch", repo=repo)
     deleted_branches = list(set(all_branches) - set(exist_branches))
     branches = {"exist": exist_branches, "deleted": deleted_branches}
     result = json.dumps(branches)
@@ -62,13 +64,13 @@ def schedules(schedule):
     """
     id = request.query.get("id")
     if id:
-        scheduler_run = SchedulerRun(id=id)
+        scheduler_run = SchedulerRun.get(id=id)
         result = json.dumps(scheduler_run.result)
         return result
 
     fields = ["status", "timestamp", "bin_release", "triggered_by"]
-    where = f"schedule_name='{schedule}'"
-    scheduler_runs = SchedulerRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
+    where = {"schedule_name": schedule}
+    scheduler_runs = SchedulerRun.get_objects(fields=fields, order_by="timestamp", asc=False, **where)
     result = json.dumps(scheduler_runs)
     return result
 
@@ -83,9 +85,10 @@ def status():
     branch = request.query.get("branch")
     result = request.query.get("result")  # to return the run result
     fields = ["status"]
+    configs = InitialConfig()
     if schedule:
-        where = f"schedule_name='{schedule}' and status!='pending'"
-        scheduler_run = SchedulerRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
+        where = {"schedule_name": schedule, "status": "error OR failure OR success"}
+        scheduler_run = SchedulerRun.get_objects(fields=fields, order_by="timestamp", asc=False, **where)
         if len(scheduler_run) == 0:
             return abort(404)
 
@@ -100,8 +103,8 @@ def status():
     elif repo:
         if not branch:
             branch = "master"
-        where = f"repo='{repo}' and branch='{branch}' and status!='pending'"
-        trigger_run = TriggerRun.get_objects(fields=fields, where=where, order_by="timestamp", asc=False)
+        where = {"repo": repo, "branch": branch, "status": "error OR failure OR success"}
+        trigger_run = TriggerRun.get_objects(fields=fields, order_by="timestamp", asc=False, **where)
         if len(trigger_run) == 0:
             return abort(404)
         if result:

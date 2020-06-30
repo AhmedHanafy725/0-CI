@@ -5,8 +5,9 @@ import requests
 from telegram import Bot
 from telegram.error import BadRequest, InvalidToken, Unauthorized
 
-from apis.base import admin, app, check_configs, configs, user
+from apis.base import admin, app, check_configs, user
 from bottle import HTTPResponse, abort, request
+from models.initial_config import InitialConfig
 from models.run_config import RunConfig
 from packages.vcs.vcs import VCSFactory
 
@@ -16,6 +17,7 @@ from packages.vcs.vcs import VCSFactory
 def validate_telegam():
     """Validate telegram token and chat ID
     """
+    configs = InitialConfig()
     confs = ["chat_id", "bot_token"]
     conf_dict = {}
     if request.method == "GET":
@@ -51,6 +53,7 @@ def validate_telegam():
 def vcs_config():
     """Initial configuration for the ci before start working.
     """
+    configs = InitialConfig()
     confs = ["domain", "vcs_host", "vcs_token"]
     conf_dict = {}
     if request.method == "GET":
@@ -81,16 +84,18 @@ def vcs_config():
 @app.route("/api/repos_config", method=["GET", "POST"])
 @admin
 def repos_config():
-    vcs_obj = VCSFactory().get_cvn()
+    configs = InitialConfig()
     if request.method == "GET":
         username = request.query.get("username")
         org_name = request.query.get("org_name")
         if username:
+            vcs_obj = VCSFactory().get_cvn()
             try:
                 repos = vcs_obj.get_user_repos(username)
             except:
                 return HTTPResponse("The token provided is invalid", 400)
         elif org_name:
+            vcs_obj = VCSFactory().get_cvn()
             try:
                 repos = vcs_obj.get_org_repos(org_name)
             except:
@@ -99,6 +104,7 @@ def repos_config():
             repos = configs.repos
         return json.dumps(repos)
     if request.headers.get("Content-Type") == "application/json":
+        vcs_obj = VCSFactory().get_cvn()
         repos = request.json.get("repos")
         if not repos:
             return HTTPResponse(f"repos should have a value", 400)
@@ -125,6 +131,7 @@ def repos_config():
 @app.route("/api/users", method=["GET", "POST", "DELETE"])
 @admin
 def users():
+    configs = InitialConfig()
     if request.method == "GET":
         all_users = {"admins": configs.admins, "users": configs.users}
         all_json = json.dumps(all_users)
@@ -158,6 +165,7 @@ def users():
 @app.route("/api/apply_config", method=["POST"])
 @admin
 def apply_config():
+    configs = InitialConfig()
     if not (configs.domain or configs.vcs_host or configs.vcs_token):
         return HTTPResponse("Version Control System is not configured")
     elif not (configs.bot_token or configs.chat_id):
@@ -169,6 +177,7 @@ def apply_config():
             admin = request.environ.get("beaker.session").get("username")
             configs.admins.append(admin)
         configs.configured = True
+        configs.save()
         return HTTPResponse("Configured", 200)
 
 
@@ -176,11 +185,7 @@ def apply_config():
 @user
 @check_configs
 def run_config(name):
-    run_config = RunConfig.find(name=name)
-    if run_config and len(run_config) == 1:
-        run_config = run_config[0]
-    else:
-        run_config = RunConfig(name=name)
+    run_config = RunConfig(name=name)
     if request.method == "POST":
         key = request.json["key"]
         value = request.json["value"]

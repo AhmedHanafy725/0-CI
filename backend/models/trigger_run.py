@@ -1,107 +1,22 @@
-from Jumpscale import j
-
-from .bcdb import Base
+from .base import Document, ModelFactory, fields, StoredFactory
 
 
-class TriggerRun(Base):
-    _bcdb = j.data.bcdb.get("zeroci")
-    _schema_text = """@url = zeroci.trigger
-    timestamp** = (F)
-    repo** = (S)
-    branch** = (S)
-    commit** = (S)
-    committer** = (S)
-    status** = (S)
-    bin_release** = no (S)
-    triggered_by** = VCS Hook (S)
-    result = (dict)
-    """
-    _schema = j.data.schema.get_from_text(_schema_text)
-    _model = _bcdb.model_get(schema=_schema)
+class TriggerModel(Document):
+    timestamp = fields.Integer(required=True, indexed=True)
+    repo = fields.String(required=True)
+    branch = fields.String(required=True)
+    commit = fields.String(required=True)
+    committer = fields.String(required=True)
+    status = fields.String(required=True)
+    bin_release = fields.String()
+    triggered_by = fields.String(default="VCS Hook")
+    result = fields.List(field=fields.Typed(dict))
 
-    def __init__(self, **kwargs):
-        if "id" in kwargs.keys():
-            self._model_obj = self._model.find(id=kwargs["id"])[0]
-        else:
-            self._model_obj = self._model.new()
-            self._model_obj.timestamp = kwargs["timestamp"]
-            self._model_obj.repo = kwargs["repo"]
-            self._model_obj.branch = kwargs["branch"]
-            self._model_obj.commit = kwargs["commit"]
-            self._model_obj.committer = kwargs["committer"]
-            self._model_obj.status = kwargs.get("status", "pending")
-            self._model_obj.triggered_by = kwargs.get("triggered_by", "no")
-            self._model_obj.result = {"result": []}
-            self._model_obj.result["result"] = kwargs.get("result", [])
 
-    @property
-    def timestamp(self):
-        return self._model_obj.timestamp
+class TriggerRun(ModelFactory):
+    _model = StoredFactory(TriggerModel)
 
-    @timestamp.setter
-    def timestamp(self, timestamp):
-        self._model_obj.timestamp = timestamp
-
-    @property
-    def status(self):
-        return self._model_obj.status
-
-    @status.setter
-    def status(self, status):
-        self._model_obj.status = status
-
-    @property
-    def result(self):
-        return self._model_obj.result["result"]
-
-    @result.setter
-    def result(self, result):
-        self._model_obj.result["result"] = result
-
-    @property
-    def repo(self):
-        return self._model_obj.repo
-
-    @repo.setter
-    def repo(self, repo):
-        self._model_obj.repo = repo
-
-    @property
-    def branch(self):
-        return self._model_obj.branch
-
-    @branch.setter
-    def branch(self, branch):
-        self._model_obj.branch = branch
-
-    @property
-    def commit(self):
-        return self._model_obj.commit
-
-    @commit.setter
-    def commit(self, commit):
-        self._model_obj.commit = commit
-
-    @property
-    def committer(self):
-        return self._model_obj.committer
-
-    @committer.setter
-    def committer(self, committer):
-        self._model_obj.committer = committer
-
-    @property
-    def bin_release(self):
-        return self._model_obj.bin_release
-
-    @bin_release.setter
-    def bin_release(self, bin_release):
-        self._model_obj.bin_release = bin_release
-
-    @property
-    def triggered_by(self):
-        return self._model_obj.triggered_by
-
-    @triggered_by.setter
-    def triggered_by(self, triggered_by):
-        self._model_obj.triggered_by = triggered_by
+    def __new__(self, **kwargs):
+        name = "model" + str(int(kwargs["timestamp"] * 10 ** 6))
+        kwargs["timestamp"] = int(kwargs["timestamp"])
+        return self._model.new(name=name, **kwargs)
