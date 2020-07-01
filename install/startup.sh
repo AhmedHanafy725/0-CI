@@ -1,5 +1,6 @@
 set -ex
 mkdir /var/zeroci
+mkdir -p /root/.config/jumpscale/
 cd /sandbox/code/github/threefoldtech/zeroCI/install
 cp cron /var/spool/cron/crontabs/root
 cp redis.conf /etc/redis/redis.conf
