@@ -13,7 +13,7 @@
         <div class="kt-header__topbar pr-0">
           <button
             type="button"
-            class="btn btn-primary btn-sm"
+            class="btn btn-primary btn-sm text-white"
             :disabled="disabled"
             @click="restart()"
           >

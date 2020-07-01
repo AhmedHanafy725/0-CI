@@ -12,7 +12,7 @@
       <div class="kt-header__topbar pr-0">
         <button
           type="button"
-          class="btn btn-primary btn-sm"
+          class="btn btn-primary btn-sm text-white"
           :disabled="disabled"
           @click="restart()"
         >
@@ -165,7 +165,7 @@
                 <div class="kt-form__actions">
                   <div class="row">
                     <div class="col">
-                      <button type="submit" class="btn btn-success">Add</button>
+                      <button type="submit" class="btn btn-success text-white">Add</button>
                       <button type="reset" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                     </div>
                   </div>

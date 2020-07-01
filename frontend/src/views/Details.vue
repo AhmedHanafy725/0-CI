@@ -11,11 +11,15 @@
       </div>
 
       <div class="kt-header__topbar pr-0">
-        <button type="button" @click="viewLogs()" class="btn btn-primary btn-sm mr-1">{{ result }}</button>
+        <button
+          type="button"
+          @click="viewLogs()"
+          class="btn btn-primary btn-sm mr-1 text-white"
+        >{{ result }}</button>
 
         <button
           type="button"
-          class="btn btn-primary btn-sm"
+          class="btn btn-primary btn-sm text-white"
           :disabled="disabled"
           @click="rebuild()"
         >

@@ -10,7 +10,11 @@
         <h3 class="kt-portlet__head-title">{{ name }}</h3>
       </div>
       <div class="kt-header__topbar pr-0">
-        <button type="button" @click="viewLogs()" class="btn btn-primary btn-sm mr-1">{{ result }}</button>
+        <button
+          type="button"
+          @click="viewLogs()"
+          class="btn btn-primary btn-sm mr-1 text-white"
+        >{{ result }}</button>
       </div>
     </div>
     <div class="kt-portlet__body">

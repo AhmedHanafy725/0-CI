@@ -20,6 +20,7 @@
               class="kt-widget20__number text-capitalize"
               :class="{
             'kt-font-success': status == 'success',
+            'kt-font-pending': status == 'pending',
             'kt-font-error': status == 'error',
             'kt-font-failure': status == 'failure'}"
             >{{ status }}</span>
