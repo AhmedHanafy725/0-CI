@@ -224,14 +224,20 @@ export default {
       this.newValue = "";
     },
     committerSrc(committer) {
-      return "https://github.com/" + committer + ".png";
+      return (
+        JSON.parse(window.localStorage.getItem("vcs")) +
+        "/" +
+        committer +
+        ".png"
+      );
     },
     committerUrl(committer) {
-      return "https://github.com/" + committer;
+      return JSON.parse(window.localStorage.getItem("vcs")) + "/" + committer;
     },
     repoCommit(commit) {
       return (
-        "https://github.com/" +
+        JSON.parse(window.localStorage.getItem("vcs")) +
+        "/" +
         this.orgName +
         "/" +
         this.repoName +
