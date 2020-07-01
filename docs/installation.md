@@ -19,7 +19,7 @@
   sed -i 's/SERVER_DOMAIN/<your server domain>/g' ~/zeroci/deployment.yaml
   ```
 
-  **Example**
+  **Example:**
     If you need to set Domain to `zeroci.grid.tf`, so the command will be:
 
   ```bash
