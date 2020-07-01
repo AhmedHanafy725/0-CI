@@ -25,6 +25,9 @@ spec:
       containers:
       - name: zeroci
         image: "ahmedhanafy725/zeroci:ng"
+        env:
+        - name: DOMAIN
+          value: "SERVER_DOMAIN"
         ports:
         - containerPort: 80
         - containerPort: 443
