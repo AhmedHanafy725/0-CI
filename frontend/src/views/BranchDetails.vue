@@ -81,11 +81,14 @@
 
           <template v-slot:item.bin_release="{ item }">
             <a
-              :href="bin()"
+              :href="bin(item.bin_release)"
               class="kt-user-card-v2__email kt-link"
               target="_blank"
               v-if="item.bin_release !== null"
-            >{{ commit(item.bin_release) }}</a>
+            >
+              {{ commit(item.bin_release) }}
+              <i class="la la-edit"></i>
+            </a>
             <span v-else>-</span>
           </template>
 
@@ -261,8 +264,8 @@ export default {
         commit
       );
     },
-    bin() {
-      return `${window.location.origin}/bin/${this.orgName}/${this.repoName}/${this.branch}/${this.bin_release}`;
+    bin(bin) {
+      return `${window.location.origin}/bin/${this.orgName}/${this.repoName}/${this.branch}/${bin}`;
     },
     commit(commit) {
       return commit.substring(0, 7);
