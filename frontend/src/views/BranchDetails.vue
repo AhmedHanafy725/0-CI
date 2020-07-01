@@ -344,15 +344,17 @@ export default {
     this.$options.sockets.onmessage = msg => {
       var data = JSON.parse(msg.data);
 
-      this.details.find((o, i) => {
+      let updated = this.details.find((o, i) => {
         if (o.id == data.id) {
           this.details[i].id = data.id;
           this.details[i].status = data.status;
           this.details[i].timestamp = data.timestamp;
-
           return true;
         }
       });
+      if (updated == undefined) {
+        this.details.unshift(data);
+      }
     };
   },
   created() {

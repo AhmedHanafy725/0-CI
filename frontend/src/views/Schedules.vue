@@ -331,15 +331,17 @@ export default {
     this.$options.sockets.onmessage = msg => {
       var data = JSON.parse(msg.data);
 
-      this.schedules.find((o, i) => {
+      let updated = this.schedules.find((o, i) => {
         if (o.id == data.id) {
           this.schedules[i].id = data.id;
           this.schedules[i].status = data.status;
           this.schedules[i].timestamp = data.timestamp;
-
           return true;
         }
       });
+      if (updated == undefined) {
+        this.schedules.unshift(data);
+      }
     };
   },
   watch: {
