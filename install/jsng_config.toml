@@ -1,6 +1,6 @@
 debug = true
 ssh_key_path = ""
-private_key_path = "/root/.config/jumpscale/privatekey.priv"
+private_key_path = ""
 store = "whoosh"
 
 [logging]

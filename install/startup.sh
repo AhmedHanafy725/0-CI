@@ -10,4 +10,5 @@ redis-server /etc/redis/redis.conf
 for i in {1..5}; do cp worker.py worker$i.py; python3 worker$i.py &> worker_$i.log & done
 rqscheduler &> schedule.log &
 service cron start
-python3 zeroci.py && caddy reverse-proxy --from $DOMAIN --to 0.0.0.0:6010
+python3 zeroci.py &
+caddy reverse-proxy --from $DOMAIN --to 0.0.0.0:6010
