@@ -12,7 +12,8 @@
   for s in authorization deployment service; do curl https://raw.githubusercontent.com/threefoldtech/zeroCI/development/install/zeroci/$s.yaml --output $s.yaml; done
   ```
 
-- Set ZeroCI Domain.
+- Create a [solution expose](https://sdk2.threefold.io/#/solution_expose)
+- Set ZeroCI domain and should be the same as one on solution expose in the previous step.
 
   ```bash
   sed -i 's/SERVER_DOMAIN/<your server domain>/g' ~/zeroci/deployment.yaml
