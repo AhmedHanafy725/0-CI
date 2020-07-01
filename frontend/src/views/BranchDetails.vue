@@ -84,7 +84,7 @@
               :href="bin()"
               class="kt-user-card-v2__email kt-link"
               target="_blank"
-              v-if="item.bin_release"
+              v-if="item.bin_release !== null"
             >{{ commit(item.bin_release) }}</a>
             <span v-else>-</span>
           </template>
