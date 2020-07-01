@@ -75,6 +75,20 @@
             >{{ commit(item.commit) }}</a>
           </template>
 
+          <template v-slot:item.triggered_by="{ item }">
+            <span>{{ item.triggered_by }}</span>
+          </template>
+
+          <template v-slot:item.bin_release="{ item }">
+            <a
+              :href="bin()"
+              class="kt-user-card-v2__email kt-link"
+              target="_blank"
+              v-if="item.bin_release"
+            >{{ commit(item.bin_release) }}</a>
+            <span v-else>-</span>
+          </template>
+
           <template v-slot:item.status="{ item }">
             <v-chip :color="getStatus(item.status)" dark>{{ item.status }}</v-chip>
           </template>
@@ -199,6 +213,8 @@ export default {
         { text: "#ID", value: "id" },
         { text: "Author", value: "committer" },
         { text: "Commit", value: "commit" },
+        { text: "Triggered By", value: "triggered_by" },
+        { text: "Bin", value: "bin_release" },
         { text: "Status", value: "status" },
         { text: "Time", value: "timestamp" }
       ],
@@ -244,6 +260,9 @@ export default {
         "/commit/" +
         commit
       );
+    },
+    bin() {
+      return `${window.location.origin}/bin/${this.orgName}/${this.repoName}/${this.branch}/${this.bin_release}`;
     },
     commit(commit) {
       return commit.substring(0, 7);
@@ -355,6 +374,8 @@ export default {
           this.details[i].id = data.id;
           this.details[i].status = data.status;
           this.details[i].timestamp = data.timestamp;
+          this.details[i].triggered_by = data.triggered_by;
+          this.details[i].bin_release = data.bin_release;
           return true;
         }
       });
