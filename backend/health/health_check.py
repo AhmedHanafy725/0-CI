@@ -1,7 +1,5 @@
-import os
-
-PATH = "/sandbox/code/github/threefoldtech/zeroCI/backend/"
-os.chdir(PATH)
+import sys
+sys.path.append("/sandbox/code/github/threefoldtech/zeroCI/backend")
 
 from redis import Redis
 
@@ -18,8 +16,15 @@ class Health(Utils):
         pids = response.stdout.split()
         return pids
 
+    def test_zeroci_server(self):
+        """Check zeroci server is still running
+        """
+        pid = self.get_process_pid("python3 zeroci")
+        if not pid:
+            recover.zeroci()
+
     def test_redis(self):
-        """Check redis is still working.
+        """Check redis is still running.
         """
         pid = self.get_process_pid("redis")
         if not pid:
@@ -27,7 +32,8 @@ class Health(Utils):
         try:
             r = Redis()
             r.set("test_redis", "test")
-            value = r.get("test_redis")
+            r.get("test_redis")
+            r.delete("test_redis")
         except:
             recover.redis()
 
@@ -52,6 +58,7 @@ class Health(Utils):
 
 if __name__ == "__main__":
     health = Health()
+    health.test_zeroci_server()
     health.test_redis()
     health.test_workers()
     health.test_schedule()

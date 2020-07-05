@@ -14,7 +14,7 @@ spec:
       volumes:
       - name: shared-path
         hostPath:
-          path: /root/.config/jumpscale
+          path: /sandbox/var
       - name: redis
         hostPath:
           path: /sandbox/redis
@@ -24,7 +24,10 @@ spec:
       hostname: zeroci
       containers:
       - name: zeroci
-        image: "ahmedhanafy725/zeroci:ng"
+        image: "ahmedhanafy725/zeroci:ng-https"
+        env:
+        - name: DOMAIN
+          value: "SERVER_DOMAIN"
         ports:
         - containerPort: 80
         - containerPort: 443

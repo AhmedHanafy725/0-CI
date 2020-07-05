@@ -4,18 +4,26 @@
 
 - Create a [kubernetes cluster](https://sdk2.threefold.io/#/solution_kubernetes?id=kubernetes-cluster-deployment) .
 - Connect to the cluster using `ssh`.
-- Create directories for BCDB and Redis.
-  
-  ```bash
-  sudo mkdir -p /sandbox/{var,redis}
-  ```
-
 - Create zeroci directory and get installation yaml files.
 
   ```bash
   mkdir ~/zeroci
   cd ~/zeroci
   for s in authorization deployment service; do curl https://raw.githubusercontent.com/threefoldtech/zeroCI/development/install/zeroci/$s.yaml --output $s.yaml; done
+  ```
+
+- Create a [solution expose](https://sdk2.threefold.io/#/solution_expose)
+- Set ZeroCI domain and should be the same as one on solution expose in the previous step.
+
+  ```bash
+  sed -i 's/SERVER_DOMAIN/<your server domain>/g' ~/zeroci/deployment.yaml
+  ```
+
+  **Example:**
+    If you need to set Domain to `zeroci.grid.tf`, so the command will be:
+
+  ```bash
+  sed -i 's/SERVER_DOMAIN/zeroci.grid.tf/g' ~/zeroci/deployment.yaml
   ```
 
 - Apply the installation yaml files.
