@@ -5,6 +5,10 @@ TIMEOUT = 5
 
 
 class Recover(Utils):
+    def zeroci(self):
+        cmd = f"/bin/bash -c 'cd {PATH}; python3 zeroci.py &>> zeroci.log &'"
+        self.execute_cmd(cmd, timeout=TIMEOUT)
+
     def redis(self):
         cmd = "redis-server /etc/redis/redis.conf"
         self.execute_cmd(cmd=cmd, timeout=TIMEOUT)

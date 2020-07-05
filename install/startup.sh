@@ -1,7 +1,7 @@
 set -ex
 mkdir /var/zeroci
 mkdir -p /root/.config/jumpscale/
-cd /sandbox/code/github/threefoldtech/zeroCI/install
+cd /sandbox/code/github/threefoldtech/zeroCI/install/config
 cp cron /var/spool/cron/crontabs/root
 cp redis.conf /etc/redis/redis.conf
 cp jsng_config.toml /root/.config/jumpscale/config.toml
