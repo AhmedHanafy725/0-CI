@@ -133,9 +133,10 @@ def repos_config():
 def users():
     configs = InitialConfig()
     if request.method == "GET":
-        all_users = {"admins": configs.admins, "users": configs.users}
-        all_json = json.dumps(all_users)
-        return all_json
+        admins = [{"name": x, "role": "admin"} for x in configs.admins]
+        users = [{"name": x, "role": "user"} for x in configs.users]
+        all_users = admins + users
+        return json.dumps(all_users)
     if not request.headers.get("Content-Type") == "application/json":
         return abort(400)
 
@@ -143,10 +144,18 @@ def users():
     admin = request.json.get("admin")
     if request.method == "POST":
         if user:
+            if user in configs.users:
+                return HTTPResponse(400, f"{user} is already user")
+            if user in configs.admins:
+                return HTTPResponse(400, f"{user} is already admin")
             configs.users.append(user)
             configs.save()
             return HTTPResponse("Added", 200)
         if admin:
+            if admin in configs.admins:
+                return HTTPResponse(400, f"{admin} is already admin")
+            if admin in configs.users:
+                configs.users.remove(admin)
             configs.admins.append(admin)
             configs.save()
             return HTTPResponse("Added", 200)
