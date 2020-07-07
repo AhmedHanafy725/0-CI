@@ -145,15 +145,15 @@ def users():
     if request.method == "POST":
         if user:
             if user in configs.users:
-                return HTTPResponse(400, f"{user} is already user")
+                return HTTPResponse(f"{user} is already user", 400)
             if user in configs.admins:
-                return HTTPResponse(400, f"{user} is already admin")
+                return HTTPResponse(f"{user} is already admin", 400)
             configs.users.append(user)
             configs.save()
             return HTTPResponse("Added", 200)
         if admin:
             if admin in configs.admins:
-                return HTTPResponse(400, f"{admin} is already admin")
+                return HTTPResponse(f"{admin} is already admin", 400)
             if admin in configs.users:
                 configs.users.remove(admin)
             configs.admins.append(admin)
