@@ -40,7 +40,7 @@ Go to the domain that ZeroCI has been deployed on, you will be asked for login f
 
 ![vcs](../docs/Images/vcs.png)
 
-- **Domain**:  The domain that will point to your server, this will be used to add webhooks on the repositories (will be added later) and send the result link with it.
+- **Domain**:  The domain that will point to your server, this will be used to add webhooks on the repositories (will be added in [Repositories](#2--repositories) step) and send the result link with it.
 - **Version Control System Host**: The domain or ip that the version control system is running on.
 (**Note:** [Github](https://github.com) and [Gitea](https://gitea.io/en-us/) are only supported)
 - **Version Control System**: Version control system access token for user, [create one](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) and make sure that this token his full permission on hooks and status as the following:
