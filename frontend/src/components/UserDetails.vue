@@ -22,20 +22,40 @@
 
     <!--begin: Navigation -->
     <div class="kt-notification">
-      <a href="#" class="kt-notification__item" v-if="$store.state.permission == 'admin'">
+      <router-link
+        to="/initial_config"
+        class="kt-notification__item"
+        v-if="$store.state.permission == 'admin'"
+      >
         <div class="kt-notification__item-icon">
           <i class="flaticon2-calendar-3 kt-font-success"></i>
         </div>
         <div class="kt-notification__item-details">
           <div class="kt-notification__item-title kt-font-bold">
-            <router-link to="/initial_config" class="kt-menu__link">Configuration</router-link>
+            <div class="kt-menu__link">Configuration</div>
           </div>
-          <!-- <div class="kt-notification__item-time">Account settings and more</div> -->
+          <div class="kt-notification__item-time">Account settings and more</div>
         </div>
-      </a>
+      </router-link>
+
+      <router-link
+        to="/users"
+        class="kt-notification__item"
+        v-if="$store.state.permission == 'admin'"
+      >
+        <div class="kt-notification__item-icon">
+          <i class="flaticon-users-1 kt-font-warning"></i>
+        </div>
+        <div class="kt-notification__item-details">
+          <div class="kt-notification__item-title kt-font-bold">
+            <div class="kt-menu__link">Users</div>
+          </div>
+          <div class="kt-notification__item-time">Users Management</div>
+        </div>
+      </router-link>
 
       <div class="kt-notification__custom">
-        <a @click="logout()" class="btn btn-label-brand btn-sm btn-bold">LogOut</a>
+        <a @click="logout()" class="btn btn-label-brand btn-sm btn-bold">Logout</a>
       </div>
     </div>
 

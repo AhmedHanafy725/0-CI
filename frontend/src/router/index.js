@@ -8,7 +8,8 @@ import BranchDetails from "@/views/BranchDetails";
 import Details from "@/views/Details";
 import Schedules from "@/views/Schedules";
 import SchedulesDetails from "@/views/SchedulesDetails";
-import InitialConfig from '@/views/InitialConfig'
+import InitialConfig from '@/views/InitialConfig';
+import Users from '@/views/Users';
 
 Vue.use(Router)
 
@@ -59,6 +60,18 @@ const router = new Router({
                     name: 'ScheduleDetails',
                     component: SchedulesDetails,
                     props: true
+                },
+                {
+                    path: '/users',
+                    name: 'Users',
+                    component: Users,
+                    beforeEnter(to, from, next) {
+                        if (store.state.permission == 'admin') {
+                            next()
+                        } else {
+                            next('/')
+                        }
+                    }
                 }
             ]
         }
