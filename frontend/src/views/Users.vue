@@ -14,36 +14,56 @@
               >New User</a>
             </template>
             <v-card>
-              <v-card-title>
-                <span class="headline">{{ formTitle }}</span>
-              </v-card-title>
+              <form @submit.prevent="save">
+                <v-card-title>
+                  <span class="headline">{{ formTitle }}</span>
+                </v-card-title>
 
-              <v-card-text>
-                <v-container>
-                  <v-row>
-                    <v-col cols="12" sm="6">
-                      <v-text-field
-                        v-model="editedUser.name"
-                        label="Username"
-                        placeholder="user.3bot"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" sm="6">
-                      <v-text-field
-                        v-model="editedUser.role"
-                        label="Role"
-                        placeholder="admin / user"
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
-                </v-container>
-              </v-card-text>
+                <v-card-text>
+                  <v-container>
+                    <v-row>
+                      <v-col
+                        cols="12"
+                        sm="6"
+                        :class="{ 'form-group--error': $v.editedUser.name.$error }"
+                      >
+                        <v-text-field
+                          v-model.trim="$v.editedUser.name.$model"
+                          label="Username"
+                          placeholder="user.3bot"
+                          required
+                        ></v-text-field>
+                        <p
+                          class="error--text mb-2"
+                          v-if="!$v.editedUser.name.included"
+                        >Username must ends with .3bot</p>
+                      </v-col>
+                      <v-col
+                        cols="12"
+                        sm="6"
+                        :class="{ 'form-group--error': $v.editedUser.role.$error }"
+                      >
+                        <v-text-field
+                          v-model.trim="$v.editedUser.role.$model"
+                          label="Role"
+                          placeholder="admin / user"
+                          required
+                        ></v-text-field>
+                        <p
+                          class="error--text mb-2"
+                          v-if="!$v.editedUser.role.required"
+                        >Role id required!</p>
+                      </v-col>
+                    </v-row>
+                  </v-container>
+                </v-card-text>
 
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="close">Cancel</v-btn>
-                <v-btn color="blue darken-1" text @click="save">Save</v-btn>
-              </v-card-actions>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="blue darken-1" text @click="close">Cancel</v-btn>
+                  <v-btn type="submit" color="blue darken-1" text>Save</v-btn>
+                </v-card-actions>
+              </form>
             </v-card>
           </v-dialog>
         </v-toolbar>
@@ -77,6 +97,14 @@
 
 <script>
 import EventService from "../services/EventService";
+import { required } from "vuelidate/lib/validators";
+
+const mustInclude3bot = value => {
+  if (value.includes(".3bot")) {
+    return true;
+  }
+};
+
 export default {
   name: "Users",
   data: () => ({
@@ -101,6 +129,19 @@ export default {
     }
   }),
 
+  validations() {
+    return {
+      editedUser: {
+        name: {
+          included: value => [".3bot"].some(name => value.indexOf(name) !== -1),
+          required
+        },
+        role: {
+          required
+        }
+      }
+    };
+  },
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? "New User" : "Edit User";
