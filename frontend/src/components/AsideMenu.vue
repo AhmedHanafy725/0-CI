@@ -52,7 +52,12 @@
           <i class="kt-menu__section-icon flaticon-more-v2"></i>
         </li>
 
-        <Schedules-Sec v-for="schedule in schedules" :key="schedule.id" :schedule="schedule" />
+        <Schedules-Sec
+          v-for="(schedule, index) in schedules"
+          :key="schedule.id"
+          :schedule="schedule"
+          :index="index"
+        />
       </ul>
     </div>
   </div>

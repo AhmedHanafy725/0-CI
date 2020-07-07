@@ -25,8 +25,10 @@
         <li
           class="kt-menu__item"
           aria-haspopup="true"
-          v-for="existedBranch in existedBranches"
+          v-for="(existedBranch, index) in existedBranches"
           :key="existedBranch"
+          :class="{ 'kt-menu__item--active': activeIndex === index}"
+          @click="setActive(index)"
         >
           <router-link
             :to="branchLink +  existedBranch"
@@ -48,8 +50,10 @@
         <li
           class="kt-menu__item"
           aria-haspopup="true"
-          v-for="deletedBranch in deletedBranches"
+          v-for="(deletedBranch, index) in deletedBranches"
           :key="deletedBranch"
+          :class="{ 'kt-menu__item--active': activeIndex === index}"
+          @click="setActive(index)"
         >
           <router-link
             :to="branchLink +  deletedBranch"
@@ -75,7 +79,8 @@ export default {
   data() {
     return {
       existedBranches: "",
-      deletedBranches: ""
+      deletedBranches: "",
+      activeIndex: undefined
     };
   },
   computed: {
@@ -99,6 +104,9 @@ export default {
         .catch(error => {
           console.log("Error! Could not reach the API. " + error);
         });
+    },
+    setActive(index) {
+      this.activeIndex = index;
     }
   },
   created() {
