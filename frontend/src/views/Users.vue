@@ -32,27 +32,29 @@
                           label="Username"
                           placeholder="user.3bot"
                           required
+                          :disabled="disabled"
                         ></v-text-field>
                         <p
                           class="error--text mb-2"
                           v-if="!$v.editedUser.name.included"
                         >Username must ends with .3bot</p>
                       </v-col>
+
                       <v-col
                         cols="12"
                         sm="6"
                         :class="{ 'form-group--error': $v.editedUser.role.$error }"
                       >
-                        <v-text-field
+                        <v-select
+                          :items="roles"
                           v-model.trim="$v.editedUser.role.$model"
                           label="Role"
-                          placeholder="admin / user"
                           required
-                        ></v-text-field>
+                        ></v-select>
                         <p
                           class="error--text mb-2"
                           v-if="!$v.editedUser.role.required"
-                        >Role id required!</p>
+                        >Role is required!</p>
                       </v-col>
                     </v-row>
                   </v-container>
@@ -109,6 +111,7 @@ export default {
   name: "Users",
   data: () => ({
     dialog: false,
+    disabled: false,
     search: "",
     headers: [
       { text: "#", value: "id" },
@@ -117,6 +120,7 @@ export default {
       { text: "Actions", value: "actions", sortable: false }
     ],
     data: [],
+    roles: ["admin", "user"],
     editedIndex: -1,
     editedUser: {
       name: "",
@@ -183,6 +187,7 @@ export default {
       this.editedIndex = this.data.indexOf(item);
       this.editedUser = Object.assign({}, item);
       this.dialog = true;
+      this.disabled = true;
     },
 
     deleteUser(item) {
@@ -213,6 +218,7 @@ export default {
 
     close() {
       this.dialog = false;
+      this.disabled = false;
       this.$nextTick(() => {
         this.editedUser = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
@@ -242,6 +248,7 @@ export default {
           });
       }
       this.close();
+      this.disabled = false;
     }
   }
 };
