@@ -2,7 +2,6 @@ import json
 import os
 import traceback
 from datetime import datetime
-from shutil import rmtree
 from urllib.parse import urljoin
 
 import redis
@@ -183,6 +182,7 @@ class Actions(Validator):
             bin_local_path = self._prepare_bin_dirs(self.bin_name)
             bin_remote_path = os.path.join(self._BIN_DIR, self.bin_name)
             container.ssh_set_remote_file(remote_path=bin_remote_path, local_path=bin_local_path)
+            container.ssh_command(f"chmod +x {bin_remote_path}")
 
     def build_and_test(self, id, schedule_name=None, script=None):
         """Builds, runs tests, calculates status and gives report on telegram and your version control system.
