@@ -98,7 +98,7 @@ class Utils:
         with open(path, "r") as f:
             content = f.read()
         return content
-    
+
     def load_ssh_key(self):
         """Load sshkey if it is exist or genertate one if not.
         :return: public key

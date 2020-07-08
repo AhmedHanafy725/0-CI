@@ -150,7 +150,7 @@ class Actions(Validator):
         return clone_details
 
     def _prepare_bin_dirs(self, bin_remote_path):
-        bin_name = bin_remote_path.split(os.path.sep)[-1]
+        self.bin_name = bin_remote_path.split(os.path.sep)[-1]
         if isinstance(self.model_obj, TriggerModel):
             release = self.model_obj.commit[:7]
             local_path = os.path.join(self._BIN_DIR, self.model_obj.repo, self.model_obj.branch)
@@ -158,7 +158,7 @@ class Actions(Validator):
             release = str(datetime.fromtimestamp(self.model_obj.timestamp)).replace(" ", "_")[:16]
             local_path = os.path.join(self._BIN_DIR, self.model_obj.schedule_name)
 
-        bin_release = f"{bin_name}_{release}"
+        bin_release = f"{self.bin_name}_{release}"
         bin_local_path = os.path.join(local_path, bin_release)
         if not os.path.exists(local_path):
             os.makedirs(local_path)
@@ -180,9 +180,8 @@ class Actions(Validator):
 
     def _set_bin(self):
         if self.model_obj.bin_release:
-            bin = self.model_obj.bin_release.split("_")[0]
-            bin_local_path = self._prepare_bin_dirs(self.model_obj.bin_release)
-            bin_remote_path = os.path.join(self._BIN_DIR, bin)
+            bin_local_path = self._prepare_bin_dirs(self.bin_name)
+            bin_remote_path = os.path.join(self._BIN_DIR, self.bin_name)
             container.ssh_set_remote_file(remote_path=bin_remote_path, local_path=bin_local_path)
 
     def build_and_test(self, id, schedule_name=None, script=None):

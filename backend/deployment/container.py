@@ -202,7 +202,11 @@ class Container(Utils):
         helper_container = client.V1Container(
             name=self.helper_container_name,
             image="ahmedhanafy725/ubuntu",
-            command=["/bin/sh", "-ce", f"echo {ssh_key} > /root/.ssh/authorized_keys && service ssh start && sleep 3600"],
+            command=[
+                "/bin/sh",
+                "-ce",
+                f"echo {ssh_key} > /root/.ssh/authorized_keys && service ssh start && sleep 3600",
+            ],
             env=[client.V1EnvVar(name="DEBIAN_FRONTEND", value="noninteractive")],
             ports=[ports],
             volume_mounts=vol_mounts,
