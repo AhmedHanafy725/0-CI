@@ -98,3 +98,20 @@ class Utils:
         with open(path, "r") as f:
             content = f.read()
         return content
+    
+    def load_ssh_key(self):
+        """Load sshkey if it is exist or genertate one if not.
+        :return: public key
+        :return type: str
+        """
+        home_user = os.path.expanduser("~")
+        if os.path.exists("{}/.ssh/id_rsa.pub".format(home_user)):
+            with open("{}/.ssh/id_rsa.pub".format(home_user), "r") as file:
+                ssh = file.readline().replace("\n", "")
+        else:
+            cmd = 'ssh-keygen -t rsa -N "" -f {}/.ssh/id_rsa -q -P ""; ssh-add {}/.ssh/id_rsa'.format(
+                home_user, home_user
+            )
+            self.execute_cmd(cmd)
+            ssh = self.load_ssh_key()
+        return ssh

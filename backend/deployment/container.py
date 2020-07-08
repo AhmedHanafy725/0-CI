@@ -170,12 +170,12 @@ class Container(Utils):
         # zeroci vol
         bin_mount_path = "/zeroci/bin"
         bin_vol_name = "bin-path"
-        bin_vol = client.V1Volume(name=bin_vol_name, empty_dir="{}")
+        bin_vol = client.V1Volume(name=bin_vol_name, empty_dir={})
         bin_vol_mount = client.V1VolumeMount(mount_path=bin_mount_path, name=bin_vol_name)
         # repo vol
         repo_mount_path = repo_path
         repo_vol_name = "repo-path"
-        repo_vol = client.V1Volume(name=repo_vol_name, empty_dir="{}")
+        repo_vol = client.V1Volume(name=repo_vol_name, empty_dir={})
         repo_vol_mount = client.V1VolumeMount(mount_path=repo_mount_path, name=repo_vol_name)
 
         vol_mounts = [bin_vol_mount, repo_vol_mount]
@@ -198,11 +198,12 @@ class Container(Utils):
             volume_mounts=vol_mounts,
             resources=resources,
         )
+        ssh_key = self.load_ssh_key()
         helper_container = client.V1Container(
             name=self.helper_container_name,
             image="ahmedhanafy725/ubuntu",
-            command=["/bin/sh", "-ce", "service ssh start && sleep 3600"],
-            env=client.V1EnvVar(name="DEBIAN_FRONTEND", value="noninteractive"),
+            command=["/bin/sh", "-ce", f"echo {ssh_key} > /root/.ssh/authorized_keys && service ssh start && sleep 3600"],
+            env=[client.V1EnvVar(name="DEBIAN_FRONTEND", value="noninteractive")],
             ports=[ports],
             volume_mounts=vol_mounts,
             resources=resources,
