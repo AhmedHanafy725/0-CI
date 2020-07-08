@@ -1,5 +1,5 @@
 set -ex
-mkdir /var/zeroci
+mkdir /zeroci/xml
 mkdir -p /root/.config/jumpscale/
 cd /sandbox/code/github/threefoldtech/zeroCI/install/config
 cp cron /var/spool/cron/crontabs/root

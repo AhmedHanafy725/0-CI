@@ -12,6 +12,8 @@ from models.initial_config import InitialConfig
 from models.trigger_run import TriggerRun
 from packages.vcs.vcs import VCSFactory
 
+BIN_DIR = "/zeroci/bin/"
+
 redis = Redis()
 actions = Actions()
 q = Queue(connection=redis)
@@ -41,7 +43,7 @@ def trigger(repo="", branch="", commit="", committer="", id=None, triggered=True
         trigger_run.result = []
         trigger_run.triggered_by = triggered_by
         if trigger_run.bin_release:
-            bin_path = os.path.join("/sandbox/var/bin/", trigger_run.repo, trigger_run.branch, trigger_run.bin_release)
+            bin_path = os.path.join(BIN_DIR, trigger_run.repo, trigger_run.branch, trigger_run.bin_release)
             if os.path.exists(bin_path):
                 os.remove(bin_path)
         trigger_run.bin_release = None

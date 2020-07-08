@@ -16,7 +16,7 @@ jobs:
           nosetests --help
       - name: Smiple Tests With Nosetest
         cmd: |
-          cd /opt/code/vcs_repos/AhmedHanafy725/test_zeroci
+          cd /zeroci/code/vcs_repos/AhmedHanafy725/test_zeroci
           nosetests -v testcase.py --with-xunit --xunit-file=/test.xml --xunit-testsuite-name=Simple_nosetest
 
     bin_path: /usr/local/bin/nosetests
@@ -33,5 +33,5 @@ jobs:
     script:
       - name: Test nosetests Bin
         cmd: |
-          cd /opt/code/vcs_repos/AhmedHanafy725/test_zeroci
-          /opt/bin/nosetests -v testcase.py --with-xunit --xunit-file=/test.xml --xunit-testsuite-name=Simple_nosetest
+          cd /zeroci/code/vcs_repos/AhmedHanafy725/test_zeroci
+          /zeroci/bin/nosetests -v testcase.py --with-xunit --xunit-file=/test.xml --xunit-testsuite-name=Simple_nosetest

@@ -26,15 +26,13 @@ There are 2 main steps to hook the RUT and make it run against ZeroCI (Github wi
     - `shell_bin`: shell bin path to be used to run commands on container. (default: `/bin/sh`)
   - `install`: list of bash commands required to install the project.
   - `script`: list of bash commands needed to run the tests ([more details](#zeroci-script-configuration)).
-  - `bin_path`: In case that the installation script or test script will generate a binary and need this binary to be in zeroci dashboard. This field can be in the first job only and if it is found in the second job, it will be ignored. Also the bin generated in first job will be found in the rest jobs in `/opt/bin`.
+  - `bin_path`: In case that the installation script or test script will generate a binary and need this binary to be in zeroci dashboard. This field can be in the first job only and if it is found in the second job, it will be ignored. Also the bin generated in first job will be found in the rest jobs in `/zeroci/bin`.
 
-  (**Note:** RUT location will be in `/opt/code/vcs_repos/<organization's name>/<repository's name>`)
+  (**Note:** RUT location will be in `/zeroci/code/vcs_repos/<organization's name>/<repository's name>`)
 
 **Example**
 
 See simple [example](./docs/config/zeroCI.yaml)
-
-
 
 ### 2- Update ZeroCI configuration
 
