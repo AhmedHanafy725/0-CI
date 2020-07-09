@@ -8,16 +8,16 @@ import redis
 import requests
 import yaml
 
+from actions.yaml_validation import Validator
 from deployment.container import Container
 from kubernetes.client import V1EnvVar
 from models.initial_config import InitialConfig
 from models.run_config import RunConfig
 from models.scheduler_run import SchedulerRun
-from models.trigger_run import TriggerRun, TriggerModel
+from models.trigger_run import TriggerModel, TriggerRun
 from packages.vcs.vcs import VCSFactory
 from utils.reporter import Reporter
-from utils.utils import Utils
-from actions.yaml_validation import Validator
+from utils.utils import Utils, ansi_escape
 
 container = Container()
 reporter = Reporter()
@@ -94,6 +94,7 @@ class Actions(Validator):
             self.model_obj.result.append({"type": LOG_TYPE, "status": status, "name": name, "content": result})
         self.model_obj.save()
         neph_jobs_names = response.stdout.split()
+        ansi_escape.sub("", neph_jobs_names)
         for neph_job_name in neph_jobs_names:
             status = SUCCESS
             cmd = f"cat {working_dir}/.neph/{neph_job_name}/log/log.out"
