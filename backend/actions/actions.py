@@ -31,6 +31,7 @@ LOG_TYPE = "log"
 TESTSUITE_TYPE = "testsuite"
 NEPH_TYPE = "neph"
 
+
 class Actions(Validator):
     _REPOS_DIR = "/zeroci/code/vcs_repos"
     _BIN_DIR = "/zeroci/bin/"
@@ -100,7 +101,7 @@ class Actions(Validator):
             out = container.execute_command(cmd=cmd, id="", verbose=False)
             cmd = f"cat {working_dir}/.neph/{neph_job_name}/log/log.err"
             err = container.execute_command(cmd=cmd, id="", verbose=False)
-            result = f"stdout:\n {out.stdout} \nstderr:\n {err.stdout}"
+            result = f"stdout:\n {out.stdout} \n\nstderr:\n {err.stdout}"
             if err.stdout:
                 status = FAILURE
             name = f"{job_name}: {line['name']}: {neph_job_name}"
