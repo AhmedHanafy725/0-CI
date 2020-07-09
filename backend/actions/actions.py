@@ -17,7 +17,7 @@ from models.scheduler_run import SchedulerRun
 from models.trigger_run import TriggerModel, TriggerRun
 from packages.vcs.vcs import VCSFactory
 from utils.reporter import Reporter
-from utils.utils import Utils, ansi_escape
+from utils.utils import Utils
 
 container = Container()
 reporter = Reporter()
@@ -86,7 +86,7 @@ class Actions(Validator):
         if response.returncode in [137, 124]:
             return False
 
-        cmd = f"ls {working_dir}/.neph"
+        cmd = f"ls --color=never {working_dir}/.neph"
         response = container.execute_command(cmd=cmd, id="", verbose=False)
         if response.returncode:
             result = "No logs found for neph"
@@ -94,7 +94,6 @@ class Actions(Validator):
             self.model_obj.result.append({"type": LOG_TYPE, "status": status, "name": name, "content": result})
         self.model_obj.save()
         neph_jobs_names = response.stdout.split()
-        ansi_escape.sub("", neph_jobs_names)
         for neph_job_name in neph_jobs_names:
             status = SUCCESS
             cmd = f"cat {working_dir}/.neph/{neph_job_name}/log/log.out"
