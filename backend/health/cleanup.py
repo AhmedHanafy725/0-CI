@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append("/sandbox/code/github/threefoldtech/zeroCI/backend")
 
 from datetime import datetime
@@ -14,6 +15,7 @@ from models.trigger_run import TriggerRun
 REDIS_PATH = "/var/lib/redis"
 WHOOSH_PATH = "/root/.config/jumpscale/whoosh_indexes/"
 
+
 def remove(factory, days=30):
     r = Redis()
     names = factory.list_all()
@@ -25,6 +27,7 @@ def remove(factory, days=30):
         if time_diff.days > days:
             factory.delete(name)
             r.delete(obj.id)
+
 
 def get_size_in_giga_bytes(path):
     root = Path(path)

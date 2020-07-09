@@ -56,6 +56,7 @@ Go to the domain that ZeroCI has been deployed on, you will be asked for login f
 - **Organization** : An organization on Version Control System that has been added in the pervious step to search and get the public repositories on this organization.
 
 (**Note:**`username` and/or `organization` can be added.)
+
 - **Select Repos**: Once the username and/or organization is added, the dropdown list will be available to select the repositories that ZeroCI will run on.
 
 ### 3- Telegram

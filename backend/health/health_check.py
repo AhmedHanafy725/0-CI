@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append("/sandbox/code/github/threefoldtech/zeroCI/backend")
 
 from redis import Redis

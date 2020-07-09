@@ -20,6 +20,7 @@ def login_required(func):
 
 def check_configs(func):
     configs = InitialConfig()
+
     def wrapper(*args, **kwargs):
         if not configs.configured:
             return redirect("/initial_config")

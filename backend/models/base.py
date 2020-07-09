@@ -26,7 +26,7 @@ class ModelFactory:
     @classmethod
     def list_all(cls):
         return cls._model.list_all()
-    
+
     @classmethod
     def delete(cls, name):
         cls._model.delete(name)

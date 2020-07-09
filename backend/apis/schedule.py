@@ -57,7 +57,6 @@ def schedule():
             if job["schedule_name"] in ScheduleInfo.list_all():
                 return HTTPResponse(f"Schedule name {job['schedule_name']} is already used", 400)
 
-
             schedule_info = ScheduleInfo(**job)
             schedule_info.save()
             try:
@@ -99,7 +98,6 @@ def schedule_trigger():
             )
         if schedule_name not in ScheduleInfo.list_all():
             return HTTPResponse(f"Schedule name {schedule_name} is not found", 400)
-
 
         schedule_info = ScheduleInfo.get_by_name(name=schedule_name)
         job = {

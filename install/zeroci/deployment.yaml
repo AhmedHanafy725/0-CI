@@ -12,15 +12,15 @@ spec:
         app: zeroci
     spec:
       volumes:
-      - name: shared-path
+      - name: bin-path
         hostPath:
-          path: /sandbox/var
+          path: /zeroci/bin
       - name: redis
         hostPath:
-          path: /sandbox/redis
+          path: /zeroci/redis
       - name: presistent-data
         hostPath:
-          path: /sandbox/data
+          path: /zeroci/data
       hostname: zeroci
       containers:
       - name: zeroci
@@ -32,8 +32,8 @@ spec:
         - containerPort: 80
         - containerPort: 443
         volumeMounts:
-          - name: shared-path
-            mountPath: /sandbox/var
+          - name: bin-path
+            mountPath: /zeroci/bin
           - name: redis
             mountPath: /var/lib/redis
           - name: presistent-data

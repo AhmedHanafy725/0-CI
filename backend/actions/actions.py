@@ -2,7 +2,6 @@ import json
 import os
 import traceback
 from datetime import datetime
-from shutil import rmtree, copyfile
 from urllib.parse import urljoin
 
 import redis
@@ -10,7 +9,6 @@ import requests
 import yaml
 
 from deployment.container import Container
-from git import Repo
 from kubernetes.client import V1EnvVar
 from models.initial_config import InitialConfig
 from models.run_config import RunConfig
@@ -28,7 +26,8 @@ r = redis.Redis()
 
 
 class Actions(Validator):
-    _REPOS_DIR = "/opt/code/vcs_repos"
+    _REPOS_DIR = "/zeroci/code/vcs_repos"
+    _BIN_DIR = "/zeroci/bin/"
     run_id = None
     model_obj = None
 
@@ -58,27 +57,33 @@ class Actions(Validator):
                 return False
         return True
 
-    def build(self, job, repo_paths, job_number):
+    def build(self, job, clone_details, job_number):
         """Create VM with the required prerequisties and run installation steps to get it ready for running tests.
         """
         env = self._get_run_env()
-        deployed = container.deploy(env=env, prerequisites=job["prerequisites"], repo_paths=repo_paths)
+        deployed = container.deploy(env=env, prerequisites=job["prerequisites"], repo_path=clone_details["remote_path"])
         installed = False
         if deployed:
             if job_number != 0:
                 self._set_bin()
-            response = container.execute_command(cmd=job["install"], id=self.run_id)
+            response = container.ssh_command(cmd=clone_details["cmd"])
             if response.returncode:
-                name = "{job_name}: Installation".format(job_name=job["name"])
+                name = "{job_name}: Clone Repository".format(job_name=job["name"])
                 result = response.stdout
+                r.rpush(self.run_id, result)
             else:
-                installed = True
+                response = container.execute_command(cmd=job["install"], id=self.run_id)
+                if response.returncode:
+                    name = "{job_name}: Installation".format(job_name=job["name"])
+                    result = response.stdout
+                else:
+                    installed = True
         else:
             name = "{job_name}: Deploy".format(job_name=job["name"])
             result = "Couldn't deploy a container"
             r.rpush(self.run_id, result)
 
-        if not deployed or not installed:
+        if not installed:
             self.model_obj.result.append({"type": "log", "status": "error", "name": name, "content": result})
             self.model_obj.save()
 
@@ -125,71 +130,59 @@ class Actions(Validator):
         self.model_obj.save()
         return False
 
-    def clone_repo(self):
+    def repo_clone_details(self):
         """Clone repo.
         """
         configs = InitialConfig()
         repo_remote_path = os.path.join(self._REPOS_DIR, self.model_obj.repo)
-        repo_local_path = f"/sandbox/var/repos/{self.run_id}"
-        if not os.path.exists(repo_local_path):
-            os.makedirs(repo_local_path)
-
         clone_url = urljoin(configs.vcs_host, f"{self.model_obj.repo}.git")
-        repo = Repo.clone_from(url=clone_url, to_path=repo_local_path, branch=self.model_obj.branch)
-        repo.head.reset(self.model_obj.commit)
-        repo.head.reset("--hard")
-        repo_paths = {"local": repo_local_path, "remote": repo_remote_path}
-        return repo_paths
-
-    def _delete_code(self):
-        repo_local_path = f"/sandbox/var/repos/{self.run_id}"
-        rmtree(repo_local_path)
-
-        if self.model_obj.bin_release:
-            temp_path = "/sandbox/var/zeroci/bin"
-            temp_bin_path = os.path.join(temp_path, self.model_obj.bin_release)
-            os.remove(temp_bin_path)
+        cmd = """git clone {clone_url} {repo_remote_path} --branch {branch}
+        cd {repo_remote_path}
+        git reset --hard {commit}
+        """.format(
+            clone_url=clone_url,
+            repo_remote_path=repo_remote_path,
+            branch=self.model_obj.branch,
+            commit=self.model_obj.commit,
+        )
+        clone_details = {"cmd": cmd, "remote_path": repo_remote_path}
+        return clone_details
 
     def _prepare_bin_dirs(self, bin_remote_path):
-        bin_name = bin_remote_path.split(os.path.sep)[-1]
+        self.bin_name = bin_remote_path.split(os.path.sep)[-1]
         if isinstance(self.model_obj, TriggerModel):
             release = self.model_obj.commit[:7]
-            local_path = os.path.join("/sandbox/var/bin/", self.model_obj.repo, self.model_obj.branch)
+            local_path = os.path.join(self._BIN_DIR, self.model_obj.repo, self.model_obj.branch)
         else:
             release = str(datetime.fromtimestamp(self.model_obj.timestamp)).replace(" ", "_")[:16]
-            local_path = os.path.join("/sandbox/var/bin/", self.model_obj.schedule_name)
+            local_path = os.path.join(self._BIN_DIR, self.model_obj.schedule_name)
 
-        bin_release = f"{bin_name}_{release}"
+        bin_release = f"{self.bin_name}_{release}"
         bin_local_path = os.path.join(local_path, bin_release)
         if not os.path.exists(local_path):
             os.makedirs(local_path)
 
-        temp_path = "/sandbox/var/zeroci/bin"
-        temp_bin_path = os.path.join(temp_path, bin_release)
-        if not os.path.exists(temp_path):
-            os.makedirs(temp_path)
-
-        return bin_local_path, temp_bin_path
+        return bin_local_path
 
     def _get_bin(self, bin_remote_path, job_number):
         if bin_remote_path and job_number == 0:
-            bin_local_path, temp_bin_path = self._prepare_bin_dirs(bin_remote_path)
+            bin_local_path = self._prepare_bin_dirs(bin_remote_path)
             bin_release = bin_local_path.split(os.path.sep)[-1]
-            cmd = f"cp {bin_remote_path} /zeroci/bin/{bin_release}"
+            bin_tmp_path = os.path.join(self._BIN_DIR, bin_release)
+            cmd = f"cp {bin_remote_path} {bin_tmp_path}"
             container.execute_command(cmd=cmd, id="", verbose=False)
-            if not os.path.exists(temp_bin_path):
-                return
+            container.ssh_get_remote_file(remote_path=bin_tmp_path, local_path=bin_local_path)
 
-            copyfile(temp_bin_path, bin_local_path)
             if os.path.exists(bin_local_path):
                 self.model_obj.bin_release = bin_release
                 self.model_obj.save()
 
     def _set_bin(self):
         if self.model_obj.bin_release:
-            bin = self.model_obj.bin_release.split("_")[0]
-            cmd = f"mkdir /opt/bin/; cp /zeroci/bin/{self.model_obj.bin_release} /opt/bin/{bin}"
-            container.execute_command(cmd=cmd, id="", verbose=False)
+            bin_local_path = self._prepare_bin_dirs(self.bin_name)
+            bin_remote_path = os.path.join(self._BIN_DIR, self.bin_name)
+            container.ssh_set_remote_file(remote_path=bin_remote_path, local_path=bin_local_path)
+            container.ssh_command(f"chmod +x {bin_remote_path}")
 
     def build_and_test(self, id, schedule_name=None, script=None):
         """Builds, runs tests, calculates status and gives report on telegram and your version control system.
@@ -208,7 +201,7 @@ class Actions(Validator):
         if script:
             valid = self.validate_yaml(run_id=self.run_id, model_obj=self.model_obj, script=script)
             if valid:
-                repo_paths = self.clone_repo()
+                clone_details = self.repo_clone_details()
                 worked = deployed = installed = True
                 for i, job in enumerate(script["jobs"]):
                     if not (worked and deployed and installed):
@@ -223,13 +216,12 @@ class Actions(Validator):
                         "  ", ""
                     )
                     r.rpush(self.run_id, log)
-                    deployed, installed = self.build(job=job, repo_paths=repo_paths, job_number=i)
+                    deployed, installed = self.build(job=job, clone_details=clone_details, job_number=i)
                     if deployed:
                         if installed:
                             worked = self.test_run(job=job)
                             self._get_bin(bin_remote_path=job.get("bin_path"), job_number=i)
                         container.delete()
-                self._delete_code()
         r.rpush(self.run_id, "hamada ok")
         self.cal_status()
         reporter.report(run_id=self.run_id, model_obj=self.model_obj, schedule_name=schedule_name)
