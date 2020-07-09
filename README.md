@@ -30,10 +30,6 @@ There are 2 main steps to hook the RUT and make it run against ZeroCI (Github wi
 
   (**Note:** RUT location will be in `/zeroci/code/vcs_repos/<organization's name>/<repository's name>`)
 
-**Example**
-
-See simple [example](./docs/config/zeroCI.yaml)
-
 ### 2- Update ZeroCI configuration
 
 - Go to [ZeroCI configuration](/docs/installation.md#configuration).
@@ -98,30 +94,52 @@ This part is important for getting result in this [view](#result-details)
 
 ### Nosetests
 
-`--with-xunit`: to enable the plugin to generate xunit test summary into xml file.
-`--xunit-file`: specify the output file name, in this case MUST be `/test.xml`.  
-`--xunit-testsuite-name`: name of testsuite that will appear in the result.
-
-**Example**
-
-```bash
-nosetests-3.4 -v testcase.py --with-xunit --xunit-file=/test.xml --xunit-testsuite-name=Simple_nosetest
-```
-
 For more details about the plugin [Xunit](https://nose.readthedocs.io/en/latest/plugins/xunit.html)
+
+- `name`: A name for the commands.
+- `cmd`: The commands for running tests.
+  `--with-xunit`: to enable the plugin to generate xunit test summary into xml file.
+  `--xunit-file`: specify the output file name, in this case MUST be `/test.xml`.  
+  `--xunit-testsuite-name`: name of testsuite that will appear in the result.
+
+  **Example**
+
+  ```bash
+  nosetests-3.4 -v testcase.py --with-xunit --xunit-file=/test.xml --xunit-testsuite-name=Simple_nosetest
+  ```
+
+  See [full example](./docs/config/nosetests.yaml)
 
 ### Pytest
 
-`--junitxml`: to enable the plugin and specify the output file name, in this case MUST be `/test.xml`.
-`-o junit_suite_name`: name of testsuite that will appear in the result.
-
-**Example**
-
-```bash
-pytest -v testcase.py --junitxml=/test.xml -o junit_suite_name=Simple_pytest
-```
-
 For more details about the plugin [junitxml](https://docs.pytest.org/en/latest/usage.html#creating-junitxml-format-files)
+
+- `name`: A name for the commands.
+- `cmd`: The commands for running tests.
+  `--junitxml`: to enable the plugin and specify the output file name, in this case MUST be `/test.xml`.
+  `-o junit_suite_name`: name of testsuite that will appear in the result.
+
+  **Example**
+
+  ```bash
+  pytest -v testcase.py --junitxml=/test.xml -o junit_suite_name=Simple_pytest
+  ```
+
+### Neph
+
+For more details, please see [neph](https://github.com/tbrand/neph)
+
+- `name`: A name for the job.
+- `type`: `neph`
+- `working_dir`: Absolute path of working directoty.
+- `yaml_path`: Absoltue path of yaml file that containing the jobs.
+
+See [full example](./docs/config/neph.yaml)
+
+### Normal Logs
+
+- `name`: A name for the commands.
+- `cmd`: The commands for running tests.
 
 ## Actions
 
