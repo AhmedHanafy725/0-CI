@@ -205,7 +205,8 @@ class Container(Utils):
             command=[
                 "/bin/sh",
                 "-ce",
-                f"echo {ssh_key} > /root/.ssh/authorized_keys && service ssh start && sleep 3600",
+                f"echo {ssh_key} > /root/.ssh/authorized_keys && cp /usr/local/bin/* /zeroci/bin/ \
+                && service ssh start && sleep 3600",
             ],
             env=[client.V1EnvVar(name="DEBIAN_FRONTEND", value="noninteractive")],
             ports=[ports],
