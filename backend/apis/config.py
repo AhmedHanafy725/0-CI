@@ -214,6 +214,7 @@ def run_config(name):
         return env
     return abort(404)
 
+
 @app.route("/api/vcs_host", method=["GET"])
 def vcs_host():
     configs = InitialConfig()

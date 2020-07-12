@@ -108,6 +108,9 @@ class Actions(Validator):
             name = f"{job_name}: {line['name']}: {neph_job_name}"
             self.model_obj.result.append({"type": LOG_TYPE, "status": status, "name": name, "content": result})
             self.model_obj.save()
+
+        cmd = f"rm -r {working_dir}/.neph"
+        container.execute_command(cmd=cmd, id="", verbose=False)
         return True
 
     def build(self, job, clone_details, job_number):
