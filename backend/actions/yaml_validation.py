@@ -2,6 +2,8 @@ import requests
 from redis import Redis
 
 redis = Redis()
+ERROR = "error"
+LOG_TYPE = "log"
 
 
 class Validator:
@@ -25,7 +27,19 @@ class Validator:
                                 msg = "Every name in script should be str"
                         cmd = item.get("cmd")
                         if not cmd:
-                            msg = "Every element in script should conttain a cmd"
+                            type = item.get("type")
+                            if not type:
+                                msg = "Every element in script should conttain a cmd or type"
+                            else:
+                                if type == "neph":
+                                    working_dir = item.get("working_dir")
+                                    if not working_dir:
+                                        msg = "working_dir should be added for neph type"
+                                    yaml_path = item.get("yaml_path")
+                                    if not yaml_path:
+                                        msg = "yaml_path should be added for neph type"
+                                else:
+                                    msg = f"{type} is not supported"
                         else:
                             if not isinstance(cmd, str):
                                 msg = "Every cmd in script should be str"
@@ -89,8 +103,9 @@ class Validator:
         return msg
 
     def _report(self, run_id, model_obj, msg):
+        msg = f"{msg} (see examples: https://github.com/threefoldtech/zeroCI/tree/development/docs/config)"
         redis.rpush(run_id, msg)
-        model_obj.result.append({"type": "log", "status": "error", "name": "Yaml File", "content": msg})
+        model_obj.result.append({"type": LOG_TYPE, "status": ERROR, "name": "Yaml File", "content": msg})
         model_obj.save()
 
     def _validate_job(self, job):

@@ -8,21 +8,29 @@ import redis
 import requests
 import yaml
 
+from actions.yaml_validation import Validator
 from deployment.container import Container
 from kubernetes.client import V1EnvVar
 from models.initial_config import InitialConfig
 from models.run_config import RunConfig
 from models.scheduler_run import SchedulerRun
-from models.trigger_run import TriggerRun, TriggerModel
+from models.trigger_run import TriggerModel, TriggerRun
 from packages.vcs.vcs import VCSFactory
 from utils.reporter import Reporter
 from utils.utils import Utils
-from actions.yaml_validation import Validator
 
 container = Container()
 reporter = Reporter()
 utils = Utils()
 r = redis.Redis()
+
+SUCCESS = "success"
+FAILURE = "failure"
+ERROR = "error"
+PENDING = "pending"
+LOG_TYPE = "log"
+TESTSUITE_TYPE = "testsuite"
+NEPH_TYPE = "neph"
 
 
 class Actions(Validator):
@@ -34,27 +42,72 @@ class Actions(Validator):
     def test_run(self, job):
         """Runs tests and store the result in DB.
         """
-        status = "success"
         for line in job["script"]:
-            status = "success"
-            response, file_path = container.run_test(id=self.run_id, run_cmd=line["cmd"])
-            result = response.stdout
-            type = "log"
-            if response.returncode:
-                status = "failure"
-            if file_path:
-                try:
-                    result = utils.xml_parse(path=file_path, line=line["cmd"])
-                    type = "testsuite"
-                except:
-                    pass
-                os.remove(file_path)
-
-            name = "{job_name}: {test_name}".format(job_name=job["name"], test_name=line["name"])
-            self.model_obj.result.append({"type": type, "status": status, "name": name, "content": result})
-            self.model_obj.save()
-            if response.returncode in [137, 124]:
+            if line.get("type") == "neph":
+                finished = self.neph_run(job_name=job["name"], line=line)
+            else:
+                finished = self.normal_run(job_name=job["name"], line=line)
+            if not finished:
                 return False
+        return True
+
+    def normal_run(self, job_name, line):
+        status = SUCCESS
+        response, file_path = container.run_test(id=self.run_id, run_cmd=line["cmd"])
+        result = response.stdout
+        type = LOG_TYPE
+        if response.returncode:
+            status = FAILURE
+        if file_path:
+            try:
+                result = utils.xml_parse(path=file_path, line=line["cmd"])
+                type = TESTSUITE_TYPE
+            except:
+                pass
+            os.remove(file_path)
+
+        name = "{job_name}: {test_name}".format(job_name=job_name, test_name=line["name"])
+        self.model_obj.result.append({"type": type, "status": status, "name": name, "content": result})
+        self.model_obj.save()
+        if response.returncode in [137, 124]:
+            return False
+        return True
+
+    def neph_run(self, job_name, line):
+        status = SUCCESS
+        working_dir = line["working_dir"]
+        yaml_path = line["yaml_path"]
+        cmd = f"cd {working_dir} \n /zeroci/bin/neph -y {yaml_path} -m CI"
+        response = container.execute_command(cmd=cmd, id=self.run_id)
+        if response.returncode:
+            status = FAILURE
+
+        name = "{job_name}: {test_name}".format(job_name=job_name, test_name=line["name"])
+        self.model_obj.result.append({"type": LOG_TYPE, "status": status, "name": name, "content": response.stdout})
+        self.model_obj.save()
+        if response.returncode in [137, 124]:
+            return False
+
+        cmd = f"ls --color=never {working_dir}/.neph"
+        response = container.execute_command(cmd=cmd, id="", verbose=False)
+        if response.returncode:
+            result = "No logs found for neph"
+            name = f"{name}: logs"
+            self.model_obj.result.append({"type": LOG_TYPE, "status": status, "name": name, "content": result})
+        self.model_obj.save()
+        neph_jobs_names = response.stdout.split()
+        for neph_job_name in neph_jobs_names:
+            status = SUCCESS
+            cmd = f"cat {working_dir}/.neph/{neph_job_name}/log/log.out"
+            out = container.execute_command(cmd=cmd, id="", verbose=False)
+            cmd = f"cat {working_dir}/.neph/{neph_job_name}/log/log.err"
+            err = container.execute_command(cmd=cmd, id="", verbose=False)
+            result = f"stdout:\n {out.stdout} \n\nstderr:\n {err.stdout}"
+            if err.stdout:
+                status = FAILURE
+            name = f"{job_name}: {line['name']}: {neph_job_name}"
+            self.model_obj.result.append({"type": LOG_TYPE, "status": status, "name": name, "content": result})
+            self.model_obj.save()
         return True
 
     def build(self, job, clone_details, job_number):
@@ -84,7 +137,7 @@ class Actions(Validator):
             r.rpush(self.run_id, result)
 
         if not installed:
-            self.model_obj.result.append({"type": "log", "status": "error", "name": name, "content": result})
+            self.model_obj.result.append({"type": LOG_TYPE, "status": ERROR, "name": name, "content": result})
             self.model_obj.save()
 
         return deployed, installed
@@ -92,9 +145,9 @@ class Actions(Validator):
     def cal_status(self):
         """Calculate the status of the whole tests result has been stored on the BD's id.
         """
-        status = "success"
+        status = SUCCESS
         for result in self.model_obj.result:
-            if result["status"] != "success":
+            if result["status"] != SUCCESS:
                 status = result["status"]
         self.model_obj.status = status
         self.model_obj.save()
@@ -126,7 +179,7 @@ class Actions(Validator):
             msg = "zeroCI.yaml is not found on the repository's home"
 
         r.rpush(self.run_id, msg)
-        self.model_obj.result.append({"type": "log", "status": "error", "name": "Yaml File", "content": msg})
+        self.model_obj.result.append({"type": LOG_TYPE, "status": ERROR, "name": "Yaml File", "content": msg})
         self.model_obj.save()
         return False
 
@@ -236,7 +289,7 @@ class Actions(Validator):
         """
         triggered_by = job.get("triggered_by", "ZeroCI Scheduler")
         data = {
-            "status": "pending",
+            "status": PENDING,
             "timestamp": int(datetime.now().timestamp()),
             "schedule_name": job["schedule_name"],
             "triggered_by": triggered_by,

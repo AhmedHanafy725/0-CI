@@ -13,6 +13,7 @@ from models.scheduler_run import SchedulerRun
 actions = Actions()
 q = Queue(connection=Redis())
 scheduler = Scheduler(connection=Redis())
+PENDING = "pending"
 
 
 @app.route("/api/schedule", method=["GET", "POST", "DELETE"])
@@ -91,7 +92,7 @@ def schedule_trigger():
 
         where = {"schedule_name": schedule_name}
         runs = SchedulerRun.get_objects(fields=["status"], order_by="timestamp", asc=False, **where)
-        if runs and runs[0]["status"] == "pending":
+        if runs and runs[0]["status"] == PENDING:
             return HTTPResponse(
                 f"There is a running job from this schedule {schedule_name}, please try again after this run finishes",
                 503,

@@ -1,0 +1,16 @@
+jobs:
+  - name: Neph
+    prerequisites:
+      image_name: crystallang/crystal:0.35.1-alpine
+
+    install: |
+      apk update
+      apk add git 
+      mkdir /zeroci/code/vcs_repos/neph
+      git clone https://github.com/tbrand/neph.git /zeroci/code/vcs_repos/neph
+
+    script:
+      - name: Test neph
+        type: neph
+        working_dir: /zeroci/code/vcs_repos/neph
+        yaml_path: /zeroci/code/vcs_repos/neph/sample/neph.yaml
