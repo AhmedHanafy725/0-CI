@@ -9,6 +9,12 @@ from models.trigger_run import TriggerRun
 from packages.vcs.vcs import VCSFactory
 
 
+SUCCESS = "success"
+FAILURE = "failure"
+ERROR = "error"
+PENDING = "pending"
+
+
 @app.route("/api/")
 @check_configs
 def home():
@@ -36,7 +42,7 @@ def branch(repo):
 
     if id:
         trigger_run = TriggerRun.get(id=id)
-        live = True if trigger_run.status == "pending" else False
+        live = True if trigger_run.status == PENDING else False
         result = json.dumps({"live": live, "result": trigger_run.result})
         return result
     if branch:
@@ -66,7 +72,7 @@ def schedules(schedule):
     id = request.query.get("id")
     if id:
         scheduler_run = SchedulerRun.get(id=id)
-        live = True if scheduler_run.status == "pending" else False
+        live = True if scheduler_run.status == PENDING else False
         result = json.dumps({"live": live, "result": scheduler_run.result})
         return result
 
@@ -89,7 +95,7 @@ def status():
     fields = ["status"]
     configs = InitialConfig()
     if schedule:
-        where = {"schedule_name": schedule, "status": "error OR failure OR success"}
+        where = {"schedule_name": schedule, "status": f"{ERROR} OR {FAILURE} OR {SUCCESS}"}
         scheduler_run = SchedulerRun.get_objects(fields=fields, order_by="timestamp", asc=False, **where)
         if len(scheduler_run) == 0:
             return abort(404)
@@ -97,7 +103,7 @@ def status():
         if result:
             link = f"{configs.domain}/schedules/{schedule}?id={str(scheduler_run[0]['id'])}"
             return redirect(link)
-        if scheduler_run[0]["status"] == "success":
+        if scheduler_run[0]["status"] == SUCCESS:
             return static_file("svgs/build_passing.svg", mimetype="image/svg+xml", root=".")
         else:
             return static_file("svgs/build_failing.svg", mimetype="image/svg+xml", root=".")
@@ -105,14 +111,14 @@ def status():
     elif repo:
         if not branch:
             branch = "master"
-        where = {"repo": repo, "branch": branch, "status": "error OR failure OR success"}
+        where = {"repo": repo, "branch": branch, "status": f"{ERROR} OR {FAILURE} OR {SUCCESS}"}
         trigger_run = TriggerRun.get_objects(fields=fields, order_by="timestamp", asc=False, **where)
         if len(trigger_run) == 0:
             return abort(404)
         if result:
             link = f"{configs.domain}/repos/{repo.replace('/', '%2F')}/{branch}/{str(trigger_run[0]['id'])}"
             return redirect(link)
-        if trigger_run[0]["status"] == "success":
+        if trigger_run[0]["status"] == SUCCESS:
             return static_file("svgs/build_passing.svg", mimetype="image/svg+xml", root=".")
         else:
             return static_file("svgs/build_failing.svg", mimetype="image/svg+xml", root=".")

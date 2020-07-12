@@ -17,11 +17,12 @@ BIN_DIR = "/zeroci/bin/"
 redis = Redis()
 actions = Actions()
 q = Queue(connection=redis)
+PENDING = "pending"
 
 
 def trigger(repo="", branch="", commit="", committer="", id=None, triggered=True):
     configs = InitialConfig()
-    status = "pending"
+    status = PENDING
     timestamp = datetime.now().timestamp()
     if id:
         # Triggered from id.
@@ -117,7 +118,7 @@ def run_trigger():
         id = request.json.get("id")
         if id:
             run = TriggerRun.get(id=id)
-            if run.status == "pending":
+            if run.status == PENDING:
                 return HTTPResponse(
                     f"There is a running job for this id {id}, please try again after this run finishes", 503
                 )
@@ -129,7 +130,7 @@ def run_trigger():
         vcs_obj = VCSFactory().get_cvn(repo=repo)
         last_commit = vcs_obj.get_last_commit(branch=branch)
         committer = vcs_obj.get_committer(commit=last_commit)
-        where = {"repo": repo, "branch": branch, "commit": last_commit, "status": "pending"}
+        where = {"repo": repo, "branch": branch, "commit": last_commit, "status": PENDING}
         run = TriggerRun.get_objects(fields=["status"], **where)
         if run:
             return HTTPResponse(
