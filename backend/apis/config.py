@@ -213,3 +213,8 @@ def run_config(name):
         env = json.dumps(run_config.env)
         return env
     return abort(404)
+
+@app.route("/api/vcs_host", method=["GET"])
+def vcs_host():
+    configs = InitialConfig()
+    return json.dumps(configs.vcs_host)
