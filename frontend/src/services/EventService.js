@@ -111,5 +111,8 @@ export default {
     },
     deleteUser(user) {
         return apiClient.delete('/users', { data: user })
+    },
+    getVCSHOST() {
+        return apiClient.get('/vcs_host')
     }
 }

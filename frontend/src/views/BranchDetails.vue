@@ -231,7 +231,8 @@ export default {
       disabled: false,
       formLoading: true,
       VarsValidate: false,
-      msg: "No Variables Existed"
+      msg: "No Variables Existed",
+      vcs_host: null
     };
   },
   methods: {
@@ -243,14 +244,14 @@ export default {
       this.newValue = "";
     },
     committerSrc(committer) {
-      return this.$store.state.vcs_host + "/" + committer + ".png";
+      return this.vcs_host + "/" + committer + ".png";
     },
     committerUrl(committer) {
-      return this.$store.state.vcs_host + "/" + committer;
+      return this.vcs_host + "/" + committer;
     },
     repoCommit(commit) {
       return (
-        this.$store.state.vcs_host +
+        this.vcs_host +
         "/" +
         this.orgName +
         "/" +
@@ -352,6 +353,15 @@ export default {
           console.log("Error! Could not reach the API. " + error);
         });
     },
+    getVCS() {
+      EventService.getVCSHOST()
+        .then(response => {
+          this.vcs_host = response.data;
+        })
+        .catch(error => {
+          console.log("Error! Could not reach the API. " + error);
+        });
+    },
     time(ts) {
       var timestamp = moment.unix(ts);
       var now = new Date();
@@ -384,6 +394,7 @@ export default {
   },
   created() {
     this.fetchData();
+    this.getVCS();
   },
   watch: {
     "$route.params": {
