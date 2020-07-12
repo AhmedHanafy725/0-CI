@@ -2,6 +2,8 @@ import requests
 from redis import Redis
 
 redis = Redis()
+ERROR = "error"
+LOG_TYPE = "log"
 
 
 class Validator:
@@ -103,7 +105,7 @@ class Validator:
     def _report(self, run_id, model_obj, msg):
         msg = f"{msg} (see examples: https://github.com/threefoldtech/zeroCI/tree/development/docs/config)"
         redis.rpush(run_id, msg)
-        model_obj.result.append({"type": "log", "status": "error", "name": "Yaml File", "content": msg})
+        model_obj.result.append({"type": LOG_TYPE, "status": ERROR, "name": "Yaml File", "content": msg})
         model_obj.save()
 
     def _validate_job(self, job):

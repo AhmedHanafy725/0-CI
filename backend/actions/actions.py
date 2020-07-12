@@ -27,6 +27,7 @@ r = redis.Redis()
 SUCCESS = "success"
 FAILURE = "failure"
 ERROR = "error"
+PENDING = "pending"
 LOG_TYPE = "log"
 TESTSUITE_TYPE = "testsuite"
 NEPH_TYPE = "neph"
@@ -288,7 +289,7 @@ class Actions(Validator):
         """
         triggered_by = job.get("triggered_by", "ZeroCI Scheduler")
         data = {
-            "status": "pending",
+            "status": PENDING,
             "timestamp": int(datetime.now().timestamp()),
             "schedule_name": job["schedule_name"],
             "triggered_by": triggered_by,
