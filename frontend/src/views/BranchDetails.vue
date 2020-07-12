@@ -243,19 +243,14 @@ export default {
       this.newValue = "";
     },
     committerSrc(committer) {
-      return (
-        JSON.parse(window.localStorage.getItem("vcs")) +
-        "/" +
-        committer +
-        ".png"
-      );
+      return this.$store.state.vcs_host + "/" + committer + ".png";
     },
     committerUrl(committer) {
-      return JSON.parse(window.localStorage.getItem("vcs")) + "/" + committer;
+      return this.$store.state.vcs_host + "/" + committer;
     },
     repoCommit(commit) {
       return (
-        JSON.parse(window.localStorage.getItem("vcs")) +
+        this.$store.state.vcs_host +
         "/" +
         this.orgName +
         "/" +
