@@ -9,7 +9,7 @@
   ```bash
   mkdir ~/zeroci
   cd ~/zeroci
-  for s in authorization deployment service; do curl https://raw.githubusercontent.com/threefoldtech/zeroCI/development/install/zeroci/$s.yaml --output $s.yaml; done
+  for s in authorization deployment service redis; do curl https://raw.githubusercontent.com/threefoldtech/zeroCI/development/install/zeroci/$s.yaml --output $s.yaml; done
   ```
 
 - Create a [solution expose](https://sdk2.threefold.io/#/solution_expose)
