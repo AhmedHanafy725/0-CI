@@ -80,7 +80,7 @@ class Actions(Validator):
         jobs_names = self.get_neph_jobs_names(job_name=job_name, line=line)
         if jobs_names:
             neph_id = f"{self.run_id}:{job_name}:{line['name']}"
-            cmd = f"export NEPH_RUN_ID={neph_id} \n cd {working_dir} \n /zeroci/bin/neph -y {yaml_path} -m CI"
+            cmd = f"export NEPH_RUN_ID='{neph_id}' \n cd {working_dir} \n /zeroci/bin/neph -y {yaml_path} -m CI"
             response = container.execute_command(cmd=cmd, id=self.run_id)
             if response.returncode:
                 status = FAILURE

@@ -83,7 +83,7 @@ def neph_jobs(id):
                     start[key] = 0
                 length = redis.llen(key)
                 result_list = redis.lrange(key, start[key], length)
-                start[key] += len(result)
+                start[key] += len(result_list)
                 for result in result_list:
                     job_name = result.decode()
                     full_job_name = f"neph:{key}:{job_name}"

@@ -49,7 +49,9 @@ def trigger(repo="", branch="", commit="", committer="", id=None, triggered=True
                 os.remove(bin_path)
         trigger_run.bin_release = None
         trigger_run.save()
-        redis.ltrim(id, -1, 0)
+        for key in redis.keys():
+            if id in key.decode():
+                redis.delete(key)
         redis.publish("zeroci_status", json.dumps(data))
     else:
         # Triggered from vcs webhook or rebuild using the button.
