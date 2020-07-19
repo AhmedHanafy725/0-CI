@@ -12,7 +12,7 @@
       <i class="fa fa-code-branch"></i>
       <span class="kt-widget24__desc">{{ default_branch }}</span>
     </div>
-    <div class="kt-portlet__body kt-portlet__body--fluid pt-0">
+    <div v-if="status !== null" class="kt-portlet__body kt-portlet__body--fluid pt-0">
       <div class="kt-widget20">
         <div class="kt-widget20__content kt-portlet__space-x">
           <router-link :to="'/repos/' + repo + '/' + default_branch + '/' + id">
@@ -31,6 +31,15 @@
               <img :src="committerSrc" title />
               <span class="kt-widget20__desc">{{ committer }}</span>
             </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-else class="kt-portlet__body kt-portlet__body--fluid pt-0">
+      <div class="kt-widget20">
+        <div class="kt-widget20__content kt-portlet__space-x">
+          <div class="kt-list-pics kt-list-pics--sm">
+            <span class="kt-widget20__desc">There's nothing to show</span>
           </div>
         </div>
       </div>
@@ -54,8 +63,7 @@ export default {
       committer: null,
       timestamp: null,
       status: null,
-      id: null,
-      filteredItems: []
+      id: null
     };
   },
   filters: {
