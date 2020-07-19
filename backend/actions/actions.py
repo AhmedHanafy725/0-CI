@@ -132,7 +132,8 @@ class Actions(Validator):
             if job == "import":
                 continue
             jobs_names.append(job)
-            r.rpush(f"{self.run_id}:{job_name}:{line['name']}", job)
+            job_id = f"{self.run_id}:{job_name}:{line['name']}"
+            r.rpush(job_id.replace(" ", "%20"), job)
 
         return jobs_names
 
