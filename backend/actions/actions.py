@@ -98,11 +98,9 @@ class Actions(Validator):
                     if log["type"] == "stderr":
                         status = FAILURE
                     all_logs += log["content"]
-                    name = key.split(f"neph:{self.run_id}:")[-1]
-                    self.model_obj.result.append(
-                        {"type": LOG_TYPE, "status": status, "name": name, "content": all_logs}
-                    )
-                    self.model_obj.save()
+                name = key.split(f"neph:{self.run_id}:")[-1]
+                self.model_obj.result.append({"type": LOG_TYPE, "status": status, "name": name, "content": all_logs})
+                self.model_obj.save()
 
         if response.returncode in [137, 124]:
             return False
