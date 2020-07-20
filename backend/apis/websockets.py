@@ -1,5 +1,6 @@
 from gevent import sleep
 from redis import Redis
+import json
 
 from apis.base import app
 from bottle import abort, request
@@ -21,6 +22,7 @@ def logs(id):
             break
         if start == length:
             sleep(0.01)
+            continue
         result_list = redis.lrange(id, start, length)
         if b"hamada ok" in result_list:
             result_list.remove(b"hamada ok")
@@ -35,6 +37,61 @@ def logs(id):
                 wsock.send(results)
             except WebSocketError:
                 break
+
+
+@app.route("/websocket/neph_logs/<neph_id>")
+def neph_logs(neph_id):
+    wsock = request.environ.get("wsgi.websocket")
+    if not wsock:
+        abort(400, "Expected WebSocket request.")
+
+    start = 0
+    while start != -1:
+        length = redis.llen(neph_id)
+        if start > length:
+            break
+        if start == length:
+            sleep(0.01)
+            continue
+
+        result_list = redis.lrange(neph_id, start, length)
+        start += len(result_list)
+        results = ""
+        for result in result_list:
+            data = json.loads(result.decode())
+            results += data["content"]
+        if results:
+            try:
+                wsock.send(results)
+            except WebSocketError:
+                break
+
+
+@app.route("/websocket/neph_jobs/<id>")
+def neph_jobs(id):
+    wsock = request.environ.get("wsgi.websocket")
+    if not wsock:
+        abort(400, "Expected WebSocket request.")
+
+    jobs = []
+    while True:
+        new_jobs = []
+        for key in redis.keys():
+            key = key.decode()
+            if key.startswith(f"neph:{id}"):
+                if key not in jobs:
+                    jobs.append(key)
+                    key = key.replace(" ", "%20")
+                    new_jobs.append(key)
+
+        if new_jobs:
+            try:
+                wsock.send(json.dumps(new_jobs))
+            except WebSocketError:
+                break
+        else:
+            sleep(1)
+            continue
 
 
 @app.route("/websocket/status")

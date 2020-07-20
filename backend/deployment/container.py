@@ -181,7 +181,9 @@ class Container(Utils):
         vol_mounts = [bin_vol_mount, repo_vol_mount]
         vols = [bin_vol, repo_vol]
         ports = client.V1ContainerPort(container_port=22)
-        env.append(client.V1EnvVar(name="DEBIAN_FRONTEND", value="noninteractive"))
+        non_interactive = client.V1EnvVar(name="DEBIAN_FRONTEND", value="noninteractive")
+        redis_server = client.V1EnvVar(name="NEPH_REDIS", value="redis://redis:6379")
+        env.extend([non_interactive, redis_server])
         if self.shell_bin in ["/bin/bash", "/bin/sh"]:
             commands = [self.shell_bin, "-ce", "env | grep _ >> /etc/environment && sleep 3600"]
         else:
@@ -208,7 +210,7 @@ class Container(Utils):
                 f"echo {ssh_key} > /root/.ssh/authorized_keys && cp /usr/local/bin/* /zeroci/bin/ \
                 && service ssh start && sleep 3600",
             ],
-            env=[client.V1EnvVar(name="DEBIAN_FRONTEND", value="noninteractive")],
+            env=[non_interactive],
             ports=[ports],
             volume_mounts=vol_mounts,
             resources=resources,

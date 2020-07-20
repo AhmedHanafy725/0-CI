@@ -77,40 +77,33 @@ class Actions(Validator):
         status = SUCCESS
         working_dir = line["working_dir"]
         yaml_path = line["yaml_path"]
-        cmd = f"cd {working_dir} \n /zeroci/bin/neph -y {yaml_path} -m CI"
+        neph_id = f"{self.run_id}:{job_name}:{line['name']}"
+        cmd = f"export NEPH_RUN_ID='{neph_id}' \n cd {working_dir} \n /zeroci/bin/neph -y {yaml_path} -m CI"
         response = container.execute_command(cmd=cmd, id=self.run_id)
         if response.returncode:
             status = FAILURE
 
-        name = "{job_name}: {test_name}".format(job_name=job_name, test_name=line["name"])
+        name = "{job_name}:{test_name}".format(job_name=job_name, test_name=line["name"])
         self.model_obj.result.append({"type": LOG_TYPE, "status": status, "name": name, "content": response.stdout})
         self.model_obj.save()
+
+        for key in r.keys():
+            key = key.decode()
+            if key.startswith(f"neph:{self.run_id}:{job_name}:{line['name']}"):
+                status = SUCCESS
+                logs = r.lrange(key, 0, -1)
+                all_logs = ""
+                for log in logs:
+                    log = json.loads(log.decode())
+                    if log["type"] == "stderr":
+                        status = FAILURE
+                    all_logs += log["content"]
+                name = key.split(f"neph:{self.run_id}:")[-1]
+                self.model_obj.result.append({"type": LOG_TYPE, "status": status, "name": name, "content": all_logs})
+                self.model_obj.save()
+
         if response.returncode in [137, 124]:
             return False
-
-        cmd = f"ls --color=never {working_dir}/.neph"
-        response = container.execute_command(cmd=cmd, id="", verbose=False)
-        if response.returncode:
-            result = "No logs found for neph"
-            name = f"{name}: logs"
-            self.model_obj.result.append({"type": LOG_TYPE, "status": status, "name": name, "content": result})
-        self.model_obj.save()
-        neph_jobs_names = response.stdout.split()
-        for neph_job_name in neph_jobs_names:
-            status = SUCCESS
-            cmd = f"cat {working_dir}/.neph/{neph_job_name}/log/log.out"
-            out = container.execute_command(cmd=cmd, id="", verbose=False)
-            cmd = f"cat {working_dir}/.neph/{neph_job_name}/log/log.err"
-            err = container.execute_command(cmd=cmd, id="", verbose=False)
-            result = f"stdout:\n {out.stdout} \n\nstderr:\n {err.stdout}"
-            if err.stdout:
-                status = FAILURE
-            name = f"{job_name}: {line['name']}: {neph_job_name}"
-            self.model_obj.result.append({"type": LOG_TYPE, "status": status, "name": name, "content": result})
-            self.model_obj.save()
-
-        cmd = f"rm -r {working_dir}/.neph"
-        container.execute_command(cmd=cmd, id="", verbose=False)
         return True
 
     def build(self, job, clone_details, job_number):
