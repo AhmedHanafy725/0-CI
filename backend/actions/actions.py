@@ -77,65 +77,36 @@ class Actions(Validator):
         status = SUCCESS
         working_dir = line["working_dir"]
         yaml_path = line["yaml_path"]
-        jobs_names = self.get_neph_jobs_names(job_name=job_name, line=line)
-        if jobs_names:
-            neph_id = f"{self.run_id}:{job_name}:{line['name']}"
-            cmd = f"export NEPH_RUN_ID='{neph_id}' \n cd {working_dir} \n /zeroci/bin/neph -y {yaml_path} -m CI"
-            response = container.execute_command(cmd=cmd, id=self.run_id)
-            if response.returncode:
-                status = FAILURE
+        neph_id = f"{self.run_id}:{job_name}:{line['name']}"
+        cmd = f"export NEPH_RUN_ID='{neph_id}' \n cd {working_dir} \n /zeroci/bin/neph -y {yaml_path} -m CI"
+        response = container.execute_command(cmd=cmd, id=self.run_id)
+        if response.returncode:
+            status = FAILURE
 
-            name = "{job_name}:{test_name}".format(job_name=job_name, test_name=line["name"])
-            self.model_obj.result.append({"type": LOG_TYPE, "status": status, "name": name, "content": response.stdout})
-            self.model_obj.save()
-            if response.returncode in [137, 124]:
-                return False
+        name = "{job_name}:{test_name}".format(job_name=job_name, test_name=line["name"])
+        self.model_obj.result.append({"type": LOG_TYPE, "status": status, "name": name, "content": response.stdout})
+        self.model_obj.save()
 
-            for job in jobs_names:
+        for key in r.keys():
+            key = key.decode()
+            if key.startswith(f"neph:{self.run_id}:{job_name}:{line['name']}"):
                 status = SUCCESS
-                logs = r.lrange(f"neph:{neph_id}:{job}", 0, -1)
+                logs = r.lrange(key, 0, -1)
                 all_logs = ""
                 for log in logs:
                     log = json.loads(log.decode())
                     if log["type"] == "stderr":
                         status = FAILURE
                     all_logs += log["content"]
-                    name = f"{job_name}:{line['name']}:{job}"
+                    name = key.strip(f"neph:{self.run_id}:")
                     self.model_obj.result.append(
                         {"type": LOG_TYPE, "status": status, "name": name, "content": all_logs}
                     )
                     self.model_obj.save()
+
+        if response.returncode in [137, 124]:
+            return False
         return True
-
-    def get_neph_jobs_names(self, job_name, line):
-        cmd = f"cat {line['yaml_path']}"
-        response = container.execute_command(cmd=cmd, id="", verbose=False)
-        if response.returncode:
-            name = "{job_name}: {test_name}".format(job_name=job_name, test_name=line["name"])
-            self.model_obj.result.append(
-                {"type": LOG_TYPE, "status": FAILURE, "name": name, "content": response.stdout}
-            )
-            self.model_obj.save()
-            return []
-        try:
-            jobs_yaml = yaml.safe_load(response.stdout)
-        except:
-            name = "{job_name}: {test_name}".format(job_name=job_name, test_name=line["name"])
-            msg = traceback.format_exc()
-            self.model_obj.result.append({"type": LOG_TYPE, "status": FAILURE, "name": name, "content": msg})
-            self.model_obj.save()
-            return []
-
-        jobs_names = []
-        jobs = jobs_yaml.keys()
-        for job in jobs:
-            if job == "import":
-                continue
-            jobs_names.append(job)
-            job_id = f"{self.run_id}:{job_name}:{line['name']}"
-            r.rpush(job_id.replace(" ", "%20"), job)
-
-        return jobs_names
 
     def build(self, job, clone_details, job_number):
         """Create VM with the required prerequisties and run installation steps to get it ready for running tests.

@@ -73,31 +73,25 @@ def neph_jobs(id):
     if not wsock:
         abort(400, "Expected WebSocket request.")
 
-    start = {}
+    jobs = []
     while True:
-        jobs = []
+        new_jobs = []
         for key in redis.keys():
             key = key.decode()
-            if id in key and not key.startswith("neph") and key != id:
-                if key not in start.keys():
-                    start[key] = 0
-                length = redis.llen(key)
-                result_list = redis.lrange(key, start[key], length)
-                start[key] += len(result_list)
-                for result in result_list:
-                    job_name = result.decode()
-                    full_job_name = f"neph:{key}:{job_name}"
-                    jobs.append(full_job_name)
+            if key.startswith(f"neph:{id}"):
+                if key not in jobs:
+                    jobs.append(key)
+                    key = key.replace(" ", "%20")
+                    new_jobs.append(key)
 
-        if not jobs:
-            sleep(1)
-            continue
-
-        if jobs:
+        if new_jobs:
             try:
-                wsock.send(json.dumps(jobs))
+                wsock.send(json.dumps(new_jobs))
             except WebSocketError:
                 break
+        else:
+            sleep(1)
+            continue
 
 
 @app.route("/websocket/status")
