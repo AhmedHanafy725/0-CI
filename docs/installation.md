@@ -2,7 +2,8 @@
 
 ## Installation
 
-- Create a [kubernetes cluster](https://sdk2.threefold.io/#/solution_kubernetes?id=kubernetes-cluster-deployment) .
+- Create a [kubernetes cluster](https://sdk2.threefold.io/#/solution_kubernetes?id=kubernetes-cluster-deployment).
+- Create a [solution expose](https://sdk2.threefold.io/#/solution_expose)
 - Connect to the cluster using `ssh`.
 - Create zeroci directory and get installation yaml files.
 
@@ -11,9 +12,7 @@
   cd ~/zeroci
   for s in authorization deployment service redis; do curl https://raw.githubusercontent.com/threefoldtech/zeroCI/development/install/zeroci/$s.yaml --output $s.yaml; done
   ```
-
-- Create a [solution expose](https://sdk2.threefold.io/#/solution_expose)
-- Set ZeroCI domain and should be the same as one on solution expose in the previous step.
+- Set ZeroCI domain and should be the same as one on solution expose in the second step.
 
   ```bash
   sed -i 's/SERVER_DOMAIN/<your server domain>/g' ~/zeroci/deployment.yaml
