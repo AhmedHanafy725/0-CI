@@ -24,7 +24,7 @@ spec:
       hostname: zeroci
       containers:
       - name: zeroci
-        image: "ahmedhanafy725/zeroci:ng-https"
+        image: "ahmedhanafy725/zeroci"
         env:
         - name: DOMAIN
           value: "SERVER_DOMAIN"
