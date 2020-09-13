@@ -189,8 +189,8 @@ class Container(Utils):
         else:
             commands = [self.shell_bin, "env | grep _ >> /etc/environment && sleep 3600"]
 
-        limits = {"memory": "200Mi"}
-        requests = {"memory": "150Mi"}
+        limits = {"memory": "2000Mi"}
+        requests = {"memory": "300Mi"}
         resources = client.V1ResourceRequirements(limits=limits, requests=requests)
         test_container = client.V1Container(
             name=self.test_container_name,
@@ -201,6 +201,9 @@ class Container(Utils):
             resources=resources,
         )
         ssh_key = self.load_ssh_key()
+        limits = {"memory": "300Mi"}
+        requests = {"memory": "150Mi"}
+        resources = client.V1ResourceRequirements(limits=limits, requests=requests)
         helper_container = client.V1Container(
             name=self.helper_container_name,
             image="ahmedhanafy725/ubuntu",
