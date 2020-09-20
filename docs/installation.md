@@ -2,8 +2,8 @@
 
 ## Installation
 
-- Create a [kubernetes cluster](https://sdk2.threefold.io/#/solution_kubernetes?id=kubernetes-cluster-deployment).
-- Create a [solution expose](https://sdk2.threefold.io/#/solution_expose)
+- Create a [kubernetes cluster](https://manual2.threefold.io/#/kubernetes).
+- Create a [solution expose](https://manual2.threefold.io/#/exposed) to tls-port 30443 and port 30080
 - Connect to the cluster using `ssh`.
 - Create zeroci directory and get installation yaml files.
 
