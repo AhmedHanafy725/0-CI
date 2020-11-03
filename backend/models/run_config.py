@@ -8,6 +8,6 @@ class RunConfigModel(Document):
 class RunConfig(ModelFactory):
     _model = StoredFactory(RunConfigModel)
 
-    def __new__(self, **kwargs):
+    def __new__(cls, **kwargs):
         kwargs["name"] = kwargs["name"].replace("/", "_")
-        return self._model.get(**kwargs)
+        return cls._model.get(**kwargs)

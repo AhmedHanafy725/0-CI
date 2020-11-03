@@ -13,7 +13,7 @@ FAILURE = "failure"
 
 
 class Reporter:
-    def report(self, run_id, model_obj, schedule_name=None):
+    def report(self, run_id, run_obj):
         """Report the result to the commit status and Telegram chat.
 
         :param run_id: DB's run_id of this run details.
@@ -25,71 +25,47 @@ class Reporter:
         """
         configs = InitialConfig()
         telegram = Telegram()
-        bin_release = model_obj.bin_release
-        triggered_by = model_obj.triggered_by
-        msg = self.report_msg(status=model_obj.status, schedule_name=schedule_name)
-        if not schedule_name:
-            url = f"/repos/{model_obj.repo}/{model_obj.branch}/{model_obj.id}"
-            link = urljoin(configs.domain, url)
-            if bin_release:
-                bin_url = f"/bin/{model_obj.repo}/{model_obj.branch}/{bin_release}"
-                bin_link = urljoin(configs.domain, bin_url)
-            else:
-                bin_link = None
-            data = {
-                "timestamp": model_obj.timestamp,
-                "commit": model_obj.commit,
-                "committer": model_obj.committer,
-                "status": model_obj.status,
-                "repo": model_obj.repo,
-                "branch": model_obj.branch,
-                "bin_release": bin_release,
-                "triggered_by": triggered_by,
-                "id": run_id,
-            }
-            r.publish("zeroci_status", json.dumps(data))
-            vcs_obj = VCSFactory().get_cvn(repo=model_obj.repo)
-            vcs_obj.status_send(status=model_obj.status, link=link, commit=model_obj.commit)
-            telegram.send_msg(
-                msg=msg,
-                link=link,
-                repo=model_obj.repo,
-                branch=model_obj.branch,
-                commit=model_obj.commit,
-                committer=model_obj.committer,
-                bin_link=bin_link,
-                triggered_by=triggered_by,
-            )
+        bin_release = run_obj.bin_release
+        triggered_by = run_obj.triggered_by
+        msg = self.report_msg(status=run_obj.status)
+        url = f"/repos/{run_obj.repo}/{run_obj.branch}/{run_obj.id}"
+        link = urljoin(configs.domain, url)
+        if bin_release:
+            bin_url = f"/bin/{run_obj.repo}/{run_obj.branch}/{bin_release}"
+            bin_link = urljoin(configs.domain, bin_url)
         else:
-            unspaced_schedule = model_obj.schedule_name.replace(" ", "%20")
-            url = f"/schedules/{unspaced_schedule}/{model_obj.id}"
-            link = urljoin(configs.domain, url)
-            if bin_release:
-                bin_url = f"/bin/{unspaced_schedule}/{bin_release}"
-                bin_link = urljoin(configs.domain, bin_url)
-            else:
-                bin_link = None
-            data = {
-                "status": model_obj.status,
-                "timestamp": model_obj.timestamp,
-                "schedule_name": schedule_name,
-                "bin_release": bin_release,
-                "triggered_by": triggered_by,
-                "id": run_id,
-            }
-            r.publish("zeroci_status", json.dumps(data))
-            telegram.send_msg(msg=msg, link=link, bin_link=bin_link, triggered_by=triggered_by)
+            bin_link = None
+        data = {
+            "timestamp": run_obj.timestamp,
+            "commit": run_obj.commit,
+            "committer": run_obj.committer,
+            "status": run_obj.status,
+            "repo": run_obj.repo,
+            "branch": run_obj.branch,
+            "bin_release": bin_release,
+            "triggered_by": triggered_by,
+            "id": run_id,
+        }
+        r.publish("zeroci_status", json.dumps(data))
+        vcs_obj = VCSFactory().get_cvn(repo=run_obj.repo)
+        vcs_obj.status_send(status=run_obj.status, link=link, commit=run_obj.commit)
+        telegram.send_msg(
+            msg=msg,
+            link=link,
+            repo=run_obj.repo,
+            branch=run_obj.branch,
+            commit=run_obj.commit,
+            committer=run_obj.committer,
+            bin_link=bin_link,
+            triggered_by=triggered_by,
+        )
 
-    def report_msg(self, status, schedule_name=None):
-        if schedule_name:
-            name = f"{schedule_name} tests"
-        else:
-            name = "Tests"
+    def report_msg(self, status):
         if status == SUCCESS:
-            msg = f"✅ {name} passed "
+            msg = f"✅ Run passed "
         elif status == FAILURE:
-            msg = f"❌ {name} failed "
+            msg = f"❌ Run failed "
         else:
-            msg = f"⛔️ {name} errored "
+            msg = f"⛔️ Run errored "
 
         return msg

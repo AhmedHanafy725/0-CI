@@ -9,7 +9,7 @@ from actions.actions import Actions
 from apis.base import app, check_configs, user
 from bottle import HTTPResponse, redirect, request
 from models.initial_config import InitialConfig
-from models.trigger_run import TriggerRun
+from models.run import Run
 from packages.vcs.vcs import VCSFactory
 
 BIN_DIR = "/zeroci/bin/"
@@ -26,29 +26,29 @@ def trigger(repo="", branch="", commit="", committer="", id=None, triggered=True
     timestamp = datetime.now().timestamp()
     if id:
         # Triggered from id.
-        trigger_run = TriggerRun.get(id=id)
+        run = Run.get(id=id)
         triggered_by = request.environ.get("beaker.session").get("username").strip(".3bot")
         data = {
             "timestamp": timestamp,
-            "commit": trigger_run.commit,
-            "committer": trigger_run.committer,
+            "commit": run.commit,
+            "committer": run.committer,
             "status": status,
-            "repo": trigger_run.repo,
-            "branch": trigger_run.branch,
+            "repo": run.repo,
+            "branch": run.branch,
             "triggered_by": triggered_by,
             "bin_release": None,
             "id": id,
         }
-        trigger_run.timestamp = int(timestamp)
-        trigger_run.status = status
-        trigger_run.result = []
-        trigger_run.triggered_by = triggered_by
-        if trigger_run.bin_release:
-            bin_path = os.path.join(BIN_DIR, trigger_run.repo, trigger_run.branch, trigger_run.bin_release)
+        run.timestamp = int(timestamp)
+        run.status = status
+        run.result = []
+        run.triggered_by = triggered_by
+        if run.bin_release:
+            bin_path = os.path.join(BIN_DIR, run.repo, run.branch, run.bin_release)
             if os.path.exists(bin_path):
                 os.remove(bin_path)
-        trigger_run.bin_release = None
-        trigger_run.save()
+        run.bin_release = None
+        run.save()
         for key in redis.keys():
             if id in key.decode():
                 redis.delete(key)
@@ -69,15 +69,15 @@ def trigger(repo="", branch="", commit="", committer="", id=None, triggered=True
                 "triggered_by": triggered_by,
                 "bin_release": None,
             }
-            trigger_run = TriggerRun(**data)
-            trigger_run.save()
-            id = str(trigger_run.id)
+            run = Run(**data)
+            run.save()
+            id = str(run.id)
             data["id"] = id
             redis.publish("zeroci_status", json.dumps(data))
     if id:
-        link = f"{configs.domain}/repos/{trigger_run.repo}/{trigger_run.branch}/{str(trigger_run.id)}"
-        vcs_obj = VCSFactory().get_cvn(repo=trigger_run.repo)
-        vcs_obj.status_send(status=status, link=link, commit=trigger_run.commit)
+        link = f"{configs.domain}/repos/{run.repo}/{run.branch}/{str(run.id)}"
+        vcs_obj = VCSFactory().get_cvn(repo=run.repo)
+        vcs_obj.status_send(status=status, link=link, commit=run.commit)
         job = q.enqueue_call(func=actions.build_and_test, args=(id,), result_ttl=5000, timeout=20000)
         return job
     return None
@@ -119,7 +119,7 @@ def run_trigger():
     if request.headers.get("Content-Type") == "application/json":
         id = request.json.get("id")
         if id:
-            run = TriggerRun.get(id=id)
+            run = Run.get(id=id)
             if run.status == PENDING:
                 return HTTPResponse(
                     f"There is a running job for this id {id}, please try again after this run finishes", 503
@@ -133,7 +133,7 @@ def run_trigger():
         last_commit = vcs_obj.get_last_commit(branch=branch)
         committer = vcs_obj.get_committer(commit=last_commit)
         where = {"repo": repo, "branch": branch, "commit": last_commit, "status": PENDING}
-        run = TriggerRun.get_objects(fields=["status"], **where)
+        run = Run.get_objects(fields=["status"], **where)
         if run:
             return HTTPResponse(
                 f"There is a running job from this commit {last_commit}, please try again after this run finishes", 503

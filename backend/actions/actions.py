@@ -13,8 +13,7 @@ from deployment.container import Container
 from kubernetes.client import V1EnvVar
 from models.initial_config import InitialConfig
 from models.run_config import RunConfig
-from models.scheduler_run import SchedulerRun
-from models.trigger_run import TriggerModel, TriggerRun
+from models.run import Run
 from packages.vcs.vcs import VCSFactory
 from utils.reporter import Reporter
 from utils.utils import Utils
@@ -37,7 +36,7 @@ class Actions(Validator):
     _REPOS_DIR = "/zeroci/code/vcs_repos"
     _BIN_DIR = "/zeroci/bin/"
     run_id = None
-    model_obj = None
+    run_obj = None
 
     def test_run(self, job):
         """Runs tests and store the result in DB.
@@ -67,8 +66,8 @@ class Actions(Validator):
             os.remove(file_path)
 
         name = "{job_name}: {test_name}".format(job_name=job_name, test_name=line["name"])
-        self.model_obj.result.append({"type": type, "status": status, "name": name, "content": result})
-        self.model_obj.save()
+        self.run_obj.result.append({"type": type, "status": status, "name": name, "content": result})
+        self.run_obj.save()
         if response.returncode in [137, 124]:
             return False
         return True
@@ -84,8 +83,8 @@ class Actions(Validator):
             status = FAILURE
 
         name = "{job_name}:{test_name}".format(job_name=job_name, test_name=line["name"])
-        self.model_obj.result.append({"type": LOG_TYPE, "status": status, "name": name, "content": response.stdout})
-        self.model_obj.save()
+        self.run_obj.result.append({"type": LOG_TYPE, "status": status, "name": name, "content": response.stdout})
+        self.run_obj.save()
 
         for key in r.keys():
             key = key.decode()
@@ -99,8 +98,8 @@ class Actions(Validator):
                         status = FAILURE
                     all_logs += log["content"]
                 name = key.split(f"neph:{self.run_id}:")[-1]
-                self.model_obj.result.append({"type": LOG_TYPE, "status": status, "name": name, "content": all_logs})
-                self.model_obj.save()
+                self.run_obj.result.append({"type": LOG_TYPE, "status": status, "name": name, "content": all_logs})
+                self.run_obj.save()
 
         if response.returncode in [137, 124]:
             return False
@@ -133,8 +132,8 @@ class Actions(Validator):
             r.rpush(self.run_id, result)
 
         if not installed:
-            self.model_obj.result.append({"type": LOG_TYPE, "status": ERROR, "name": name, "content": result})
-            self.model_obj.save()
+            self.run_obj.result.append({"type": LOG_TYPE, "status": ERROR, "name": name, "content": result})
+            self.run_obj.save()
 
         return deployed, installed
 
@@ -142,19 +141,16 @@ class Actions(Validator):
         """Calculate the status of the whole tests result has been stored on the BD's id.
         """
         status = SUCCESS
-        for result in self.model_obj.result:
+        for result in self.run_obj.result:
             if result["status"] != SUCCESS:
                 status = result["status"]
-        self.model_obj.status = status
-        self.model_obj.save()
+        self.run_obj.status = status
+        self.run_obj.save()
 
     def _get_run_env(self):
         """Get run environment variables.
         """
-        if isinstance(self.model_obj, TriggerModel):
-            name = self.model_obj.repo
-        else:
-            name = self.model_obj.schedule_name
+        name = self.run_obj.repo
         run_config = RunConfig(name=name)
         run_env = run_config.env
         env = []
@@ -164,8 +160,8 @@ class Actions(Validator):
         return env
 
     def _load_yaml(self):
-        vcs_obj = VCSFactory().get_cvn(repo=self.model_obj.repo)
-        script = vcs_obj.get_content(ref=self.model_obj.commit, file_path="zeroCI.yaml")
+        vcs_obj = VCSFactory().get_cvn(repo=self.run_obj.repo)
+        script = vcs_obj.get_content(ref=self.run_obj.commit, file_path="zeroCI.yaml")
         if script:
             try:
                 return yaml.safe_load(script)
@@ -175,37 +171,32 @@ class Actions(Validator):
             msg = "zeroCI.yaml is not found on the repository's home"
 
         r.rpush(self.run_id, msg)
-        self.model_obj.result.append({"type": LOG_TYPE, "status": ERROR, "name": "Yaml File", "content": msg})
-        self.model_obj.save()
+        self.run_obj.result.append({"type": LOG_TYPE, "status": ERROR, "name": "Yaml File", "content": msg})
+        self.run_obj.save()
         return False
 
     def repo_clone_details(self):
         """Clone repo.
         """
         configs = InitialConfig()
-        repo_remote_path = os.path.join(self._REPOS_DIR, self.model_obj.repo)
-        clone_url = urljoin(configs.vcs_host, f"{self.model_obj.repo}.git")
+        repo_remote_path = os.path.join(self._REPOS_DIR, self.run_obj.repo)
+        clone_url = urljoin(configs.vcs_host, f"{self.run_obj.repo}.git")
         cmd = """git clone {clone_url} {repo_remote_path} --branch {branch}
         cd {repo_remote_path}
         git reset --hard {commit}
         """.format(
             clone_url=clone_url,
             repo_remote_path=repo_remote_path,
-            branch=self.model_obj.branch,
-            commit=self.model_obj.commit,
+            branch=self.run_obj.branch,
+            commit=self.run_obj.commit,
         )
         clone_details = {"cmd": cmd, "remote_path": repo_remote_path}
         return clone_details
 
     def _prepare_bin_dirs(self, bin_remote_path):
         self.bin_name = bin_remote_path.split(os.path.sep)[-1]
-        if isinstance(self.model_obj, TriggerModel):
-            release = self.model_obj.commit[:7]
-            local_path = os.path.join(self._BIN_DIR, self.model_obj.repo, self.model_obj.branch)
-        else:
-            release = str(datetime.fromtimestamp(self.model_obj.timestamp)).replace(" ", "_")[:16]
-            local_path = os.path.join(self._BIN_DIR, self.model_obj.schedule_name)
-
+        release = self.run_obj.commit[:7]
+        local_path = os.path.join(self._BIN_DIR, self.run_obj.repo, self.run_obj.branch)
         bin_release = f"{self.bin_name}_{release}"
         bin_local_path = os.path.join(local_path, bin_release)
         if not os.path.exists(local_path):
@@ -223,17 +214,17 @@ class Actions(Validator):
             container.ssh_get_remote_file(remote_path=bin_tmp_path, local_path=bin_local_path)
 
             if os.path.exists(bin_local_path):
-                self.model_obj.bin_release = bin_release
-                self.model_obj.save()
+                self.run_obj.bin_release = bin_release
+                self.run_obj.save()
 
     def _set_bin(self):
-        if self.model_obj.bin_release:
+        if self.run_obj.bin_release:
             bin_local_path = self._prepare_bin_dirs(self.bin_name)
             bin_remote_path = os.path.join(self._BIN_DIR, self.bin_name)
             container.ssh_set_remote_file(remote_path=bin_remote_path, local_path=bin_local_path)
             container.ssh_command(f"chmod +x {bin_remote_path}")
 
-    def build_and_test(self, id, schedule_name=None, script=None):
+    def build_and_test(self, id):
         """Builds, runs tests, calculates status and gives report on telegram and your version control system.
         
         :param id: DB's id of this run details.
@@ -242,13 +233,12 @@ class Actions(Validator):
         :param schedule_name: str
         """
         self.run_id = id
-        if not schedule_name:
-            self.model_obj = TriggerRun.get(id=self.run_id)
-            script = self._load_yaml()
-        else:
-            self.model_obj = SchedulerRun.get(id=self.run_id)
+    
+        self.run_obj = TriggerRun.get(id=self.run_id)
+        script = self._load_yaml()
+
         if script:
-            valid = self.validate_yaml(run_id=self.run_id, model_obj=self.model_obj, script=script)
+            valid = self.validate_yaml(run_id=self.run_id, run_obj=self.run_obj, script=script)
             if valid:
                 clone_details = self.repo_clone_details()
                 worked = deployed = installed = True
@@ -273,27 +263,27 @@ class Actions(Validator):
                         container.delete()
         r.rpush(self.run_id, "hamada ok")
         self.cal_status()
-        reporter.report(run_id=self.run_id, model_obj=self.model_obj, schedule_name=schedule_name)
+        reporter.report(run_id=self.run_id, run_obj=self.run_obj)
 
-    def schedule_run(self, job):
-        """Builds, runs tests, calculates status and gives report on telegram.
+    # def schedule_run(self, job):
+    #     """Builds, runs tests, calculates status and gives report on telegram.
 
-        :param schedule_name: the name of the scheduled run.
-        :type schedule_name: str
-        :param script: the script that should run your schedule.
-        :type script: str
-        """
-        triggered_by = job.get("triggered_by", "ZeroCI Scheduler")
-        data = {
-            "status": PENDING,
-            "timestamp": int(datetime.now().timestamp()),
-            "schedule_name": job["schedule_name"],
-            "triggered_by": triggered_by,
-            "bin_release": None,
-        }
-        scheduler_run = SchedulerRun(**data)
-        scheduler_run.save()
-        id = str(scheduler_run.id)
-        data["id"] = id
-        r.publish("zeroci_status", json.dumps(data))
-        self.build_and_test(id=id, schedule_name=job["schedule_name"], script=job)
+    #     :param schedule_name: the name of the scheduled run.
+    #     :type schedule_name: str
+    #     :param script: the script that should run your schedule.
+    #     :type script: str
+    #     """
+    #     triggered_by = job.get("triggered_by", "ZeroCI Scheduler")
+    #     data = {
+    #         "status": PENDING,
+    #         "timestamp": int(datetime.now().timestamp()),
+    #         "schedule_name": job["schedule_name"],
+    #         "triggered_by": triggered_by,
+    #         "bin_release": None,
+    #     }
+    #     scheduler_run = SchedulerRun(**data)
+    #     scheduler_run.save()
+    #     id = str(scheduler_run.id)
+    #     data["id"] = id
+    #     r.publish("zeroci_status", json.dumps(data))
+    #     self.build_and_test(id=id, schedule_name=job["schedule_name"], script=job)

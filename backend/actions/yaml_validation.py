@@ -102,12 +102,6 @@ class Validator:
 
         return msg
 
-    def _report(self, run_id, model_obj, msg):
-        msg = f"{msg} (see examples: https://github.com/threefoldtech/zeroCI/tree/development/docs/config)"
-        redis.rpush(run_id, msg)
-        model_obj.result.append({"type": LOG_TYPE, "status": ERROR, "name": "Yaml File", "content": msg})
-        model_obj.save()
-
     def _validate_job(self, job):
         job_name = job.get("name")
         msg = self._validate_job_name(job_name)
@@ -133,7 +127,13 @@ class Validator:
         msg = self._validate_prerequisites(prerequisites)
         return msg
 
-    def validate_yaml(self, run_id, model_obj, script):
+    def _report(self, run_id, run_obj, msg):
+        msg = f"{msg} (see examples: https://github.com/threefoldtech/zeroCI/tree/development/docs/config)"
+        redis.rpush(run_id, msg)
+        run_obj.result.append({"type": LOG_TYPE, "status": ERROR, "name": "Yaml File", "content": msg})
+        run_obj.save()
+
+    def validate_yaml(self, run_id, run_obj, script):
         jobs = script.get("jobs")
         if not jobs:
             msg = "jobs should be in yaml and shouldn't be empty"
@@ -149,6 +149,6 @@ class Validator:
                         if msg:
                             break
         if msg:
-            self._report(run_id=run_id, model_obj=model_obj, msg=msg)
+            self._report(run_id=run_id, run_obj=run_obj, msg=msg)
             return False
         return True
