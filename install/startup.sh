@@ -1,6 +1,10 @@
 set -ex
-echo "NAMESPACE=$NAMESPACE" >> /etc/environment
-echo "REDIS=$REDIS" >> /etc/environment
+if [ ! -z "$NAMESPACE" ] ; then
+  echo "NAMESPACE=$NAMESPACE" >> /etc/environment
+fi
+if [ ! -z "$REDIS" ] ; then
+  echo "REDIS=$REDIS" >> /etc/environment
+fi
 mkdir /zeroci/xml
 mkdir -p /root/.config/jumpscale/
 cd /sandbox/code/github/threefoldtech/zeroCI/install/config
