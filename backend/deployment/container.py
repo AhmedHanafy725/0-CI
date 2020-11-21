@@ -182,7 +182,8 @@ class Container(Utils):
         vols = [bin_vol, repo_vol]
         ports = client.V1ContainerPort(container_port=22)
         non_interactive = client.V1EnvVar(name="DEBIAN_FRONTEND", value="noninteractive")
-        redis_server = client.V1EnvVar(name="NEPH_REDIS", value="redis://redis:6379")
+        redis_server = os.environ.get("REDIS", "redis")
+        redis_server = client.V1EnvVar(name="NEPH_REDIS", value=f"redis://{redis_server}:6379")
         env.extend([non_interactive, redis_server])
         if self.shell_bin in ["/bin/bash", "/bin/sh"]:
             commands = [self.shell_bin, "-ce", "env | grep _ >> /etc/environment && sleep 3600"]
@@ -244,7 +245,7 @@ class Container(Utils):
         self.name = self.random_string()
         self.test_container_name = f"test-{self.name}"
         self.helper_container_name = f"helper-{self.name}"
-        self.namespace = "default"
+        self.namespace = os.environ.get("NAMESPACE", "default")
         if prerequisites.get("shell_bin"):
             self.shell_bin = prerequisites["shell_bin"]
         for _ in range(RETRIES):

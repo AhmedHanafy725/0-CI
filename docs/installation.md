@@ -3,32 +3,53 @@
 ## Installation
 
 - Create a [kubernetes cluster](https://manual2.threefold.io/#/kubernetes).
-- Create a [solution expose](https://manual2.threefold.io/#/exposed) to tls-port 30443 and port 30080
+- Create a [solution expose](https://manual2.threefold.io/#/exposed) to tls-port 443 and port 80.
 - Connect to the cluster using `ssh`.
-- Create zeroci directory and get installation yaml files.
+- Install [helm](https://helm.sh/docs/intro/install/).
+
+### Install from repository
+
+- Clone the repository and go to installation directory.
 
   ```bash
-  mkdir ~/zeroci
-  cd ~/zeroci
-  for s in authorization deployment service redis; do curl https://raw.githubusercontent.com/threefoldtech/zeroCI/development/install/zeroci/$s.yaml --output $s.yaml; done
+  git clone https://github.com/threefoldtech/zeroCI.git
+  cd zeroCI/install/zeroci
   ```
-- Set ZeroCI domain and should be the same as one on solution expose in the second step.
+
+- Install ZeroCI.
+  (**Note:** the domain used should be the same as the one on solution expose in the second step.
 
   ```bash
-  sed -i 's/SERVER_DOMAIN/<your server domain>/g' ~/zeroci/deployment.yaml
+  helm install mytest . --namespace myspace --create-namespace --set "ingress.hosts[0].host=<domain>" --set "ingress.hosts[0].paths[0]=/"
   ```
 
   **Example:**
-    If you need to set Domain to `zeroci.grid.tf`, so the command will be:
+    If you need to set domain to `zeroci.grid.tf`, so the command will be:
 
   ```bash
-  sed -i 's/SERVER_DOMAIN/zeroci.grid.tf/g' ~/zeroci/deployment.yaml
+  helm install mytest . --namespace myspace --create-namespace --set "ingress.hosts[0].host=zeroci.grid.tf" --set "ingress.hosts[0].paths[0]=/"
   ```
 
-- Apply the installation yaml files.
+### Install from marketplace
+
+- Add marketplace helm charts repository.
 
   ```bash
-  kubectl apply -f ~/zeroci
+  helm repo add marketplace https://threefoldtech.github.io/marketplace-charts/
+  ```
+
+- Install ZeroCI.
+  (**Note:** the domain used should be the same as the one on solution expose in the second step.
+
+  ```bash
+  helm install mytest marketplace/zeroci --namespace myspace --create-namespace --set "ingress.hosts[0].host=<domain>" --set "ingress.hosts[0].paths[0]=/"
+  ```
+
+  **Example:**
+    If you need to set domain to `zeroci.grid.tf`, so the command will be:
+
+  ```bash
+  helm install mytest marketplace/zeroci --namespace myspace --create-namespace --set "ingress.hosts[0].host=zeroci.grid.tf" --set "ingress.hosts[0].paths[0]=/"
   ```
 
 ## Configuration
