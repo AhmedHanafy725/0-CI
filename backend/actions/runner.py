@@ -8,14 +8,14 @@ import redis
 import requests
 import yaml
 
-from actions.yaml_validation import Validator
+from actions.validator import Validator
 from deployment.container import Container
 from kubernetes.client import V1EnvVar
 from models.initial_config import InitialConfig
 from models.run_config import RunConfig
 from models.run import Run
 from packages.vcs.vcs import VCSFactory
-from utils.reporter import Reporter
+from actions.reporter import Reporter
 from utils.utils import Utils
 
 container = Container()
@@ -32,7 +32,7 @@ TESTSUITE_TYPE = "testsuite"
 NEPH_TYPE = "neph"
 
 
-class Actions(Validator):
+class Runner:
     _REPOS_DIR = "/zeroci/code/vcs_repos"
     _BIN_DIR = "/zeroci/bin/"
     run_id = None
@@ -159,22 +159,6 @@ class Actions(Validator):
             env.append(env_var)
         return env
 
-    def _load_yaml(self):
-        vcs_obj = VCSFactory().get_cvn(repo=self.run_obj.repo)
-        script = vcs_obj.get_content(ref=self.run_obj.commit, file_path="zeroCI.yaml")
-        if script:
-            try:
-                return yaml.safe_load(script)
-            except:
-                msg = traceback.format_exc()
-        else:
-            msg = "zeroCI.yaml is not found on the repository's home"
-
-        r.rpush(self.run_id, msg)
-        self.run_obj.result.append({"type": LOG_TYPE, "status": ERROR, "name": "Yaml File", "content": msg})
-        self.run_obj.save()
-        return False
-
     def repo_clone_details(self):
         """Clone repo.
         """
@@ -205,7 +189,7 @@ class Actions(Validator):
         return bin_local_path
 
     def _get_bin(self, bin_remote_path, job_number):
-        if bin_remote_path and job_number == 0:
+        if bin_remote_path and not job_number:
             bin_local_path = self._prepare_bin_dirs(bin_remote_path)
             bin_release = bin_local_path.split(os.path.sep)[-1]
             bin_tmp_path = os.path.join(self._BIN_DIR, bin_release)
@@ -234,7 +218,7 @@ class Actions(Validator):
         """
         self.run_id = id
     
-        self.run_obj = TriggerRun.get(id=self.run_id)
+        self.run_obj = Run.get(id=self.run_id)
         script = self._load_yaml()
 
         if script:
