@@ -26,7 +26,7 @@ def remove(factory, days=30):
         time_diff = now_time - run_time
         if time_diff.days > days:
             factory.delete(name)
-            r.delete(obj.id)
+            r.delete(obj.run_id)
 
 
 def get_size_in_giga_bytes(path):

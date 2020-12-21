@@ -28,7 +28,7 @@ class Reporter:
         bin_release = run_obj.bin_release
         triggered_by = run_obj.triggered_by
         msg = self.report_msg(status=run_obj.status)
-        url = f"/repos/{run_obj.repo}/{run_obj.branch}/{run_obj.id}"
+        url = f"/repos/{run_obj.repo}/{run_obj.branch}/{run_obj.run_id}"
         link = urljoin(configs.domain, url)
         if bin_release:
             bin_url = f"/bin/{run_obj.repo}/{run_obj.branch}/{bin_release}"
@@ -44,7 +44,7 @@ class Reporter:
             "branch": run_obj.branch,
             "bin_release": bin_release,
             "triggered_by": triggered_by,
-            "id": run_id,
+            "run_id": run_id,
         }
         r.publish("zeroci_status", json.dumps(data))
         vcs_obj = VCSFactory().get_cvn(repo=run_obj.repo)

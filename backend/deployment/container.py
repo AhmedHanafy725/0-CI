@@ -90,12 +90,12 @@ class Container(Utils):
         except:
             return False
 
-    def redis_push(self, id, content, verbose=True):
+    def redis_push(self, run_id, content, verbose=True):
         if verbose:
             r = redis.Redis()
-            r.rpush(id, content)
+            r.rpush(run_id, content)
 
-    def execute_command(self, cmd, id, verbose=True):
+    def execute_command(self, cmd, run_id, verbose=True):
         """Execute a command on a remote machine using ssh.
 
         :param cmd: command to be executed on a remote machine.
@@ -123,7 +123,7 @@ class Container(Utils):
             )
         except:
             out += "Couldn't run on the testing container, container become unreachable"
-            self.redis_push(id, out, verbose=verbose)
+            self.redis_push(run_id, out, verbose=verbose)
             rc = 137
             return Complete_Execution(rc, out)
 
@@ -133,18 +133,18 @@ class Container(Utils):
                 content = response.read_stdout(timeout=600)
             except:
                 msg = "\nConnectionError: Couldn't execute cmd on the runner"
-                self.redis_push(id, msg, verbose=verbose)
+                self.redis_push(run_id, msg, verbose=verbose)
                 out += msg
                 rc = 124
                 break
             end = time.time()
             time_taken = end - start
             if content:
-                self.redis_push(id, content, verbose=verbose)
+                self.redis_push(run_id, content, verbose=verbose)
                 out += content
             elif time_taken > 590:
                 msg = "\nTimeout exceeded 10 mins with no output"
-                self.redis_push(id, msg, verbose=verbose)
+                self.redis_push(run_id, msg, verbose=verbose)
                 out += msg
                 rc = 124
                 response.close()
@@ -154,13 +154,13 @@ class Container(Utils):
             rc = response.returncode
         if rc == 137:
             msg = "Runner expired (job takes more than 1 hour)"
-            self.redis_push(id, msg, verbose=verbose)
+            self.redis_push(run_id, msg, verbose=verbose)
             out += msg
 
         return Complete_Execution(rc, out)
 
     def get_remote_file(self, remote_path, local_path):
-        response = self.execute_command(f"cat {remote_path}", id="", verbose=False)
+        response = self.execute_command(f"cat {remote_path}", run_id="", verbose=False)
         if not response.returncode:
             self.write_file(text=response.stdout, file_path=local_path)
             return True
@@ -278,7 +278,7 @@ class Container(Utils):
         except:
             pass
 
-    def run_test(self, run_cmd, id):
+    def run_test(self, run_cmd, run_id):
         """Run test command and get the result as xml file if the running command is following junit otherwise result will be log.
 
         :param run_cmd: test command to be run.
@@ -289,14 +289,14 @@ class Container(Utils):
         :type env: dict
         :return: path to xml file if exist and subprocess object containing (returncode, stdout, stderr)
         """
-        response = self.execute_command(run_cmd, id=id)
+        response = self.execute_command(run_cmd, run_id=run_id)
         file_path = "/zeroci/xml/{}.xml".format(self.random_string())
         remote_path = "/test.xml"
         copied = self.get_remote_file(remote_path=remote_path, local_path=file_path)
         if copied:
             file_path = file_path
             delete_cmd = f"rm -f {remote_path}"
-            self.execute_command(delete_cmd, id=id)
+            self.execute_command(delete_cmd, run_id=run_id)
         else:
             if os.path.exists(file_path):
                 os.remove(file_path)

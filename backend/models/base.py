@@ -3,7 +3,7 @@ from jumpscale.core.base import Base, fields, StoredFactory
 
 class Document(Base):
     @property
-    def id(self):
+    def run_id(self):
         return self.instance_name.strip("model")
 
     @property
@@ -15,8 +15,8 @@ class ModelFactory:
     _model = None
 
     @classmethod
-    def get(cls, id):
-        name = "model" + str(id)
+    def get(cls, run_id):
+        name = "model" + str(run_id)
         return cls._model.find(name)
 
     @classmethod
@@ -67,7 +67,7 @@ class ModelFactory:
             obj_dict = {}
             for field in fields:
                 obj_dict[field] = getattr(obj, field)
-            obj_dict["id"] = obj.instance_name.strip("model")
+            obj_dict["run_id"] = obj.instance_name.strip("model")
             results.append(obj_dict)
 
         if order_by:

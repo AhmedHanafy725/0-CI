@@ -10,6 +10,7 @@ from models.run import Run
 from packages.vcs.vcs import VCSFactory
 from redis import Redis
 from rq import Queue
+from models.run import Run
 
 from actions.runner import Runner
 
@@ -23,9 +24,9 @@ BIN_DIR = "/zeroci/bin/"
 
 
 class Trigger:
-    def _load_yaml(self, repo):
+    def _load_config(self, run_id, repo, commit):
         vcs_obj = VCSFactory().get_cvn(repo=repo)
-        script = vcs_obj.get_content(ref=self.run_obj.commit, file_path="zeroCI.yaml")
+        script = vcs_obj.get_content(ref=commit, file_path="zeroCI.yaml")
         if script:
             try:
                 return yaml.safe_load(script)
@@ -34,23 +35,19 @@ class Trigger:
         else:
             msg = "zeroCI.yaml is not found on the repository's home"
 
-        redis.rpush(self.run_id, msg)
-        self.run_obj.result.append({"type": LOG_TYPE, "status": ERROR, "name": "Yaml File", "content": msg})
-        self.run_obj.save()
+        redis.rpush(run_id, msg)
+        run_obj = Run.get(run_id=run_id)
+        run_obj.result.append({"type": LOG_TYPE, "status": ERROR, "name": "Yaml File", "content": msg})
+        run_obj.save()
         return False
 
-    def enqueue(self, repo="", branch="", commit="", committer="", id=None, triggered=True):
+    def enqueue(self, repo="", branch="", commit="", committer="", run_id=None, triggered=True):
         configs = InitialConfig()
         status = PENDING
         timestamp = datetime.now().timestamp()
-        yaml_config = self._load_yaml(repo)
-        if yaml_config:
-            valid = self.validate_yaml(yaml_config)
-            if valid:
-                pass #FIXME
-        if id:
+        if run_id:
             # Triggered from id.
-            run = Run.get(id=id)
+            run = Run.get(run_id=run_id)
             triggered_by = request.environ.get("beaker.session").get("username").strip(".3bot")
             data = {
                 "timestamp": timestamp,
@@ -61,7 +58,7 @@ class Trigger:
                 "branch": run.branch,
                 "triggered_by": triggered_by,
                 "bin_release": None,
-                "id": id,
+                "run_id": run_id,
             }
             run.timestamp = int(timestamp)
             run.status = status
@@ -74,7 +71,7 @@ class Trigger:
             run.bin_release = None
             run.save()
             for key in redis.keys():
-                if id in key.decode():
+                if run_id in key.decode():
                     redis.delete(key)
             redis.publish("zeroci_status", json.dumps(data))
         else:
@@ -95,13 +92,19 @@ class Trigger:
                 }
                 run = Run(**data)
                 run.save()
-                id = str(run.id)
-                data["id"] = id
+                run_id = str(run.run_id)
+                data["run_id"] = run_id
                 redis.publish("zeroci_status", json.dumps(data))
-        if id:
-            link = f"{configs.domain}/repos/{run.repo}/{run.branch}/{str(run.id)}"
+        if run_id:
+            yaml_config = self._load_config(run_id, repo, commit)
+            if yaml_config:
+                valid = self.validate_yaml(yaml_config)
+                if valid:
+                    pass
+            
+            link = f"{configs.domain}/repos/{run.repo}/{run.branch}/{str(run.run_id)}"
             vcs_obj = VCSFactory().get_cvn(repo=run.repo)
             vcs_obj.status_send(status=status, link=link, commit=run.commit)
-            job = q.enqueue_call(func=Runner.build_and_test, args=(id,), result_ttl=5000, timeout=20000)
+            job = q.enqueue_call(func=Runner.build_and_test, args=(run_id,), result_ttl=5000, timeout=20000)
             return job
         return None

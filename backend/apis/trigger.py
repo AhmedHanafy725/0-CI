@@ -58,14 +58,14 @@ def run_trigger():
         redirect("/")
 
     if request.headers.get("Content-Type") == "application/json":
-        id = request.json.get("id")
-        if id:
-            run = Run.get(id=id)
+        run_id = request.json.get("id")
+        if run_id:
+            run = Run.get(run_id=run_id)
             if run.status == PENDING:
                 return HTTPResponse(
-                    f"There is a running job for this id {id}, please try again after this run finishes", 503
+                    f"There is a running job for this run_id {run_id}, please try again after this run finishes", 503
                 )
-            job = trigger.enqueue(id=id)
+            job = trigger.enqueue(run_id=run_id)
             return HTTPResponse(job.get_id(), 200)
 
         repo = request.json.get("repo")

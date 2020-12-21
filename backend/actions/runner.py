@@ -52,7 +52,7 @@ class Runner:
 
     def normal_run(self, job_name, line):
         status = SUCCESS
-        response, file_path = container.run_test(id=self.run_id, run_cmd=line["cmd"])
+        response, file_path = container.run_test(run_id=self.run_id, run_cmd=line["cmd"])
         result = response.stdout
         type = LOG_TYPE
         if response.returncode:
@@ -78,7 +78,7 @@ class Runner:
         yaml_path = line["yaml_path"]
         neph_id = f"{self.run_id}:{job_name}:{line['name']}"
         cmd = f"export NEPH_RUN_ID='{neph_id}' \n cd {working_dir} \n /zeroci/bin/neph -y {yaml_path} -m CI"
-        response = container.execute_command(cmd=cmd, id=self.run_id)
+        response = container.execute_command(cmd=cmd, run_id=self.run_id)
         if response.returncode:
             status = FAILURE
 
@@ -120,7 +120,7 @@ class Runner:
                 result = response.stdout
                 r.rpush(self.run_id, result)
             else:
-                response = container.execute_command(cmd=job["install"], id=self.run_id)
+                response = container.execute_command(cmd=job["install"], run_id=self.run_id)
                 if response.returncode:
                     name = "{job_name}: Installation".format(job_name=job["name"])
                     result = response.stdout
@@ -194,7 +194,7 @@ class Runner:
             bin_release = bin_local_path.split(os.path.sep)[-1]
             bin_tmp_path = os.path.join(self._BIN_DIR, bin_release)
             cmd = f"cp {bin_remote_path} {bin_tmp_path}"
-            container.execute_command(cmd=cmd, id="", verbose=False)
+            container.execute_command(cmd=cmd, run_id="", verbose=False)
             container.ssh_get_remote_file(remote_path=bin_tmp_path, local_path=bin_local_path)
 
             if os.path.exists(bin_local_path):
@@ -208,7 +208,7 @@ class Runner:
             container.ssh_set_remote_file(remote_path=bin_remote_path, local_path=bin_local_path)
             container.ssh_command(f"chmod +x {bin_remote_path}")
 
-    def build_and_test(self, id):
+    def build_and_test(self, run_id):
         """Builds, runs tests, calculates status and gives report on telegram and your version control system.
         
         :param id: DB's id of this run details.
@@ -216,9 +216,9 @@ class Runner:
         :param schedule_name: it will have a value if the run is scheduled.
         :param schedule_name: str
         """
-        self.run_id = id
+        self.run_id = run_id
     
-        self.run_obj = Run.get(id=self.run_id)
+        self.run_obj = Run.get(run_id=self.run_id)
         script = self._load_yaml()
 
         if script:

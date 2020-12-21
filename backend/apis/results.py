@@ -33,10 +33,10 @@ def result(repo):
     :param id: DB id of test details.
     """
     branch = request.query.get("branch")
-    id = request.query.get("id")
+    run_id = request.query.get("id")
 
-    if id:
-        run = Run.get(id=id)
+    if run_id:
+        run = Run.get(run_id=id)
         live = True if run.status == PENDING else False
         return json.dumps({"live": live, "result": run.result})
 
@@ -74,7 +74,7 @@ def status():
     if len(run) == 0:
         return abort(404)
     if result:
-        link = f"{configs.domain}/repos/{repo.replace('/', '%2F')}/{branch}/{str(run[0]['id'])}"
+        link = f"{configs.domain}/repos/{repo.replace('/', '%2F')}/{branch}/{str(run[0]['run_id'])}"
         return redirect(link)
     if run[0]["status"] == SUCCESS:
         return static_file("svgs/build_passing.svg", mimetype="image/svg+xml", root=".")

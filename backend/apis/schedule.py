@@ -65,7 +65,7 @@ def schedule():
                     cron_string=job["run_time"],
                     func=actions.schedule_run,
                     args=[job,],
-                    id=job["schedule_name"],
+                    run_id=job["schedule_name"],
                     timeout=-1,
                 )
             except:
