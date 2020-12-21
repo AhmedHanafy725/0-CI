@@ -17,6 +17,7 @@ PENDING = "pending"
 def git_trigger():
     """Trigger the test when a post request is sent from a repo's webhook.
     """
+    # TODO: handle the case of running from push and pull request to not run it twice.
     configs = InitialConfig()
     if request.headers.get("Content-Type") == "application/json":
         job = ""
@@ -32,7 +33,7 @@ def git_trigger():
                 committer = request.json["pusher"]["login"]
             branch_exist = not commit.startswith("000000")
             if branch_exist:
-                job = trigger.enqueue(repo=repo, branch=branch, commit=commit, committer=committer, triggered=False)
+                job = trigger.enqueue(repo=repo, branch=branch, commit=commit, committer=committer)
 
         # pull case
         # TODO: Handle the request for gitea.
@@ -43,7 +44,7 @@ def git_trigger():
                 target_branch = request.json["pull_request"]["base"]["ref"]
                 commit = request.json["pull_request"]["head"]["sha"]
                 committer = request.json["sender"]["login"]
-                job = trigger.enqueue(repo=repo, branch=current_branch, commit=commit, committer=committer, triggered=False)
+                job = trigger.enqueue(repo=repo, branch=current_branch, commit=commit, committer=committer, target_branch=target_branch)
         if job:
             return HTTPResponse(job.get_id(), 201)
         return HTTPResponse("Nothing to be done", 200)
@@ -65,7 +66,7 @@ def run_trigger():
                 return HTTPResponse(
                     f"There is a running job for this run_id {run_id}, please try again after this run finishes", 503
                 )
-            job = trigger.enqueue(run_id=run_id)
+            job = trigger.enqueue(run_id=run_id, triggered=True)
             return HTTPResponse(job.get_id(), 200)
 
         repo = request.json.get("repo")
@@ -80,7 +81,7 @@ def run_trigger():
                 f"There is a running job from this commit {last_commit}, please try again after this run finishes", 503
             )
         if last_commit:
-            job = trigger.enqueue(repo=repo, branch=branch, commit=last_commit, committer=committer)
+            job = trigger.enqueue(repo=repo, branch=branch, commit=last_commit, committer=committer, triggered=True)
         else:
             return HTTPResponse(f"Couldn't get last commit from this branch {branch}, please try again", 503)
         if job:

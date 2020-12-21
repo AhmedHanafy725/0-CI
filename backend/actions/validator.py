@@ -1,7 +1,7 @@
 import requests
-from redis import Redis
+# from redis import Redis
 
-redis = Redis()
+# redis = Redis()
 ERROR = "error"
 LOG_TYPE = "log"
 
@@ -127,6 +127,43 @@ class Validator:
         msg = self._validate_prerequisites(prerequisites)
         return msg
 
+    def _validate_run_on(self, run_on):
+        msg = ""
+        if not run_on:
+            msg = "run_on should be in yaml and shouldn't be empty"
+        else:
+            if not isinstance(run_on, dict):
+                msg = "run_on should have push or pull_request as keys"
+            else:
+                push = run_on.get("push")
+                pull_request = run_on.get("pull_request")
+                if not any([push, pull_request]):
+                    msg = "run_on should have push or pull_request as keys and at least one of them should be filled"
+                else:
+                    if push:
+                        if not isinstance(push, dict):
+                            msg = "push should have branches as a key"
+                        else:
+                            branches = push.get("branches")
+                            if branches and not isinstance(branches, list):
+                                msg = "branches shouldn't be empty and it should be of contain list of the branches"
+                            else:
+                                for branch in branches:
+                                    if not isinstance(branch, str):
+                                        msg = "branches should be list of str"
+                    if pull_request: 
+                        if not isinstance(pull_request, dict):
+                            msg = "pull_request should have branches as a key"
+                        else:
+                            branches = pull_request.get("branches")
+                            if branches and not isinstance(branches, list):
+                                msg = "branches shouldn't be empty and it should be of contain list of the branches"
+                            else:
+                                for branch in branches:
+                                    if not isinstance(branch, str):
+                                        msg = "branches should be list of str"
+        return msg
+
     # def _report(self, run_id, run_obj, msg):
     #     msg = f"{msg} (see examples: https://github.com/threefoldtech/zeroCI/tree/development/docs/config)"
     #     redis.rpush(run_id, msg)
@@ -148,6 +185,10 @@ class Validator:
                         msg = self._validate_job(job)
                         if msg:
                             break
+
+        run_on = config.get("run_on")
+        msg = self._validate_run_on(run_on)
+
         if msg:
-            return msg
-        return True
+            return False, msg
+        return True, ""

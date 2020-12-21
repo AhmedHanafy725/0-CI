@@ -208,7 +208,7 @@ class Runner:
             container.ssh_set_remote_file(remote_path=bin_remote_path, local_path=bin_local_path)
             container.ssh_command(f"chmod +x {bin_remote_path}")
 
-    def build_and_test(self, run_id):
+    def build_and_test(self, run_id, repo_config):
         """Builds, runs tests, calculates status and gives report on telegram and your version control system.
         
         :param id: DB's id of this run details.
@@ -217,34 +217,28 @@ class Runner:
         :param schedule_name: str
         """
         self.run_id = run_id
-    
         self.run_obj = Run.get(run_id=self.run_id)
-        script = self._load_yaml()
-
-        if script:
-            valid = self.validate_yaml(run_id=self.run_id, run_obj=self.run_obj, script=script)
-            if valid:
-                clone_details = self.repo_clone_details()
-                worked = deployed = installed = True
-                for i, job in enumerate(script["jobs"]):
-                    if not (worked and deployed and installed):
-                        break
-                    log = """
-                    ******************************************************
-                    Starting {job_name} job
-                    ******************************************************
-                    """.format(
-                        job_name=job["name"]
-                    ).replace(
-                        "  ", ""
-                    )
-                    r.rpush(self.run_id, log)
-                    deployed, installed = self.build(job=job, clone_details=clone_details, job_number=i)
-                    if deployed:
-                        if installed:
-                            worked = self.test_run(job=job)
-                            self._get_bin(bin_remote_path=job.get("bin_path"), job_number=i)
-                        container.delete()
+        clone_details = self.repo_clone_details()
+        worked = deployed = installed = True
+        for i, job in enumerate(repo_config["jobs"]):
+            if not (worked and deployed and installed):
+                break
+            log = """
+            ******************************************************
+            Starting {job_name} job
+            ******************************************************
+            """.format(
+                job_name=job["name"]
+            ).replace(
+                "  ", ""
+            )
+            r.rpush(self.run_id, log)
+            deployed, installed = self.build(job=job, clone_details=clone_details, job_number=i)
+            if deployed:
+                if installed:
+                    worked = self.test_run(job=job)
+                    self._get_bin(bin_remote_path=job.get("bin_path"), job_number=i)
+                container.delete()
         r.rpush(self.run_id, "hamada ok")
         self.cal_status()
         reporter.report(run_id=self.run_id, run_obj=self.run_obj)
