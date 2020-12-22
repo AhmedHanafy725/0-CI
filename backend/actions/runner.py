@@ -7,16 +7,16 @@ from urllib.parse import urljoin
 import redis
 import requests
 import yaml
-
-from actions.validator import Validator
 from deployment.container import Container
 from kubernetes.client import V1EnvVar
 from models.initial_config import InitialConfig
-from models.run_config import RunConfig
 from models.run import Run
+from models.run_config import RunConfig
 from packages.vcs.vcs import VCSFactory
-from actions.reporter import Reporter
 from utils.utils import Utils
+
+from actions.reporter import Reporter
+from actions.validator import Validator
 
 container = Container()
 reporter = Reporter()
@@ -39,8 +39,7 @@ class Runner:
     run_obj = None
 
     def test_run(self, job):
-        """Runs tests and store the result in DB.
-        """
+        """Runs tests and store the result in DB."""
         for line in job["script"]:
             if line.get("type") == "neph":
                 finished = self.neph_run(job_name=job["name"], line=line)
@@ -106,8 +105,7 @@ class Runner:
         return True
 
     def build(self, job, clone_details, job_number):
-        """Create VM with the required prerequisties and run installation steps to get it ready for running tests.
-        """
+        """Create VM with the required prerequisties and run installation steps to get it ready for running tests."""
         env = self._get_run_env()
         deployed = container.deploy(env=env, prerequisites=job["prerequisites"], repo_path=clone_details["remote_path"])
         installed = False
@@ -138,8 +136,7 @@ class Runner:
         return deployed, installed
 
     def cal_status(self):
-        """Calculate the status of the whole tests result has been stored on the BD's id.
-        """
+        """Calculate the status of the whole tests result has been stored on the BD's id."""
         status = SUCCESS
         for result in self.run_obj.result:
             if result["status"] != SUCCESS:
@@ -148,8 +145,7 @@ class Runner:
         self.run_obj.save()
 
     def _get_run_env(self):
-        """Get run environment variables.
-        """
+        """Get run environment variables."""
         name = self.run_obj.repo
         run_config = RunConfig(name=name)
         run_env = run_config.env
@@ -160,8 +156,7 @@ class Runner:
         return env
 
     def repo_clone_details(self):
-        """Clone repo.
-        """
+        """Clone repo."""
         configs = InitialConfig()
         repo_remote_path = os.path.join(self._REPOS_DIR, self.run_obj.repo)
         clone_url = urljoin(configs.vcs_host, f"{self.run_obj.repo}.git")
@@ -210,7 +205,7 @@ class Runner:
 
     def build_and_test(self, run_id, repo_config):
         """Builds, runs tests, calculates status and gives report on telegram and your version control system.
-        
+
         :param id: DB's id of this run details.
         :type id: str
         :param schedule_name: it will have a value if the run is scheduled.

@@ -1,5 +1,7 @@
-from .base import Document, ModelFactory, fields, StoredFactory
 import uuid
+
+from .base import Document, ModelFactory, StoredFactory, fields
+
 
 class RunModel(Document):
     timestamp = fields.Integer(required=True, indexed=True)

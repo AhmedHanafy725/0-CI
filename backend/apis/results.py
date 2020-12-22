@@ -1,11 +1,11 @@
 import json
 
-from apis.base import app, check_configs
 from bottle import abort, redirect, request, static_file
 from models.initial_config import InitialConfig
 from models.run import Run
 from packages.vcs.vcs import VCSFactory
 
+from apis.base import app, check_configs
 
 SUCCESS = "success"
 FAILURE = "failure"
@@ -16,8 +16,7 @@ PENDING = "pending"
 @app.route("/api/")
 @check_configs
 def home():
-    """Return repos and schedules which are running on the server.
-    """
+    """Return repos and schedules which are running on the server."""
     configs = InitialConfig()
     result = {"repos": configs.repos}
     return json.dumps(result)
@@ -57,8 +56,7 @@ def result(repo):
 @app.route("/status")
 @check_configs
 def status():
-    """Returns repo's branch or schedule status for your version control system.
-    """
+    """Returns repo's branch or schedule status for your version control system."""
     repo = request.query.get("repo")
     branch = request.query.get("branch")
     result = request.query.get("result")  # to return the run result

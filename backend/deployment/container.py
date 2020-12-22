@@ -5,7 +5,6 @@ import time
 import paramiko
 import redis
 import yaml
-
 from kubernetes import client, config
 from kubernetes.stream import stream
 from utils.utils import Utils
@@ -220,7 +219,10 @@ class Container(Utils):
             resources=resources,
         )
         spec = client.V1PodSpec(
-            volumes=vols, containers=[test_container, helper_container], hostname=self.name, restart_policy="Never",
+            volumes=vols,
+            containers=[test_container, helper_container],
+            hostname=self.name,
+            restart_policy="Never",
         )
         meta = client.V1ObjectMeta(name=self.name, namespace=self.namespace, labels={"app": self.name})
         pod = client.V1Pod(api_version="v1", kind="Pod", metadata=meta, spec=spec)
@@ -270,8 +272,7 @@ class Container(Utils):
                 break
 
     def delete(self):
-        """Delete the container after finishing test.
-        """
+        """Delete the container after finishing test."""
         try:
             self.client.delete_namespaced_pod(name=self.name, namespace=self.namespace)
             self.client.delete_namespaced_service(name=self.name, namespace=self.namespace)

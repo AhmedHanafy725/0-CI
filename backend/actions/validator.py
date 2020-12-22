@@ -1,6 +1,9 @@
+import traceback
+
 import requests
 from croniter import croniter
-import traceback
+
+
 class Validator:
     def _validate_test_script(self, test_script):
         msg = ""
@@ -151,7 +154,7 @@ class Validator:
                                     for branch in branches:
                                         if not isinstance(branch, str):
                                             msg = "branches should be list of str"
-                    if pull_request: 
+                    if pull_request:
                         if not isinstance(pull_request, dict):
                             msg = "pull_request should have branches as a key"
                         else:
@@ -166,7 +169,7 @@ class Validator:
                                         if not isinstance(branch, str):
                                             msg = "branches should be list of str"
 
-                    if manual: 
+                    if manual:
                         if not isinstance(manual, dict):
                             msg = "manual should have branches as a key"
                         else:
@@ -180,8 +183,8 @@ class Validator:
                                     for branch in branches:
                                         if not isinstance(branch, str):
                                             msg = "branches should be list of str"
-                    
-                    if schedule: 
+
+                    if schedule:
                         if not isinstance(schedule, dict):
                             msg = "schedule should have branch and cron as keys"
                         else:
@@ -202,9 +205,7 @@ class Validator:
                                         croniter(cron)
                                     except Exception as e:
                                         msg = traceback.format_exc(e)
-                                        
 
-                    
         return msg
 
     def validate_yaml(self, config):

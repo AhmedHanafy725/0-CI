@@ -2,21 +2,20 @@ import json
 import sys
 
 import requests
-from telegram import Bot
-from telegram.error import BadRequest, InvalidToken, Unauthorized
-
-from apis.base import admin, app, check_configs, user
 from bottle import HTTPResponse, abort, request
 from models.initial_config import InitialConfig
 from models.run_config import RunConfig
 from packages.vcs.vcs import VCSFactory
+from telegram import Bot
+from telegram.error import BadRequest, InvalidToken, Unauthorized
+
+from apis.base import admin, app, check_configs, user
 
 
 @app.route("/api/telegram_config", method=["GET", "POST"])
 @admin
 def validate_telegam():
-    """Validate telegram token and chat ID
-    """
+    """Validate telegram token and chat ID"""
     configs = InitialConfig()
     confs = ["chat_id", "bot_token"]
     conf_dict = {}
@@ -51,8 +50,7 @@ def validate_telegam():
 @app.route("/api/vcs_config", method=["GET", "POST"])
 @admin
 def vcs_config():
-    """Initial configuration for the ci before start working.
-    """
+    """Initial configuration for the ci before start working."""
     configs = InitialConfig()
     confs = ["domain", "vcs_host", "vcs_token"]
     conf_dict = {}

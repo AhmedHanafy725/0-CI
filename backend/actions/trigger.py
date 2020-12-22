@@ -11,11 +11,11 @@ from models.schedule_info import ScheduleInfo
 from packages.vcs.vcs import VCSFactory
 from redis import Redis
 from rq import Queue
+from rq_scheduler import Scheduler
 
 from actions.reporter import Reporter
 from actions.runner import Runner
 from actions.validator import Validator
-from rq_scheduler import Scheduler
 
 reporter = Reporter()
 runner = Runner()
@@ -44,7 +44,7 @@ class Trigger:
                 msg = traceback.format_exc()
         else:
             msg = "zeroCI.yaml is not found on the repository's home"
-        
+
         return False, "", msg
 
     def enqueue(self, repo="", branch="", commit="", committer="", target_branch="", run_id=None, triggered=False):
@@ -54,16 +54,20 @@ class Trigger:
             commit = run.commit
         status, config, msg = self._load_config(repo, commit)
         if not status:
-            run , run_id = self._prepare_run_object(repo=repo, branch=branch, commit=commit, committer=committer, run_id=run_id, triggered=triggered)
+            run, run_id = self._prepare_run_object(
+                repo=repo, branch=branch, commit=commit, committer=committer, run_id=run_id, triggered=triggered
+            )
             return self._report(msg, run, run_id)
         validator = Validator()
         valid, msg = validator.validate_yaml(config)
         if not valid:
-            run , run_id = self._prepare_run_object(repo=repo, branch=branch, commit=commit, committer=committer, run_id=run_id, triggered=triggered)
+            run, run_id = self._prepare_run_object(
+                repo=repo, branch=branch, commit=commit, committer=committer, run_id=run_id, triggered=triggered
+            )
             return self._report(msg, run, run_id)
-        
+
         if run_id:
-            run , run_id = self._prepare_run_object(run_id=run_id, triggered=triggered)
+            run, run_id = self._prepare_run_object(run_id=run_id, triggered=triggered)
             return self._trigger(repo_config=config, run=run, run_id=run_id)
 
         push = config["run_on"].get("push")
@@ -77,17 +81,23 @@ class Trigger:
         if push:
             trigger_branches = push["branches"]
             if branch and branch in trigger_branches:
-                run , run_id = self._prepare_run_object(repo=repo, branch=branch, commit=commit, committer=committer, triggered=triggered)
+                run, run_id = self._prepare_run_object(
+                    repo=repo, branch=branch, commit=commit, committer=committer, triggered=triggered
+                )
                 return self._trigger(repo_config=config, run=run, run_id=run_id)
         if pull_request:
             target_branches = pull_request["branches"]
             if target_branch and target_branch in target_branches:
-                run , run_id = self._prepare_run_object(repo=repo, branch=branch, commit=commit, committer=committer, triggered=triggered)
+                run, run_id = self._prepare_run_object(
+                    repo=repo, branch=branch, commit=commit, committer=committer, triggered=triggered
+                )
                 return self._trigger(repo_config=config, run=run, run_id=run_id)
         if manual and triggered:
             trigger_branches = manual["branches"]
             if branch and branch in trigger_branches:
-                run , run_id = self._prepare_run_object(repo=repo, branch=branch, commit=commit, committer=committer, triggered=triggered)
+                run, run_id = self._prepare_run_object(
+                    repo=repo, branch=branch, commit=commit, committer=committer, triggered=triggered
+                )
                 return self._trigger(repo_config=config, run=run, run_id=run_id)
         if schedule:
             schedule_branch = schedule["branch"]
@@ -167,7 +177,7 @@ class Trigger:
             link = f"{configs.domain}/repos/{run.repo}/{run.branch}/{str(run.run_id)}"
             vcs_obj = VCSFactory().get_cvn(repo=run.repo)
             vcs_obj.status_send(status=PENDING, link=link, commit=run.commit)
-            #TODO: before triggering, check that there is not a run with same commit and in state pending.
+            # TODO: before triggering, check that there is not a run with same commit and in state pending.
             job = q.enqueue_call(func=runner.build_and_test, args=(run_id, repo_config), result_ttl=5000, timeout=20000)
             return job
         return

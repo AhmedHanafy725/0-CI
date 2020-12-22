@@ -16,12 +16,12 @@ PENDING = "pending"
 redis = Redis()
 q = Queue(connection=redis, name="zeroci")
 
+
 @app.route("/git_trigger", method=["POST"])
 @check_configs
 def git_trigger():
-    """Trigger the test when a post request is sent from a repo's webhook.
-    """
-    #TODO: make payload validation before work on it.
+    """Trigger the test when a post request is sent from a repo's webhook."""
+    # TODO: make payload validation before work on it.
     configs = InitialConfig()
     if request.headers.get("Content-Type") == "application/json":
         job = ""
@@ -37,7 +37,12 @@ def git_trigger():
                 committer = request.json["pusher"]["login"]
             branch_exist = not commit.startswith("000000")
             if branch_exist:
-                job = q.enqueue_call(trigger.enqueue, args=(repo, branch, commit, committer, "", None, False), result_ttl=5000, timeout=20000)
+                job = q.enqueue_call(
+                    trigger.enqueue,
+                    args=(repo, branch, commit, committer, "", None, False),
+                    result_ttl=5000,
+                    timeout=20000,
+                )
 
         # pull case
         # TODO: Handle the request for gitea.
@@ -48,7 +53,12 @@ def git_trigger():
                 target_branch = request.json["pull_request"]["base"]["ref"]
                 commit = request.json["pull_request"]["head"]["sha"]
                 committer = request.json["sender"]["login"]
-                job = q.enqueue_call(trigger.enqueue, args=(repo, branch, commit, committer, target_branch, None, False), result_ttl=5000, timeout=20000)
+                job = q.enqueue_call(
+                    trigger.enqueue,
+                    args=(repo, branch, commit, committer, target_branch, None, False),
+                    result_ttl=5000,
+                    timeout=20000,
+                )
         if job:
             return HTTPResponse(job.get_id(), 201)
         return HTTPResponse("Nothing to be done", 200)
@@ -70,7 +80,9 @@ def run_trigger():
                 return HTTPResponse(
                     f"There is a running job for this run_id {run_id}, please try again after this run finishes", 503
                 )
-            job = q.enqueue_call(trigger.enqueue, args=("", "", "", "", "", run_id, True), result_ttl=5000, timeout=20000)
+            job = q.enqueue_call(
+                trigger.enqueue, args=("", "", "", "", "", run_id, True), result_ttl=5000, timeout=20000
+            )
             if job:
                 return HTTPResponse(job.get_id(), 200)
 
@@ -86,7 +98,12 @@ def run_trigger():
                 f"There is a running job from this commit {last_commit}, please try again after this run finishes", 503
             )
         if last_commit:
-            job = q.enqueue_call(trigger.enqueue, args=(repo, branch, last_commit, committer, "", None, True), result_ttl=5000, timeout=20000)
+            job = q.enqueue_call(
+                trigger.enqueue,
+                args=(repo, branch, last_commit, committer, "", None, True),
+                result_ttl=5000,
+                timeout=20000,
+            )
         else:
             return HTTPResponse(f"Couldn't get last commit from this branch {branch}, please try again", 503)
         if job:

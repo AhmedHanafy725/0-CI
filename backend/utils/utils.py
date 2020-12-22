@@ -89,7 +89,7 @@ class Utils:
 
     def load_file(self, path):
         """Load file content.
-        
+
         :param path: path to file.
         :type path: str
         :return: file content

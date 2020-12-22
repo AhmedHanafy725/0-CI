@@ -3,11 +3,10 @@ import time
 from abc import ABCMeta, abstractmethod
 from urllib.parse import urljoin
 
+import giteapy
 from github import Github as GH
 from github import UnknownObjectException
 from github.GithubException import GithubException
-
-import giteapy
 from models.initial_config import InitialConfig
 
 
@@ -272,7 +271,12 @@ class Gitea(VCSInterface):
 
     @VCSInterface.call_trial
     def status_send(
-        self, status, link, commit, description="ZeroCI for testing", context="continuous-integration/ZeroCI",
+        self,
+        status,
+        link,
+        commit,
+        description="ZeroCI for testing",
+        context="continuous-integration/ZeroCI",
     ):
         body = {"context": context, "description": description, "state": status, "target_url": link}
         self.repo_obj.repo_create_status(self.owner, self.repo_name, commit, body=body)
