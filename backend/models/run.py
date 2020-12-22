@@ -1,5 +1,5 @@
 from .base import Document, ModelFactory, fields, StoredFactory
-
+import uuid
 
 class RunModel(Document):
     timestamp = fields.Integer(required=True, indexed=True)
@@ -17,6 +17,6 @@ class Run(ModelFactory):
     _model = StoredFactory(RunModel)
 
     def __new__(cls, **kwargs):
-        name = "model" + str(int(kwargs["timestamp"] * 10 ** 6))
+        name = uuid.uuid4().hex
         kwargs["timestamp"] = int(kwargs["timestamp"])
         return cls._model.new(name=name, **kwargs)
