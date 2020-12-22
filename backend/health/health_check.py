@@ -49,6 +49,17 @@ class Health(Utils):
                 if not pid:
                     recover.worker(i)
 
+    def test_zeroci_workers(self):
+        """Check rq workers are up.
+        """
+        pids = self.get_process_pid("python3 zeroci_worker")
+        zeroci_workers = len(pids)
+        if zeroci_workers < 2:
+            for i in range(1, 6):
+                pid = self.get_process_pid(f"python3 zeroci_worker{i}")
+                if not pid:
+                    recover.zeroci_worker(i)
+
     def test_schedule(self):
         """Check rq schedule is up.
         """

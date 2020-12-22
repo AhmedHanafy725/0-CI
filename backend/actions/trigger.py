@@ -19,7 +19,7 @@ reporter = Reporter()
 runner = Runner()
 
 redis = Redis()
-q = Queue(connection=redis)
+q = Queue(connection=redis, name="default")
 PENDING = "pending"
 ERROR = "error"
 
@@ -44,7 +44,7 @@ class Trigger:
         
         return False, "", msg
 
-    def enqueue(self, repo="", branch="", target_branch="", commit="", committer="", run_id=None, triggered=False):
+    def enqueue(self, repo="", branch="", commit="", committer="", target_branch="", run_id=None, triggered=False):
         if run_id:
             run = Run.get(run_id=run_id)
             repo = run.repo
@@ -141,6 +141,7 @@ class Trigger:
             link = f"{configs.domain}/repos/{run.repo}/{run.branch}/{str(run.run_id)}"
             vcs_obj = VCSFactory().get_cvn(repo=run.repo)
             vcs_obj.status_send(status=PENDING, link=link, commit=run.commit)
+            #TODO: before triggering, check that there is not a run with same commit and in state pending.
             job = q.enqueue_call(func=runner.build_and_test, args=(run_id, repo_config), result_ttl=5000, timeout=20000)
             return job
         return

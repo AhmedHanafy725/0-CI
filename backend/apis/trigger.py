@@ -1,23 +1,27 @@
 import json
 
-from apis.base import app, check_configs, user
+from actions.trigger import Trigger
 from bottle import HTTPResponse, redirect, request
 from models.initial_config import InitialConfig
 from models.run import Run
 from packages.vcs.vcs import VCSFactory
-from actions.trigger import Trigger
+from redis import Redis
+from rq import Queue
+
+from apis.base import app, check_configs, user
 
 trigger = Trigger()
 
 PENDING = "pending"
-
+redis = Redis()
+q = Queue(connection=redis, name="zeroci")
 
 @app.route("/git_trigger", method=["POST"])
 @check_configs
 def git_trigger():
     """Trigger the test when a post request is sent from a repo's webhook.
     """
-    # TODO: handle the case of running from push and pull request to not run it twice.
+    #TODO: make payload validation before work on it.
     configs = InitialConfig()
     if request.headers.get("Content-Type") == "application/json":
         job = ""
@@ -33,18 +37,18 @@ def git_trigger():
                 committer = request.json["pusher"]["login"]
             branch_exist = not commit.startswith("000000")
             if branch_exist:
-                job = trigger.enqueue(repo=repo, branch=branch, commit=commit, committer=committer)
+                job = q.enqueue_call(trigger.enqueue, args=(repo, branch, commit, committer, "", None, False), result_ttl=5000, timeout=20000)
 
         # pull case
         # TODO: Handle the request for gitea.
         elif request.json.get("pull_request"):
             if request.json.get("action") in ["opened", "synchronize"]:
                 repo = request.json["pull_request"]["head"]["repo"]["full_name"]
-                current_branch = request.json["pull_request"]["head"]["ref"]
+                branch = request.json["pull_request"]["head"]["ref"]
                 target_branch = request.json["pull_request"]["base"]["ref"]
                 commit = request.json["pull_request"]["head"]["sha"]
                 committer = request.json["sender"]["login"]
-                job = trigger.enqueue(repo=repo, branch=current_branch, commit=commit, committer=committer, target_branch=target_branch)
+                job = q.enqueue_call(trigger.enqueue, args=(repo, branch, commit, committer, target_branch, None, False), result_ttl=5000, timeout=20000)
         if job:
             return HTTPResponse(job.get_id(), 201)
         return HTTPResponse("Nothing to be done", 200)
@@ -66,11 +70,9 @@ def run_trigger():
                 return HTTPResponse(
                     f"There is a running job for this run_id {run_id}, please try again after this run finishes", 503
                 )
-            job = trigger.enqueue(run_id=run_id, triggered=True)
+            job = q.enqueue_call(trigger.enqueue, args=("", "", "", "", "", run_id, True), result_ttl=5000, timeout=20000)
             if job:
                 return HTTPResponse(job.get_id(), 200)
-            else:
-                return HTTPResponse("", 200)
 
         repo = request.json.get("repo")
         branch = request.json.get("branch")
@@ -84,9 +86,9 @@ def run_trigger():
                 f"There is a running job from this commit {last_commit}, please try again after this run finishes", 503
             )
         if last_commit:
-            job = trigger.enqueue(repo=repo, branch=branch, commit=last_commit, committer=committer, triggered=True)
+            job = q.enqueue_call(trigger.enqueue, args=(repo, branch, last_commit, committer, "", None, True), result_ttl=5000, timeout=20000)
         else:
             return HTTPResponse(f"Couldn't get last commit from this branch {branch}, please try again", 503)
         if job:
             return HTTPResponse(job.get_id(), 200)
-        return HTTPResponse("", 200)
+        return HTTPResponse("Wrong data", 400)
