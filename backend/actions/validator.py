@@ -145,30 +145,30 @@ class Validator:
                             msg = "push should have branches as a key"
                         else:
                             branches = push.get("branches")
-                            if branches and not isinstance(branches, list):
-                                msg = "branches shouldn't be empty and it should be of contain list of the branches"
+                            if not branches:
+                                msg = "branches on push shouldn't be empty"
                             else:
-                                for branch in branches:
-                                    if not isinstance(branch, str):
-                                        msg = "branches should be list of str"
+                                if not isinstance(branches, list):
+                                    msg = "branches shouldn't be empty and it should be of contain list of the branches"
+                                else:
+                                    for branch in branches:
+                                        if not isinstance(branch, str):
+                                            msg = "branches should be list of str"
                     if pull_request: 
                         if not isinstance(pull_request, dict):
                             msg = "pull_request should have branches as a key"
                         else:
                             branches = pull_request.get("branches")
-                            if branches and not isinstance(branches, list):
-                                msg = "branches shouldn't be empty and it should be of contain list of the branches"
+                            if not branches:
+                                msg = "branches on pull_request shouldn't be empty"
                             else:
-                                for branch in branches:
-                                    if not isinstance(branch, str):
-                                        msg = "branches should be list of str"
+                                if not isinstance(branches, list):
+                                    msg = "branches shouldn't be empty and it should be of contain list of the branches"
+                                else:
+                                    for branch in branches:
+                                        if not isinstance(branch, str):
+                                            msg = "branches should be list of str"
         return msg
-
-    # def _report(self, run_id, run_obj, msg):
-    #     msg = f"{msg} (see examples: https://github.com/threefoldtech/zeroCI/tree/development/docs/config)"
-    #     redis.rpush(run_id, msg)
-    #     run_obj.result.append({"type": LOG_TYPE, "status": ERROR, "name": "Yaml File", "content": msg})
-    #     run_obj.save()
 
     def validate_yaml(self, config):
         jobs = config.get("jobs")

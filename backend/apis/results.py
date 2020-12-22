@@ -36,7 +36,7 @@ def result(repo):
     run_id = request.query.get("id")
 
     if run_id:
-        run = Run.get(run_id=id)
+        run = Run.get(run_id=run_id)
         live = True if run.status == PENDING else False
         return json.dumps({"live": live, "result": run.result})
 

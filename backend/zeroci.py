@@ -8,7 +8,7 @@ from apis.base import app
 import apis.config
 import apis.login
 import apis.results
-import apis.schedule
+# import apis.schedule
 import apis.trigger
 import apis.websockets
 import apis.default

@@ -67,7 +67,10 @@ def run_trigger():
                     f"There is a running job for this run_id {run_id}, please try again after this run finishes", 503
                 )
             job = trigger.enqueue(run_id=run_id, triggered=True)
-            return HTTPResponse(job.get_id(), 200)
+            if job:
+                return HTTPResponse(job.get_id(), 200)
+            else:
+                return HTTPResponse("", 200)
 
         repo = request.json.get("repo")
         branch = request.json.get("branch")
@@ -86,4 +89,4 @@ def run_trigger():
             return HTTPResponse(f"Couldn't get last commit from this branch {branch}, please try again", 503)
         if job:
             return HTTPResponse(job.get_id(), 200)
-        return HTTPResponse("Wrong data", 400)
+        return HTTPResponse("", 200)

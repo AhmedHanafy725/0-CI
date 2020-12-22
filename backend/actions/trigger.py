@@ -10,14 +10,19 @@ from models.run import Run
 from packages.vcs.vcs import VCSFactory
 from redis import Redis
 from rq import Queue
-from models.run import Run
+
+from actions.reporter import Reporter
+from actions.runner import Runner
 from actions.validator import Validator
 
-from actions.runner import Runner
+reporter = Reporter()
+runner = Runner()
 
 redis = Redis()
 q = Queue(connection=redis)
 PENDING = "pending"
+ERROR = "error"
+
 
 ERROR = "error"
 LOG_TYPE = "log"
@@ -58,8 +63,8 @@ class Trigger:
             run , run_id = self._prepare_run_object(run_id=run_id, triggered=triggered)
             return self._trigger(repo_config=config, run=run, run_id=run_id)
 
-        push = config["run_on"]["push"]
-        pull_request = config["run_on"]["pull_request"]
+        push = config["run_on"].get("push")
+        pull_request = config["run_on"].get("pull_request")
         if push:
             trigger_branches = push["branches"]
             if branch and branch in trigger_branches:
@@ -136,12 +141,14 @@ class Trigger:
             link = f"{configs.domain}/repos/{run.repo}/{run.branch}/{str(run.run_id)}"
             vcs_obj = VCSFactory().get_cvn(repo=run.repo)
             vcs_obj.status_send(status=PENDING, link=link, commit=run.commit)
-            job = q.enqueue_call(func=Runner.build_and_test, args=(run_id, repo_config), result_ttl=5000, timeout=20000)
+            job = q.enqueue_call(func=runner.build_and_test, args=(run_id, repo_config), result_ttl=5000, timeout=20000)
             return job
         return
 
     def _report(self, msg, run, run_id):
         redis.rpush(run_id, msg)
         run.result.append({"type": LOG_TYPE, "status": ERROR, "name": "Yaml File", "content": msg})
+        run.status = ERROR
         run.save()
+        reporter.report(run_id=run_id, run_obj=run)
         return
