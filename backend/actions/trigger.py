@@ -7,6 +7,7 @@ import yaml
 from bottle import request
 from models.initial_config import InitialConfig
 from models.run import Run
+from models.schedule_info import ScheduleInfo
 from packages.vcs.vcs import VCSFactory
 from redis import Redis
 from rq import Queue
@@ -14,9 +15,11 @@ from rq import Queue
 from actions.reporter import Reporter
 from actions.runner import Runner
 from actions.validator import Validator
+from rq_scheduler import Scheduler
 
 reporter = Reporter()
 runner = Runner()
+scheduler = Scheduler(connection=Redis())
 
 redis = Redis()
 q = Queue(connection=redis, name="default")
@@ -65,6 +68,12 @@ class Trigger:
 
         push = config["run_on"].get("push")
         pull_request = config["run_on"].get("pull_request")
+        manual = config["run_on"].get("manual")
+        schedule = config["run_on"].get("schedule")
+
+        if repo and branch and not schedule:
+            schedule_name = f"{repo}_{branch}"
+            scheduler.cancel(schedule_name)
         if push:
             trigger_branches = push["branches"]
             if branch and branch in trigger_branches:
@@ -75,6 +84,23 @@ class Trigger:
             if target_branch and target_branch in target_branches:
                 run , run_id = self._prepare_run_object(repo=repo, branch=branch, commit=commit, committer=committer, triggered=triggered)
                 return self._trigger(repo_config=config, run=run, run_id=run_id)
+        if manual and triggered:
+            trigger_branches = manual["branches"]
+            if branch and branch in trigger_branches:
+                run , run_id = self._prepare_run_object(repo=repo, branch=branch, commit=commit, committer=committer, triggered=triggered)
+                return self._trigger(repo_config=config, run=run, run_id=run_id)
+        if schedule:
+            schedule_branch = schedule["branch"]
+            cron = schedule["cron"]
+            schedule_name = f"{repo}_{branch}"
+            if branch == schedule_branch:
+                scheduler.cron(
+                    cron_string=cron,
+                    func=self._trigger_schedule,
+                    args=[repo, branch],
+                    id=schedule_name,
+                    timeout=-1,
+                )
         return
 
     def _prepare_run_object(self, repo="", branch="", commit="", committer="", run_id=None, triggered=False):
@@ -146,7 +172,29 @@ class Trigger:
             return job
         return
 
+    def _trigger_schedule(self, repo, branch):
+        vcs_obj = VCSFactory().get_cvn(repo=repo)
+        last_commit = vcs_obj.get_last_commit(branch=branch)
+        committer = vcs_obj.get_committer(commit=last_commit)
+        where = {"repo": repo, "branch": branch, "commit": last_commit, "status": PENDING}
+        exist_run = Run.get_objects(fields=["status"], **where)
+        run, run_id = self._prepare_run_object(repo=repo, branch=branch, commit=last_commit, committer=committer)
+        if exist_run:
+            msg = f"There is a running job from this commit {last_commit}"
+            return self._report(msg, run, run_id)
+        run.triggered_by = "ZeroCI Scheduler"
+        run.save()
+        status, config, msg = self._load_config(repo, last_commit)
+        if not status:
+            return self._report(msg, run, run_id)
+        validator = Validator()
+        valid, msg = validator.validate_yaml(config)
+        if not valid:
+            return self._report(msg, run, run_id)
+        runner.build_and_test(run_id, config)
+
     def _report(self, msg, run, run_id):
+        msg = f"{msg} (see examples: https://github.com/threefoldtech/zeroCI/tree/development/docs/config)"
         redis.rpush(run_id, msg)
         run.result.append({"type": LOG_TYPE, "status": ERROR, "name": "Yaml File", "content": msg})
         run.status = ERROR

@@ -1,11 +1,6 @@
 import requests
-# from redis import Redis
-
-# redis = Redis()
-ERROR = "error"
-LOG_TYPE = "log"
-
-
+from croniter import croniter
+import traceback
 class Validator:
     def _validate_test_script(self, test_script):
         msg = ""
@@ -137,8 +132,10 @@ class Validator:
             else:
                 push = run_on.get("push")
                 pull_request = run_on.get("pull_request")
-                if not any([push, pull_request]):
-                    msg = "run_on should have push or pull_request as keys and at least one of them should be filled"
+                schedule = run_on.get("schedule")
+                manual = run_on.get("manual")
+                if not any([push, pull_request, schedule, manual]):
+                    msg = "run_on should have push, pull_request, schedule or manual as keys and at least one of them should be filled"
                 else:
                     if push:
                         if not isinstance(push, dict):
@@ -149,7 +146,7 @@ class Validator:
                                 msg = "branches on push shouldn't be empty"
                             else:
                                 if not isinstance(branches, list):
-                                    msg = "branches shouldn't be empty and it should be of contain list of the branches"
+                                    msg = "branches should be of contain list of the branches"
                                 else:
                                     for branch in branches:
                                         if not isinstance(branch, str):
@@ -163,11 +160,51 @@ class Validator:
                                 msg = "branches on pull_request shouldn't be empty"
                             else:
                                 if not isinstance(branches, list):
-                                    msg = "branches shouldn't be empty and it should be of contain list of the branches"
+                                    msg = "branches should be of contain list of the branches"
                                 else:
                                     for branch in branches:
                                         if not isinstance(branch, str):
                                             msg = "branches should be list of str"
+
+                    if manual: 
+                        if not isinstance(manual, dict):
+                            msg = "manual should have branches as a key"
+                        else:
+                            branches = manual.get("branches")
+                            if not branches:
+                                msg = "branches on manual shouldn't be empty"
+                            else:
+                                if not isinstance(branches, list):
+                                    msg = "branches should be of contain list of the branches"
+                                else:
+                                    for branch in branches:
+                                        if not isinstance(branch, str):
+                                            msg = "branches should be list of str"
+                    
+                    if schedule: 
+                        if not isinstance(schedule, dict):
+                            msg = "schedule should have branch and cron as keys"
+                        else:
+                            branch = schedule.get("branch")
+                            cron = schedule.get("cron")
+                            if not branch:
+                                msg = "branch on schedule shouldn't be empty"
+                            else:
+                                if not isinstance(branch, str):
+                                    msg = "branch should be str"
+                            if not cron:
+                                msg = "cron on schedule shouldn't be empty"
+                            else:
+                                if not isinstance(cron, str):
+                                    msg = "cron should be str"
+                                else:
+                                    try:
+                                        croniter(cron)
+                                    except Exception as e:
+                                        msg = traceback.format_exc(e)
+                                        
+
+                    
         return msg
 
     def validate_yaml(self, config):
