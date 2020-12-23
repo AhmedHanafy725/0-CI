@@ -12,6 +12,7 @@ from packages.vcs.vcs import VCSFactory
 from redis import Redis
 from rq import Queue
 from rq_scheduler import Scheduler
+from utils.constants import BIN_DIR, ERROR, LOG_TYPE, PENDING
 
 from actions.reporter import Reporter
 from actions.runner import Runner
@@ -19,17 +20,9 @@ from actions.validator import Validator
 
 reporter = Reporter()
 runner = Runner()
-scheduler = Scheduler(connection=Redis())
-
 redis = Redis()
+scheduler = Scheduler(connection=redis)
 q = Queue(connection=redis, name="default")
-PENDING = "pending"
-ERROR = "error"
-
-
-ERROR = "error"
-LOG_TYPE = "log"
-BIN_DIR = "/zeroci/bin/"
 
 
 class Trigger:
@@ -115,8 +108,7 @@ class Trigger:
 
     def _prepare_run_object(self, repo="", branch="", commit="", committer="", run_id=None, triggered=False):
         configs = InitialConfig()
-        status = PENDING
-        timestamp = datetime.now().timestamp()
+        timestamp = int(datetime.now().timestamp())
         if run_id:
             # Triggered from id.
             run = Run.get(run_id=run_id)
@@ -125,15 +117,15 @@ class Trigger:
                 "timestamp": timestamp,
                 "commit": run.commit,
                 "committer": run.committer,
-                "status": status,
+                "status": PENDING,
                 "repo": run.repo,
                 "branch": run.branch,
                 "triggered_by": triggered_by,
                 "bin_release": None,
                 "run_id": run_id,
             }
-            run.timestamp = int(timestamp)
-            run.status = status
+            run.timestamp = timestamp
+            run.status = PENDING
             run.result = []
             run.triggered_by = triggered_by
             if run.bin_release:
@@ -156,7 +148,7 @@ class Trigger:
                     "timestamp": timestamp,
                     "commit": commit,
                     "committer": committer,
-                    "status": status,
+                    "status": PENDING,
                     "repo": repo,
                     "branch": branch,
                     "triggered_by": triggered_by,

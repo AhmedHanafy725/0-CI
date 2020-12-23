@@ -217,7 +217,7 @@ class Github(VCSInterface):
         repo = self.github_cl.get_repo(repo)
         hook_config = {"url": self.HOOK_URL, "content_type": "json"}
         try:
-            repo.create_hook(name="web", config=hook_config, events=["push"], active=True)
+            repo.create_hook(name="web", config=hook_config, events=["push", "pull_request"], active=True)
         except (UnknownObjectException, GithubException) as e:
             if e.status in [404, 403]:
                 return False
@@ -328,7 +328,10 @@ class Gitea(VCSInterface):
                 return True
 
         config = giteapy.CreateHookOption(
-            active=True, config={"url": self.HOOK_URL, "content_type": "json"}, events=["push"], type="gitea"
+            active=True,
+            config={"url": self.HOOK_URL, "content_type": "json"},
+            events=["push", "pull_request"],
+            type="gitea",
         )
         try:
             self.repo_obj.repo_create_hook(owner, repo_name, body=config)

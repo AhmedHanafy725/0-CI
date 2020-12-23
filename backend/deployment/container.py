@@ -7,6 +7,7 @@ import redis
 import yaml
 from kubernetes import client, config
 from kubernetes.stream import stream
+from utils.constants import BIN_DIR
 from utils.utils import Utils
 
 TIMEOUT = 120
@@ -167,7 +168,7 @@ class Container(Utils):
 
     def create_pod(self, env, prerequisites, repo_path):
         # zeroci vol
-        bin_mount_path = "/zeroci/bin"
+        bin_mount_path = BIN_DIR
         bin_vol_name = "bin-path"
         bin_vol = client.V1Volume(name=bin_vol_name, empty_dir={})
         bin_vol_mount = client.V1VolumeMount(mount_path=bin_mount_path, name=bin_vol_name)
@@ -210,7 +211,7 @@ class Container(Utils):
             command=[
                 "/bin/sh",
                 "-ce",
-                f"echo {ssh_key} > /root/.ssh/authorized_keys && cp /usr/local/bin/* /zeroci/bin/ \
+                f"echo {ssh_key} > /root/.ssh/authorized_keys && cp /usr/local/bin/* {BIN_DIR} \
                 && service ssh start && sleep 3600",
             ],
             env=[non_interactive],

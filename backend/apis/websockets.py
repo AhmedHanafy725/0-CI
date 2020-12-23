@@ -1,10 +1,11 @@
-from gevent import sleep
-from redis import Redis
 import json
 
-from apis.base import app
 from bottle import abort, request
+from gevent import sleep
 from geventwebsocket import WebSocketError
+from redis import Redis
+
+from apis.base import app
 
 redis = Redis()
 

@@ -1,15 +1,13 @@
 import json
 from urllib.parse import urljoin
 
-from redis import Redis
-
 from models.initial_config import InitialConfig
 from packages.telegram.telegram import Telegram
 from packages.vcs.vcs import VCSFactory
+from redis import Redis
+from utils.constants import FAILURE, SUCCESS
 
-r = Redis()
-SUCCESS = "success"
-FAILURE = "failure"
+redis = Redis()
 
 
 class Reporter:
@@ -46,7 +44,7 @@ class Reporter:
             "triggered_by": triggered_by,
             "run_id": run_id,
         }
-        r.publish("zeroci_status", json.dumps(data))
+        redis.publish("zeroci_status", json.dumps(data))
         vcs_obj = VCSFactory().get_cvn(repo=run_obj.repo)
         vcs_obj.status_send(status=run_obj.status, link=link, commit=run_obj.commit)
         telegram.send_msg(

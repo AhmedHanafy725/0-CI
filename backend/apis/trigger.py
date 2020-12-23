@@ -7,14 +7,12 @@ from models.run import Run
 from packages.vcs.vcs import VCSFactory
 from redis import Redis
 from rq import Queue
+from utils.constants import PENDING
 
 from apis.base import app, check_configs, user
 
 trigger = Trigger()
-
-PENDING = "pending"
-redis = Redis()
-q = Queue(connection=redis, name="zeroci")
+q = Queue(connection=Redis(), name="zeroci")
 
 
 @app.route("/git_trigger", method=["POST"])

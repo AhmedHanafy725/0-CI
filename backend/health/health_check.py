@@ -3,9 +3,9 @@ import sys
 sys.path.append("/sandbox/code/github/threefoldtech/zeroCI/backend")
 
 from redis import Redis
+from utils.utils import Utils
 
 from health_recover import Recover
-from utils.utils import Utils
 
 recover = Recover()
 

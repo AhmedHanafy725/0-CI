@@ -4,13 +4,13 @@ from urllib.parse import urlencode
 
 import nacl
 import requests
-from nacl.public import Box
-from nacl.signing import VerifyKey
-
-from apis.base import app
 from bottle import abort, redirect, request
 from models.initial_config import InitialConfig
+from nacl.public import Box
+from nacl.signing import VerifyKey
 from utils.utils import Utils
+
+from apis.base import app
 
 CALLBACK_URL = "/auth/3bot_callback"
 REDIRECT_URL = "https://login.threefold.me"

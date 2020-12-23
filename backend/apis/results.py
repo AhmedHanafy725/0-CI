@@ -4,13 +4,9 @@ from bottle import abort, redirect, request, static_file
 from models.initial_config import InitialConfig
 from models.run import Run
 from packages.vcs.vcs import VCSFactory
+from utils.constants import ERROR, FAILURE, PENDING, SUCCESS
 
 from apis.base import app, check_configs
-
-SUCCESS = "success"
-FAILURE = "failure"
-ERROR = "error"
-PENDING = "pending"
 
 
 @app.route("/api/")
