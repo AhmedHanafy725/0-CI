@@ -17,7 +17,6 @@ from utils.constants import *
 from utils.utils import Utils
 
 from actions.reporter import Reporter
-from actions.validator import Validator
 
 
 class Runner:

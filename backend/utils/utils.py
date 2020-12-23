@@ -11,7 +11,7 @@ ansi_escape = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
 
 class Utils:
     @staticmethod
-    def random_string(self):
+    def random_string():
         return "s" + uuid4().hex
 
     def execute_cmd(self, cmd, timeout=3600):

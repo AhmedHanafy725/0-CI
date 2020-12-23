@@ -7,7 +7,6 @@ import yaml
 from bottle import request
 from models.initial_config import InitialConfig
 from models.run import Run
-from models.schedule_info import ScheduleInfo
 from packages.vcs.vcs import VCSFactory
 from redis import Redis
 from rq import Queue

@@ -1,5 +1,7 @@
 import uuid
 
+from utils.utils import Utils
+
 from .base import Document, ModelFactory, StoredFactory, fields
 
 
@@ -19,6 +21,6 @@ class Run(ModelFactory):
     _model = StoredFactory(RunModel)
 
     def __new__(cls, **kwargs):
-        name = uuid.uuid4().hex
+        name = Utils.random_string()
         kwargs["timestamp"] = int(kwargs["timestamp"])
         return cls._model.new(name=name, **kwargs)
