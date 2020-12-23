@@ -45,13 +45,13 @@ class Trigger:
         if not self._reporter:
             self._reporter = Reporter()
         return self._reporter
-    
+
     @property
     def queue(self):
         if not self._queue:
             self._queue = Queue(connection=self.redis, name="default")
         return self._queue
-    
+
     @property
     def scheduler(self):
         if not self._scheduler:
@@ -78,7 +78,9 @@ class Trigger:
 
         return False, "", msg
 
-    def _load_validate_config(self, repo="", branch="", commit="", committer="", run_id=None, triggered=False, triggered_by=None):
+    def _load_validate_config(
+        self, repo="", branch="", commit="", committer="", run_id=None, triggered=False, triggered_by=None
+    ):
         if run_id:
             run = Run.get(run_id=run_id)
             repo = run.repo
@@ -86,20 +88,34 @@ class Trigger:
         status, config, msg = self._load_config(repo, commit)
         if not status:
             run, run_id = self._prepare_run_object(
-                repo=repo, branch=branch, commit=commit, committer=committer, run_id=run_id, triggered=triggered, triggered_by=triggered_by
+                repo=repo,
+                branch=branch,
+                commit=commit,
+                committer=committer,
+                run_id=run_id,
+                triggered=triggered,
+                triggered_by=triggered_by,
             )
             self._report(msg, run, run_id)
             return False
         valid, msg = validate_yaml(config)
         if not valid:
             run, run_id = self._prepare_run_object(
-                repo=repo, branch=branch, commit=commit, committer=committer, run_id=run_id, triggered=triggered, triggered_by=triggered_by
+                repo=repo,
+                branch=branch,
+                commit=commit,
+                committer=committer,
+                run_id=run_id,
+                triggered=triggered,
+                triggered_by=triggered_by,
             )
             self._report(msg, run, run_id)
             return False
         return config
 
-    def _prepare_run_object(self, repo="", branch="", commit="", committer="", run_id=None, triggered=False, triggered_by=None):
+    def _prepare_run_object(
+        self, repo="", branch="", commit="", committer="", run_id=None, triggered=False, triggered_by=None
+    ):
         configs = InitialConfig()
         timestamp = int(datetime.now().timestamp())
         if run_id:
@@ -157,7 +173,9 @@ class Trigger:
         return None, None
 
     def enqueue(self, repo="", branch="", commit="", committer="", target_branch="", run_id=None, triggered=False):
-        config = self._load_validate_config(repo=repo, branch=branch, commit=commit, committer=committer, run_id=run_id, triggered=triggered)
+        config = self._load_validate_config(
+            repo=repo, branch=branch, commit=commit, committer=committer, run_id=run_id, triggered=triggered
+        )
         if not config:
             return
 
@@ -214,7 +232,9 @@ class Trigger:
             self.vcs._set_repo_obj(repo=run.repo)
             self.vcs.status_send(status=PENDING, link=link, commit=run.commit)
             # TODO: before triggering, check that there is not a run with same commit and in state pending.
-            job = self.queue.enqueue_call(func=self.runner.build_and_test, args=(run_id, repo_config), result_ttl=5000, timeout=20000)
+            job = self.queue.enqueue_call(
+                func=self.runner.build_and_test, args=(run_id, repo_config), result_ttl=5000, timeout=20000
+            )
             return job
 
     def _trigger_schedule(self, repo, branch):
@@ -223,7 +243,9 @@ class Trigger:
         last_commit = self.vcs.get_last_commit(branch=branch)
         committer = self.vcs.get_committer(commit=last_commit)
         where = {"repo": repo, "branch": branch, "commit": last_commit, "status": PENDING}
-        run, run_id = self._prepare_run_object(repo=repo, branch=branch, commit=last_commit, committer=committer, triggered_by=triggered_by)
+        run, run_id = self._prepare_run_object(
+            repo=repo, branch=branch, commit=last_commit, committer=committer, triggered_by=triggered_by
+        )
         exist_run = Run.get_objects(fields=["status"], **where)
         if exist_run:
             msg = f"There is a running job from this commit {last_commit}"

@@ -46,13 +46,12 @@ class Runner:
         if not self._reporter:
             self._reporter = Reporter()
         return self._reporter
-    
+
     @property
     def utils(self):
         if not self._utils:
             self._utils = Utils()
         return self._utils
-    
 
     def _test_run(self, job):
         """Runs tests and store the result in DB."""
@@ -123,7 +122,9 @@ class Runner:
     def _build(self, job, clone_details, job_number):
         """Create VM with the required prerequisties and run installation steps to get it ready for running tests."""
         env = self._get_run_env()
-        deployed = self.container.deploy(env=env, prerequisites=job["prerequisites"], repo_path=clone_details["remote_path"])
+        deployed = self.container.deploy(
+            env=env, prerequisites=job["prerequisites"], repo_path=clone_details["remote_path"]
+        )
         installed = False
         if deployed:
             if job_number != 0:

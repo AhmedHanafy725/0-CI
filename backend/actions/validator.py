@@ -42,6 +42,7 @@ def _validate_test_script(test_script):
                             msg = "Every cmd in script should be str"
     return msg
 
+
 def _validate_install_script(install_script):
     msg = ""
     if not install_script:
@@ -51,6 +52,7 @@ def _validate_install_script(install_script):
             msg = "install should be str"
 
     return msg
+
 
 def _validate_prerequisites(prerequisites):
     msg = ""
@@ -81,6 +83,7 @@ def _validate_prerequisites(prerequisites):
                     msg = "shell_bin should be str"
     return msg
 
+
 def _validate_bin_path(bin_path):
     msg = ""
     if bin_path:
@@ -88,6 +91,7 @@ def _validate_bin_path(bin_path):
             msg = "bin_path should be str"
 
     return msg
+
 
 def _validate_job_name(name):
     msg = ""
@@ -98,6 +102,7 @@ def _validate_job_name(name):
             msg = "name of the job should be str"
 
     return msg
+
 
 def _validate_job(job):
     job_name = job.get("name")
@@ -123,6 +128,7 @@ def _validate_job(job):
     prerequisites = job.get("prerequisites")
     msg = _validate_prerequisites(prerequisites)
     return msg
+
 
 def _validate_run_on(run_on):
     msg = ""
@@ -206,6 +212,7 @@ def _validate_run_on(run_on):
                                     msg = traceback.format_exc(e)
 
     return msg
+
 
 def validate_yaml(config):
     jobs = config.get("jobs")

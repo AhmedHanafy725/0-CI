@@ -40,7 +40,7 @@ class Container(Utils):
         if not self._redis:
             self._redis = Redis()
         return self._redis
-    
+
     @property
     def client(self):
         if not self._client:
