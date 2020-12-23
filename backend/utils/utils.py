@@ -10,6 +10,10 @@ ansi_escape = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
 
 
 class Utils:
+    @staticmethod
+    def random_string(self):
+        return "s" + uuid4().hex
+
     def execute_cmd(self, cmd, timeout=3600):
         with Popen(cmd, shell=True, universal_newlines=True, stdout=PIPE, stderr=PIPE, encoding="utf-8") as process:
             try:
@@ -22,9 +26,6 @@ class Utils:
                 retruncode = 127
 
         return CompletedProcess(process.args, returncode=retruncode, stdout=stdout, stderr=stderr)
-
-    def random_string(self):
-        return "s" + str(uuid4())[:10].replace("-", "")
 
     def write_file(self, text, file_path, append=False, binary=False):
         """Write result file.

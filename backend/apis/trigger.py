@@ -12,7 +12,7 @@ from utils.constants import PENDING
 from apis.base import app, check_configs, user
 
 trigger = Trigger()
-q = Queue(connection=Redis(), name="zeroci")
+queue = Queue(connection=Redis(), name="zeroci")
 
 
 @app.route("/git_trigger", method=["POST"])
@@ -35,7 +35,7 @@ def git_trigger():
                 committer = request.json["pusher"]["login"]
             branch_exist = not commit.startswith("000000")
             if branch_exist:
-                job = q.enqueue_call(
+                job = queue.enqueue_call(
                     trigger.enqueue,
                     args=(repo, branch, commit, committer, "", None, False),
                     result_ttl=5000,
@@ -51,7 +51,7 @@ def git_trigger():
                 target_branch = request.json["pull_request"]["base"]["ref"]
                 commit = request.json["pull_request"]["head"]["sha"]
                 committer = request.json["sender"]["login"]
-                job = q.enqueue_call(
+                job = queue.enqueue_call(
                     trigger.enqueue,
                     args=(repo, branch, commit, committer, target_branch, None, False),
                     result_ttl=5000,
@@ -78,7 +78,7 @@ def run_trigger():
                 return HTTPResponse(
                     f"There is a running job for this run_id {run_id}, please try again after this run finishes", 503
                 )
-            job = q.enqueue_call(
+            job = queue.enqueue_call(
                 trigger.enqueue, args=("", "", "", "", "", run_id, True), result_ttl=5000, timeout=20000
             )
             if job:
@@ -96,7 +96,7 @@ def run_trigger():
                 f"There is a running job from this commit {last_commit}, please try again after this run finishes", 503
             )
         if last_commit:
-            job = q.enqueue_call(
+            job = queue.enqueue_call(
                 trigger.enqueue,
                 args=(repo, branch, last_commit, committer, "", None, True),
                 result_ttl=5000,

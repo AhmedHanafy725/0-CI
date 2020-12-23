@@ -14,9 +14,6 @@ from apis.base import app
 
 CALLBACK_URL = "/auth/3bot_callback"
 REDIRECT_URL = "https://login.threefold.me"
-
-
-utils = Utils()
 PRIV_KEY = nacl.signing.SigningKey.generate()
 
 
@@ -28,7 +25,7 @@ def login():
 
     public_key = PRIV_KEY.verify_key
     if provider and provider == "3bot":
-        state = utils.random_string()
+        state = Utils.random_string()
         session["next_url"] = next_url
         session["state"] = state
         app_id = request.get_header("host")

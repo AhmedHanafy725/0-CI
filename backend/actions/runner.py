@@ -19,37 +19,62 @@ from utils.utils import Utils
 from actions.reporter import Reporter
 from actions.validator import Validator
 
-container = Container()
-reporter = Reporter()
-utils = Utils()
-redis = Redis()
-
 
 class Runner:
-    run_id = None
-    run_obj = None
+    def __init__(self, run=None, run_id=None):
+        self.run_id = run_id
+        self.run_obj = run
+        self._redis = None
+        self._container = None
+        self._reporter = None
+        self._utils = None
 
-    def test_run(self, job):
+    @property
+    def redis(self):
+        if not self._redis:
+            self._redis = Redis()
+        return self._redis
+
+    @property
+    def container(self):
+        if not self._container:
+            self._container = Container()
+        return self._container
+
+    @property
+    def reporter(self):
+        if not self._reporter:
+            self._reporter = Reporter()
+        return self._reporter
+    
+    @property
+    def utils(self):
+        if not self._utils:
+            self._utils = Utils()
+        return self._utils
+    
+
+    def _test_run(self, job):
         """Runs tests and store the result in DB."""
         for line in job["script"]:
             if line.get("type") == "neph":
-                finished = self.neph_run(job_name=job["name"], line=line)
+                finished = self._neph_run(job_name=job["name"], line=line)
             else:
-                finished = self.normal_run(job_name=job["name"], line=line)
+                finished = self._normal_run(job_name=job["name"], line=line)
             if not finished:
                 return False
         return True
 
-    def normal_run(self, job_name, line):
+    def _normal_run(self, job_name, line):
         status = SUCCESS
-        response, file_path = container.run_test(run_id=self.run_id, run_cmd=line["cmd"])
+        response, file_path = self.container.run_test(run_id=self.run_id, run_cmd=line["cmd"])
         result = response.stdout
         type = LOG_TYPE
         if response.returncode:
             status = FAILURE
         if file_path:
             try:
-                result = utils.xml_parse(path=file_path, line=line["cmd"])
+                result = self.utils.xml_parse(path=file_path, line=line["cmd"])
                 type = TESTSUITE_TYPE
             except:
                 pass
@@ -62,13 +87,13 @@ class Runner:
             return False
         return True
 
-    def neph_run(self, job_name, line):
+    def _neph_run(self, job_name, line):
         status = SUCCESS
         working_dir = line["working_dir"]
         yaml_path = line["yaml_path"]
         neph_id = f"{self.run_id}:{job_name}:{line['name']}"
         cmd = f"export NEPH_RUN_ID='{neph_id}' \n cd {working_dir} \n {BIN_DIR}neph -y {yaml_path} -m CI"
-        response = container.execute_command(cmd=cmd, run_id=self.run_id)
+        response = self.container.execute_on_test_container(cmd=cmd, run_id=self.run_id)
         if response.returncode:
             status = FAILURE
 
@@ -76,11 +101,11 @@ class Runner:
         self.run_obj.result.append({"type": LOG_TYPE, "status": status, "name": name, "content": response.stdout})
         self.run_obj.save()
 
-        for key in redis.keys():
+        for key in self.redis.keys():
             key = key.decode()
             if key.startswith(f"neph:{self.run_id}:{job_name}:{line['name']}"):
                 status = SUCCESS
-                logs = redis.lrange(key, 0, -1)
+                logs = self.redis.lrange(key, 0, -1)
                 all_logs = ""
                 for log in logs:
                     log = json.loads(log.decode())
@@ -95,21 +120,21 @@ class Runner:
             return False
         return True
 
-    def build(self, job, clone_details, job_number):
+    def _build(self, job, clone_details, job_number):
         """Create VM with the required prerequisties and run installation steps to get it ready for running tests."""
         env = self._get_run_env()
-        deployed = container.deploy(env=env, prerequisites=job["prerequisites"], repo_path=clone_details["remote_path"])
+        deployed = self.container.deploy(env=env, prerequisites=job["prerequisites"], repo_path=clone_details["remote_path"])
         installed = False
         if deployed:
             if job_number != 0:
                 self._set_bin()
-            response = container.ssh_command(cmd=clone_details["cmd"])
+            response = self.container.execute_on_helper(cmd=clone_details["cmd"])
             if response.returncode:
                 name = "{job_name}: Clone Repository".format(job_name=job["name"])
                 result = response.stdout
-                redis.rpush(self.run_id, result)
+                self.redis.rpush(self.run_id, result)
             else:
-                response = container.execute_command(cmd=job["install"], run_id=self.run_id)
+                response = self.container.execute_on_test_container(cmd=job["install"], run_id=self.run_id)
                 if response.returncode:
                     name = "{job_name}: Installation".format(job_name=job["name"])
                     result = response.stdout
@@ -118,7 +143,7 @@ class Runner:
         else:
             name = "{job_name}: Deploy".format(job_name=job["name"])
             result = "Couldn't deploy a container"
-            redis.rpush(self.run_id, result)
+            self.redis.rpush(self.run_id, result)
 
         if not installed:
             self.run_obj.result.append({"type": LOG_TYPE, "status": ERROR, "name": name, "content": result})
@@ -126,7 +151,7 @@ class Runner:
 
         return deployed, installed
 
-    def cal_status(self):
+    def _cal_status(self):
         """Calculate the status of the whole tests result has been stored on the BD's id."""
         status = SUCCESS
         for result in self.run_obj.result:
@@ -146,7 +171,7 @@ class Runner:
             env.append(env_var)
         return env
 
-    def repo_clone_details(self):
+    def _repo_clone_details(self):
         """Clone repo."""
         configs = InitialConfig()
         repo_remote_path = os.path.join(REPOS_DIR, self.run_obj.repo)
@@ -180,8 +205,8 @@ class Runner:
             bin_release = bin_local_path.split(os.path.sep)[-1]
             bin_tmp_path = os.path.join(BIN_DIR, bin_release)
             cmd = f"cp {bin_remote_path} {bin_tmp_path}"
-            container.execute_command(cmd=cmd, run_id="", verbose=False)
-            container.ssh_get_remote_file(remote_path=bin_tmp_path, local_path=bin_local_path)
+            self.container.execute_on_test_container(cmd=cmd, run_id="", verbose=False)
+            self.container.get_remote_file_from_helper(remote_path=bin_tmp_path, local_path=bin_local_path)
 
             if os.path.exists(bin_local_path):
                 self.run_obj.bin_release = bin_release
@@ -191,8 +216,8 @@ class Runner:
         if self.run_obj.bin_release:
             bin_local_path = self._prepare_bin_dirs(self.bin_name)
             bin_remote_path = os.path.join(BIN_DIR, self.bin_name)
-            container.ssh_set_remote_file(remote_path=bin_remote_path, local_path=bin_local_path)
-            container.ssh_command(f"chmod +x {bin_remote_path}")
+            self.container.set_remote_file_on_helper(remote_path=bin_remote_path, local_path=bin_local_path)
+            self.container.execute_on_helper(f"chmod +x {bin_remote_path}")
 
     def build_and_test(self, run_id, repo_config):
         """Builds, runs tests, calculates status and gives report on telegram and your version control system.
@@ -204,7 +229,7 @@ class Runner:
         """
         self.run_id = run_id
         self.run_obj = Run.get(run_id=self.run_id)
-        clone_details = self.repo_clone_details()
+        clone_details = self._repo_clone_details()
         worked = deployed = installed = True
         for i, job in enumerate(repo_config["jobs"]):
             if not (worked and deployed and installed):
@@ -218,13 +243,13 @@ class Runner:
             ).replace(
                 "  ", ""
             )
-            redis.rpush(self.run_id, log)
-            deployed, installed = self.build(job=job, clone_details=clone_details, job_number=i)
+            self.redis.rpush(self.run_id, log)
+            deployed, installed = self._build(job=job, clone_details=clone_details, job_number=i)
             if deployed:
                 if installed:
-                    worked = self.test_run(job=job)
+                    worked = self._test_run(job=job)
                     self._get_bin(bin_remote_path=job.get("bin_path"), job_number=i)
-                container.delete()
-        redis.rpush(self.run_id, "hamada ok")
-        self.cal_status()
-        reporter.report(run_id=self.run_id, run_obj=self.run_obj)
+                self.container.delete()
+        self.redis.rpush(self.run_id, "hamada ok")
+        self._cal_status()
+        self.reporter.report(run_id=self.run_id, run_obj=self.run_obj)

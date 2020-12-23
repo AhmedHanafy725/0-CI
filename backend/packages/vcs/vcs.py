@@ -152,10 +152,13 @@ class Github(VCSInterface):
         configs = InitialConfig()
         self.HOOK_URL = urljoin(configs.domain, "git_trigger")
         if configs.vcs_token:
-            self.repo = repo
             self.github_cl = GH(configs.vcs_token)
             if repo:
-                self.repo_obj = self.github_cl.get_repo(self.repo)
+                self._set_repo_obj(repo)
+
+    def _set_repo_obj(self, repo):
+        self.repo = repo
+        self.repo_obj = self.github_cl.get_repo(self.repo)
 
     @VCSInterface.call_trial
     def status_send(
@@ -264,10 +267,14 @@ class Gitea(VCSInterface):
             self.repo_obj = giteapy.RepositoryApi(_get_gitea_cl())
             self.user_obj = giteapy.UserApi(_get_gitea_cl())
             self.org_obj = giteapy.OrganizationApi(_get_gitea_cl())
+
             if repo:
-                self.repo = repo
-                self.owner = repo.split("/")[0]  # org name
-                self.repo_name = self.repo.split("/")[-1]
+                self._set_repo_obj(repo)
+
+    def _set_repo_obj(self, repo):
+        self.repo = repo
+        self.owner = repo.split("/")[0]  # org name
+        self.repo_name = self.repo.split("/")[-1]
 
     @VCSInterface.call_trial
     def status_send(

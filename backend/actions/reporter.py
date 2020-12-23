@@ -7,10 +7,31 @@ from packages.vcs.vcs import VCSFactory
 from redis import Redis
 from utils.constants import FAILURE, SUCCESS
 
-redis = Redis()
-
 
 class Reporter:
+    def __init__(self):
+        self._redis = None
+        self._telegram = None
+        self._vcs = None
+
+    @property
+    def redis(self):
+        if not self._redis:
+            self._redis = Redis()
+        return self._redis
+
+    @property
+    def telegram(self):
+        if not self._telegram:
+            self._telegram = Telegram()
+        return self._telegram
+
+    @property
+    def vcs(self):
+        if not self._vcs:
+            self._vcs = VCSFactory().get_cvn()
+        return self._vcs
+
     def report(self, run_id, run_obj):
         """Report the result to the commit status and Telegram chat.
 
@@ -22,7 +43,6 @@ class Reporter:
         :param schedule_name: str
         """
         configs = InitialConfig()
-        telegram = Telegram()
         bin_release = run_obj.bin_release
         triggered_by = run_obj.triggered_by
         msg = self.report_msg(status=run_obj.status)
@@ -44,10 +64,10 @@ class Reporter:
             "triggered_by": triggered_by,
             "run_id": run_id,
         }
-        redis.publish("zeroci_status", json.dumps(data))
-        vcs_obj = VCSFactory().get_cvn(repo=run_obj.repo)
-        vcs_obj.status_send(status=run_obj.status, link=link, commit=run_obj.commit)
-        telegram.send_msg(
+        self.redis.publish("zeroci_status", json.dumps(data))
+        self.vcs._set_repo_obj(repo=run_obj.repo)
+        self.vcs.status_send(status=run_obj.status, link=link, commit=run_obj.commit)
+        self.telegram.send_msg(
             msg=msg,
             link=link,
             repo=run_obj.repo,
