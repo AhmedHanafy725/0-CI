@@ -1,6 +1,7 @@
+from functools import wraps
+
 from bottle import Bottle, abort, redirect, request, response
 from models.initial_config import InitialConfig
-from functools import wraps
 
 app = Bottle()
 LOGIN_URL = "/auth/login?provider=3bot"

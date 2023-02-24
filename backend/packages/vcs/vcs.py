@@ -3,11 +3,10 @@ import time
 from abc import ABCMeta, abstractmethod
 from urllib.parse import urljoin
 
+import giteapy
 from github import Github as GH
 from github import UnknownObjectException
 from github.GithubException import GithubException
-
-import giteapy
 from models.initial_config import InitialConfig
 
 
@@ -153,10 +152,13 @@ class Github(VCSInterface):
         configs = InitialConfig()
         self.HOOK_URL = urljoin(configs.domain, "git_trigger")
         if configs.vcs_token:
-            self.repo = repo
             self.github_cl = GH(configs.vcs_token)
             if repo:
-                self.repo_obj = self.github_cl.get_repo(self.repo)
+                self._set_repo_obj(repo)
+
+    def _set_repo_obj(self, repo):
+        self.repo = repo
+        self.repo_obj = self.github_cl.get_repo(self.repo)
 
     @VCSInterface.call_trial
     def status_send(
@@ -218,7 +220,7 @@ class Github(VCSInterface):
         repo = self.github_cl.get_repo(repo)
         hook_config = {"url": self.HOOK_URL, "content_type": "json"}
         try:
-            repo.create_hook(name="web", config=hook_config, events=["push"], active=True)
+            repo.create_hook(name="web", config=hook_config, events=["push", "pull_request"], active=True)
         except (UnknownObjectException, GithubException) as e:
             if e.status in [404, 403]:
                 return False
@@ -265,14 +267,23 @@ class Gitea(VCSInterface):
             self.repo_obj = giteapy.RepositoryApi(_get_gitea_cl())
             self.user_obj = giteapy.UserApi(_get_gitea_cl())
             self.org_obj = giteapy.OrganizationApi(_get_gitea_cl())
+
             if repo:
-                self.repo = repo
-                self.owner = repo.split("/")[0]  # org name
-                self.repo_name = self.repo.split("/")[-1]
+                self._set_repo_obj(repo)
+
+    def _set_repo_obj(self, repo):
+        self.repo = repo
+        self.owner = repo.split("/")[0]  # org name
+        self.repo_name = self.repo.split("/")[-1]
 
     @VCSInterface.call_trial
     def status_send(
-        self, status, link, commit, description="ZeroCI for testing", context="continuous-integration/ZeroCI",
+        self,
+        status,
+        link,
+        commit,
+        description="ZeroCI for testing",
+        context="continuous-integration/ZeroCI",
     ):
         body = {"context": context, "description": description, "state": status, "target_url": link}
         self.repo_obj.repo_create_status(self.owner, self.repo_name, commit, body=body)
@@ -324,7 +335,10 @@ class Gitea(VCSInterface):
                 return True
 
         config = giteapy.CreateHookOption(
-            active=True, config={"url": self.HOOK_URL, "content_type": "json"}, events=["push"], type="gitea"
+            active=True,
+            config={"url": self.HOOK_URL, "content_type": "json"},
+            events=["push", "pull_request"],
+            type="gitea",
         )
         try:
             self.repo_obj.repo_create_hook(owner, repo_name, body=config)

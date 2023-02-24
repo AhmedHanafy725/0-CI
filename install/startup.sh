@@ -14,6 +14,7 @@ cp jsng_config.toml /root/.config/jumpscale/config.toml
 cd /sandbox/code/github/threefoldtech/zeroCI/backend
 redis-server /etc/redis/redis.conf
 for i in {1..5}; do cp worker.py worker$i.py; python3 worker$i.py &> worker_$i.log & done
+for i in {1..2}; do cp zeroci_worker.py zeroci_worker$i.py; python3 zeroci_worker$i.py &> zeroci_worker_$i.log & done
 rqscheduler &> schedule.log &
 service cron start
 python3 zeroci.py

@@ -1,7 +1,8 @@
-from apis.base import app, check_configs, admin
 from bottle import static_file
+from utils.constants import BIN_DIR
 
-BIN_DIR = "/zeroci/bin/"
+from apis.base import admin, app, check_configs
+
 STATIC_DIR = "../dist/static"
 INDEX_DIR = "../dist"
 

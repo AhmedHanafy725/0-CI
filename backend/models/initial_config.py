@@ -27,6 +27,6 @@ class InitialConfigModel(Document):
 class InitialConfig(ModelFactory):
     _model = StoredFactory(InitialConfigModel)
 
-    def __new__(self, **kwargs):
+    def __new__(cls, **kwargs):
         name = "Initial_config"
-        return self._model.get(name=name, **kwargs)
+        return cls._model.get(name=name, **kwargs)

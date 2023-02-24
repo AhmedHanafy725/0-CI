@@ -3,9 +3,9 @@ import sys
 sys.path.append("/sandbox/code/github/threefoldtech/zeroCI/backend")
 
 from redis import Redis
+from utils.utils import Utils
 
 from health_recover import Recover
-from utils.utils import Utils
 
 recover = Recover()
 
@@ -18,15 +18,13 @@ class Health(Utils):
         return pids
 
     def test_zeroci_server(self):
-        """Check zeroci server is still running
-        """
+        """Check zeroci server is still running"""
         pid = self.get_process_pid("python3 zeroci")
         if not pid:
             recover.zeroci()
 
     def test_redis(self):
-        """Check redis is still running.
-        """
+        """Check redis is still running."""
         pid = self.get_process_pid("redis")
         if not pid:
             recover.redis()
@@ -39,8 +37,7 @@ class Health(Utils):
             recover.redis()
 
     def test_workers(self):
-        """Check rq workers are up.
-        """
+        """Check rq workers are up."""
         pids = self.get_process_pid("python3 worker")
         workers = len(pids)
         if workers < 5:
@@ -49,9 +46,18 @@ class Health(Utils):
                 if not pid:
                     recover.worker(i)
 
+    def test_zeroci_workers(self):
+        """Check rq workers are up."""
+        pids = self.get_process_pid("python3 zeroci_worker")
+        zeroci_workers = len(pids)
+        if zeroci_workers < 2:
+            for i in range(1, 6):
+                pid = self.get_process_pid(f"python3 zeroci_worker{i}")
+                if not pid:
+                    recover.zeroci_worker(i)
+
     def test_schedule(self):
-        """Check rq schedule is up.
-        """
+        """Check rq schedule is up."""
         pid = self.get_process_pid("rqscheduler")
         if not pid:
             recover.scheduler()
