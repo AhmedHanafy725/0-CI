@@ -1,90 +1,28 @@
 import json
-import os
-from datetime import datetime
 
-from redis import Redis
-from rq import Queue
-
-from actions.actions import Actions
-from apis.base import app, check_configs, user
+from actions.trigger import Trigger
 from bottle import HTTPResponse, redirect, request
 from models.initial_config import InitialConfig
-from models.trigger_run import TriggerRun
+from models.run import Run
 from packages.vcs.vcs import VCSFactory
+from redis import Redis
+from rq import Queue
+from utils.constants import PENDING
 
-redis = Redis()
-actions = Actions()
-q = Queue(connection=redis)
+from apis.base import app, check_configs, user
 
-
-def trigger(repo="", branch="", commit="", committer="", id=None, triggered=True):
-    configs = InitialConfig()
-    status = "pending"
-    timestamp = datetime.now().timestamp()
-    if id:
-        # Triggered from id.
-        trigger_run = TriggerRun.get(id=id)
-        triggered_by = request.environ.get("beaker.session").get("username").strip(".3bot")
-        data = {
-            "timestamp": timestamp,
-            "commit": trigger_run.commit,
-            "committer": trigger_run.committer,
-            "status": status,
-            "repo": trigger_run.repo,
-            "branch": trigger_run.branch,
-            "triggered_by": triggered_by,
-            "bin_release": None,
-            "id": id,
-        }
-        trigger_run.timestamp = int(timestamp)
-        trigger_run.status = status
-        trigger_run.result = []
-        trigger_run.triggered_by = triggered_by
-        if trigger_run.bin_release:
-            bin_path = os.path.join("/sandbox/var/bin/", trigger_run.repo, trigger_run.branch, trigger_run.bin_release)
-            if os.path.exists(bin_path):
-                os.remove(bin_path)
-        trigger_run.bin_release = None
-        trigger_run.save()
-        redis.ltrim(id, -1, 0)
-        redis.publish("zeroci_status", json.dumps(data))
-    else:
-        # Triggered from vcs webhook or rebuild using the button.
-        if repo in configs.repos:
-            triggered_by = "VCS Hook"
-            if triggered:
-                triggered_by = request.environ.get("beaker.session").get("username").strip(".3bot")
-            data = {
-                "timestamp": timestamp,
-                "commit": commit,
-                "committer": committer,
-                "status": status,
-                "repo": repo,
-                "branch": branch,
-                "triggered_by": triggered_by,
-                "bin_release": None,
-            }
-            trigger_run = TriggerRun(**data)
-            trigger_run.save()
-            id = str(trigger_run.id)
-            data["id"] = id
-            redis.publish("zeroci_status", json.dumps(data))
-    if id:
-        link = f"{configs.domain}/repos/{trigger_run.repo}/{trigger_run.branch}/{str(trigger_run.id)}"
-        vcs_obj = VCSFactory().get_cvn(repo=trigger_run.repo)
-        vcs_obj.status_send(status=status, link=link, commit=trigger_run.commit)
-        job = q.enqueue_call(func=actions.build_and_test, args=(id,), result_ttl=5000, timeout=20000)
-        return job
-    return None
+trigger = Trigger()
+queue = Queue(connection=Redis(), name="zeroci")
 
 
 @app.route("/git_trigger", method=["POST"])
 @check_configs
 def git_trigger():
-    """Trigger the test when a post request is sent from a repo's webhook.
-    """
+    """Trigger the test when a post request is sent from a repo's webhook."""
+    # TODO: make payload validation before work on it.
     configs = InitialConfig()
     if request.headers.get("Content-Type") == "application/json":
+        job = ""
         # push case
         reference = request.json.get("ref")
         if reference:
@@ -97,10 +35,31 @@ def git_trigger():
                 committer = request.json["pusher"]["login"]
             branch_exist = not commit.startswith("000000")
             if branch_exist:
-                job = trigger(repo=repo, branch=branch, commit=commit, committer=committer, triggered=False)
-                if job:
-                    return HTTPResponse(job.get_id(), 200)
-        return HTTPResponse("Done", 200)
+                job = queue.enqueue_call(
+                    trigger.enqueue,
+                    args=(repo, branch, commit, committer, "", None, False),
+                    result_ttl=5000,
+                    timeout=20000,
+                )
+
+        # pull case
+        # TODO: Handle the request for gitea.
+        elif request.json.get("pull_request"):
+            if request.json.get("action") in ["opened", "synchronize"]:
+                repo = request.json["pull_request"]["head"]["repo"]["full_name"]
+                branch = request.json["pull_request"]["head"]["ref"]
+                target_branch = request.json["pull_request"]["base"]["ref"]
+                commit = request.json["pull_request"]["head"]["sha"]
+                committer = request.json["sender"]["login"]
+                job = queue.enqueue_call(
+                    trigger.enqueue,
+                    args=(repo, branch, commit, committer, target_branch, None, False),
+                    result_ttl=5000,
+                    timeout=20000,
+                )
+        if job:
+            return HTTPResponse(job.get_id(), 201)
+        return HTTPResponse("Nothing to be done", 200)
     return HTTPResponse("Wrong content type", 400)
 
 
@@ -112,29 +71,37 @@ def run_trigger():
         redirect("/")
 
     if request.headers.get("Content-Type") == "application/json":
-        id = request.json.get("id")
-        if id:
-            run = TriggerRun.get(id=id)
-            if run.status == "pending":
+        run_id = request.json.get("id")
+        if run_id:
+            run = Run.get(run_id=run_id)
+            if run.status == PENDING:
                 return HTTPResponse(
-                    f"There is a running job for this id {id}, please try again after this run finishes", 503
+                    f"There is a running job for this run_id {run_id}, please try again after this run finishes", 503
                 )
-            job = trigger(id=id)
-            return HTTPResponse(job.get_id(), 200)
+            job = queue.enqueue_call(
+                trigger.enqueue, args=("", "", "", "", "", run_id, True), result_ttl=5000, timeout=20000
+            )
+            if job:
+                return HTTPResponse(job.get_id(), 200)
 
         repo = request.json.get("repo")
         branch = request.json.get("branch")
         vcs_obj = VCSFactory().get_cvn(repo=repo)
         last_commit = vcs_obj.get_last_commit(branch=branch)
         committer = vcs_obj.get_committer(commit=last_commit)
-        where = {"repo": repo, "branch": branch, "commit": last_commit, "status": "pending"}
-        run = TriggerRun.get_objects(fields=["status"], **where)
+        where = {"repo": repo, "branch": branch, "commit": last_commit, "status": PENDING}
+        run = Run.get_objects(fields=["status"], **where)
         if run:
             return HTTPResponse(
                 f"There is a running job from this commit {last_commit}, please try again after this run finishes", 503
             )
         if last_commit:
-            job = trigger(repo=repo, branch=branch, commit=last_commit, committer=committer)
+            job = queue.enqueue_call(
+                trigger.enqueue,
+                args=(repo, branch, last_commit, committer, "", None, True),
+                result_ttl=5000,
+                timeout=20000,
+            )
         else:
             return HTTPResponse(f"Couldn't get last commit from this branch {branch}, please try again", 503)
         if job:

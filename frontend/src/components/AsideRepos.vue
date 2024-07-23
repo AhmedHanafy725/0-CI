@@ -17,7 +17,7 @@
           </span>
         </li>
 
-        <li class="kt-menu__section">
+        <li class="kt-menu__section" v-if="existedBranches.length > 0">
           <h4 class="kt-menu__section-text">Existed</h4>
           <i class="kt-menu__section-icon flaticon-more-v2"></i>
         </li>
@@ -25,8 +25,10 @@
         <li
           class="kt-menu__item"
           aria-haspopup="true"
-          v-for="existedBranch in existedBranches"
+          v-for="(existedBranch, index) in existedBranches"
           :key="existedBranch"
+          :class="{ 'kt-menu__item--active': activeIndex === index}"
+          @click="setActive(index)"
         >
           <router-link
             :to="branchLink +  existedBranch"
@@ -40,7 +42,7 @@
           </router-link>
         </li>
 
-        <li class="kt-menu__section">
+        <li class="kt-menu__section" v-if="deletedBranches.length > 0">
           <h4 class="kt-menu__section-text">Deleted</h4>
           <i class="kt-menu__section-icon flaticon-more-v2"></i>
         </li>
@@ -48,8 +50,10 @@
         <li
           class="kt-menu__item"
           aria-haspopup="true"
-          v-for="deletedBranch in deletedBranches"
+          v-for="(deletedBranch, index) in deletedBranches"
           :key="deletedBranch"
+          :class="{ 'kt-menu__item--active': activeIndex === index}"
+          @click="setActive(index)"
         >
           <router-link
             :to="branchLink +  deletedBranch"
@@ -74,8 +78,9 @@ export default {
   props: ["repo"],
   data() {
     return {
-      existedBranches: null,
-      deletedBranches: null
+      existedBranches: "",
+      deletedBranches: "",
+      activeIndex: undefined
     };
   },
   computed: {
@@ -99,6 +104,9 @@ export default {
         .catch(error => {
           console.log("Error! Could not reach the API. " + error);
         });
+    },
+    setActive(index) {
+      this.activeIndex = index;
     }
   },
   created() {

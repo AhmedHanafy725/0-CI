@@ -1,6 +1,7 @@
+from functools import wraps
+
 from bottle import Bottle, abort, redirect, request, response
 from models.initial_config import InitialConfig
-from functools import wraps
 
 app = Bottle()
 LOGIN_URL = "/auth/login?provider=3bot"
@@ -20,6 +21,7 @@ def login_required(func):
 
 def check_configs(func):
     configs = InitialConfig()
+
     def wrapper(*args, **kwargs):
         if not configs.configured:
             return redirect("/initial_config")

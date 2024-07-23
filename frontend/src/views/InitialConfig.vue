@@ -254,6 +254,7 @@ export default {
         });
     },
     vcsSubmit() {
+      localStorage.setItem("vcs", JSON.stringify(this.vcs_host));
       this.submitStatus = "PENDING";
       EventService.postVCS(this.domain, this.vcs_host, this.vcs_token)
         .then(response => {

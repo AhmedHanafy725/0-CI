@@ -12,7 +12,7 @@
       <div class="kt-header__topbar pr-0">
         <button
           type="button"
-          class="btn btn-primary btn-sm"
+          class="btn btn-primary btn-sm text-white"
           :disabled="disabled"
           @click="restart()"
         >
@@ -73,6 +73,23 @@
               class="kt-user-card-v2__email kt-link"
               target="_blank"
             >{{ commit(item.commit) }}</a>
+          </template>
+
+          <template v-slot:item.triggered_by="{ item }">
+            <span>{{ item.triggered_by }}</span>
+          </template>
+
+          <template v-slot:item.bin_release="{ item }">
+            <a
+              :href="bin(item.bin_release)"
+              class="kt-user-card-v2__email kt-link"
+              target="_blank"
+              v-if="item.bin_release !== null"
+            >
+              {{ commit(item.bin_release) }}
+              <i class="la la-edit"></i>
+            </a>
+            <span v-else>-</span>
           </template>
 
           <template v-slot:item.status="{ item }">
@@ -165,7 +182,7 @@
                 <div class="kt-form__actions">
                   <div class="row">
                     <div class="col">
-                      <button type="submit" class="btn btn-success">Add</button>
+                      <button type="submit" class="btn btn-success text-white">Add</button>
                       <button type="reset" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                     </div>
                   </div>
@@ -199,6 +216,8 @@ export default {
         { text: "#ID", value: "id" },
         { text: "Author", value: "committer" },
         { text: "Commit", value: "commit" },
+        { text: "Triggered By", value: "triggered_by" },
+        { text: "Bin", value: "bin_release" },
         { text: "Status", value: "status" },
         { text: "Time", value: "timestamp" }
       ],
@@ -212,7 +231,8 @@ export default {
       disabled: false,
       formLoading: true,
       VarsValidate: false,
-      msg: "No Variables Existed"
+      msg: "No Variables Existed",
+      vcs_host: null
     };
   },
   methods: {
@@ -224,20 +244,24 @@ export default {
       this.newValue = "";
     },
     committerSrc(committer) {
-      return "https://github.com/" + committer + ".png";
+      return this.vcs_host + "/" + committer + ".png";
     },
     committerUrl(committer) {
-      return "https://github.com/" + committer;
+      return this.vcs_host + "/" + committer;
     },
     repoCommit(commit) {
       return (
-        "https://github.com/" +
+        this.vcs_host +
+        "/" +
         this.orgName +
         "/" +
         this.repoName +
         "/commit/" +
         commit
       );
+    },
+    bin(bin) {
+      return `${window.location.origin}/bin/${this.orgName}/${this.repoName}/${this.branch}/${bin}`;
     },
     commit(commit) {
       return commit.substring(0, 7);
@@ -246,13 +270,13 @@ export default {
       if (this.$store.state.user !== null) {
         EventService.restartBuild(this.fullRepoName, this.branch)
           .then(response => {
-            if (response) {
-              this.loading = false;
-              this.disabled = true;
-            }
+            this.loading = false;
+            this.disabled = true;
           })
           .catch(error => {
-            if (error.response.status == 401) {
+            if (error.response.status == 503) {
+              toastr.error(error.response.data);
+            } else if (error.response.status == 401) {
               toastr.error("Please contact Adminstrator");
             } else {
               console.log("Error! Could not reach the API. " + error);
@@ -264,8 +288,8 @@ export default {
     },
     runConfig() {
       if (
-        this.$store.state.user == "admin" ||
-        this.$store.state.user == "user"
+        this.$store.state.permission == "admin" ||
+        this.$store.state.permission == "user"
       ) {
         this.model = 4;
         this.fireInput = false;
@@ -329,6 +353,15 @@ export default {
           console.log("Error! Could not reach the API. " + error);
         });
     },
+    getVCS() {
+      EventService.getVCSHOST()
+        .then(response => {
+          this.vcs_host = response.data;
+        })
+        .catch(error => {
+          console.log("Error! Could not reach the API. " + error);
+        });
+    },
     time(ts) {
       var timestamp = moment.unix(ts);
       var now = new Date();
@@ -344,19 +377,24 @@ export default {
     this.$options.sockets.onmessage = msg => {
       var data = JSON.parse(msg.data);
 
-      this.details.find((o, i) => {
+      let updated = this.details.find((o, i) => {
         if (o.id == data.id) {
           this.details[i].id = data.id;
           this.details[i].status = data.status;
           this.details[i].timestamp = data.timestamp;
-
+          this.details[i].triggered_by = data.triggered_by;
+          this.details[i].bin_release = data.bin_release;
           return true;
         }
       });
+      if (updated == undefined) {
+        this.details.unshift(data);
+      }
     };
   },
   created() {
     this.fetchData();
+    this.getVCS();
   },
   watch: {
     "$route.params": {

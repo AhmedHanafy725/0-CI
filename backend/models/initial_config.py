@@ -30,7 +30,7 @@ class InitialConfigModel(Document):
 class InitialConfig(ModelFactory):
     _model = InitialConfigModel
 
-    def __new__(self, **kwargs):
+    def __new__(cls, **kwargs):
         name = "Initial_config"
         objs = self._model.objects(name="Initial_config")
         if objs:

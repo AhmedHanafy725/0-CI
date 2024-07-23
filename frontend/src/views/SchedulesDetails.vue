@@ -10,12 +10,16 @@
         <h3 class="kt-portlet__head-title">{{ name }}</h3>
       </div>
       <div class="kt-header__topbar pr-0">
-        <button type="button" @click="viewLogs()" class="btn btn-primary btn-sm mr-1">{{ result }}</button>
+        <button
+          type="button"
+          @click="viewLogs()"
+          class="btn btn-primary btn-sm mr-1 text-white"
+        >{{ result }}</button>
       </div>
     </div>
     <div class="kt-portlet__body">
       <!-- live logs -->
-      <v-expansion-panels v-model="panel" v-if="live && livelogs.length > 0">
+      <v-expansion-panels v-model="panel" v-if="live">
         <Live-Logs :livelogs="livelogs" />
       </v-expansion-panels>
       <!-- logs -->
@@ -66,15 +70,17 @@ export default {
       EventService.getProjectIdDetails(this.name, this.id)
         .then(response => {
           this.loading = false;
-          response.data.map((job, index) => {
-            if (job.type == "log") {
-              this.logs.push(job);
-            } else if (job.type == "testsuite") {
-              this.testsuites.push(job);
-            } else {
-              this.viewLogs();
-            }
-          });
+          if (response.data.live) {
+            this.viewLogs();
+          } else {
+            response.data.map((job, index) => {
+              if (job.type == "log") {
+                this.logs.push(job);
+              } else if (job.type == "testsuite") {
+                this.testsuites.push(job);
+              }
+            });
+          }
         })
         .catch(error => {
           console.log("Error! Could not reach the API. " + error);
@@ -90,9 +96,16 @@ export default {
       }
     },
     connect() {
-      this.socket = new WebSocket(
-        "wss://" + window.location.hostname + `/websocket/logs/${this.id}`
-      );
+      if (process.env.NODE_ENV === "development") {
+        this.socket = new WebSocket(
+          "ws://" + window.location.hostname + `/websocket/logs/${this.id}`
+        );
+      } else {
+        this.socket = new WebSocket(
+          "wss://" + window.location.hostname + `/websocket/logs/${this.id}`
+        );
+      }
+
       this.socket.onmessage = ({ data }) => {
         this.livelogs = data;
       };

@@ -1,21 +1,21 @@
 import sys
+
 sys.path.append("/sandbox/code/github/threefoldtech/zeroCI/backend")
 
 from datetime import datetime
 from pathlib import Path
 
-from redis import Redis
-
 from models.base import StoredFactory
 from models.scheduler_run import SchedulerRun
 from models.trigger_run import TriggerRun
-
+from redis import Redis
 
 REDIS_PATH = "/var/lib/redis"
 WHOOSH_PATH = "/root/.config/jumpscale/whoosh_indexes/"
 
+
 def remove(factory, days=30):
-    r = Redis()
+    redis = Redis()
     names = factory.list_all()
     for name in names:
         obj = factory.get(name)
@@ -24,7 +24,8 @@ def remove(factory, days=30):
         time_diff = now_time - run_time
         if time_diff.days > days:
             factory.delete(name)
-            r.delete(obj.id)
+            redis.delete(obj.run_id)
+
 
 def get_size_in_giga_bytes(path):
     root = Path(path)

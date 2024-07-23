@@ -11,11 +11,15 @@
       </div>
 
       <div class="kt-header__topbar pr-0">
-        <button type="button" @click="viewLogs()" class="btn btn-primary btn-sm mr-1">{{ result }}</button>
+        <button
+          type="button"
+          @click="viewLogs()"
+          class="btn btn-primary btn-sm mr-1 text-white"
+        >{{ result }}</button>
 
         <button
           type="button"
-          class="btn btn-primary btn-sm"
+          class="btn btn-primary btn-sm text-white"
           :disabled="disabled"
           @click="rebuild()"
         >
@@ -28,11 +32,17 @@
       <v-expansion-panels v-model="panel" v-if="live && livelogs.length > 0">
         <Live-Logs :livelogs="livelogs" />
       </v-expansion-panels>
+
+      <v-expansion-panels v-if="live && livelogs.length > 0">
+        <Neph-Logs v-for="nephID in nephIDs" :key="nephID.id" :nephID="nephID" :id="id" />
+      </v-expansion-panels>
+
       <span v-if="live && livelogs.length < 0">No data available</span>
       <!-- logs -->
       <v-expansion-panels v-model="panel" v-if="!live">
         <logs v-for="log in logs" :key="log.id" :log="log" />
       </v-expansion-panels>
+
       <!-- testcases -->
       <v-expansion-panels v-if="!live">
         <test-suites
@@ -50,6 +60,7 @@
 <script>
 import EventService from "../services/EventService";
 import LiveLogs from "../components/LiveLogs";
+import NephLogs from "../components/NephLogs";
 import Logs from "../components/Logs";
 import TestSuites from "../components/TestSuites";
 import Loading from "../components/Loading";
@@ -58,6 +69,7 @@ export default {
   props: ["orgName", "repoName", "branch", "id"],
   components: {
     "Live-Logs": LiveLogs,
+    "Neph-Logs": NephLogs,
     logs: Logs,
     Loading: Loading,
     "test-suites": TestSuites
@@ -71,14 +83,21 @@ export default {
       logs: [],
       livelogs: [],
       testsuites: [],
-      disabled: false
+      disabled: false,
+      nephIDs: []
     };
   },
   methods: {
     connect() {
-      this.socket = new WebSocket(
-        "wss://" + window.location.hostname + `/websocket/logs/${this.id}`
-      );
+      if (process.env.NODE_ENV === "development") {
+        this.socket = new WebSocket(
+          "ws://" + window.location.hostname + `/websocket/logs/${this.id}`
+        );
+      } else {
+        this.socket = new WebSocket(
+          "wss://" + window.location.hostname + `/websocket/logs/${this.id}`
+        );
+      }
       this.socket.onopen = () => {
         console.log("connecting...");
         this.socket.onmessage = ({ data }) => {
@@ -86,7 +105,26 @@ export default {
         };
       };
     },
+    nephConnect() {
+      if (process.env.NODE_ENV === "development") {
+        this.nephID = new WebSocket(
+          "ws://" + window.location.hostname + `/websocket/neph_jobs/${this.id}`
+        );
+      } else {
+        this.nephID = new WebSocket(
+          "wss://" +
+            window.location.hostname +
+            `/websocket/neph_jobs/${this.id}`
+        );
+      }
+      this.nephID.onopen = () => {
+        this.nephID.onmessage = ({ data }) => {
+          this.nephIDs = JSON.parse(data);
+        };
+      };
+    },
     fetchBrancheIdDetails() {
+      this.loading = true;
       EventService.getBranchIdDetails(
         this.orgName + "/" + this.repoName,
         this.branch,
@@ -94,15 +132,17 @@ export default {
       )
         .then(response => {
           this.loading = false;
-          response.data.map((job, index) => {
-            if (job.type == "log") {
-              this.logs.push(job);
-            } else if (job.type == "testsuite") {
-              this.testsuites.push(job);
-            } else {
-              this.viewLogs();
-            }
-          });
+          if (response.data.live) {
+            this.viewLogs();
+          } else {
+            response.data.result.map((job, index) => {
+              if (job.type == "log") {
+                this.logs.push(job);
+              } else if (job.type == "testsuite") {
+                this.testsuites.push(job);
+              }
+            });
+          }
         })
         .catch(error => {
           console.log("Error! Could not reach the API. " + error);
@@ -137,6 +177,7 @@ export default {
   },
   created() {
     this.fetchBrancheIdDetails();
+    this.nephConnect();
   }
 };
 </script>

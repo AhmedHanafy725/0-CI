@@ -2,21 +2,20 @@ import json
 import sys
 
 import requests
-from telegram import Bot
-from telegram.error import BadRequest, InvalidToken, Unauthorized
-
-from apis.base import admin, app, check_configs, user
 from bottle import HTTPResponse, abort, request
 from models.initial_config import InitialConfig
 from models.run_config import RunConfig
 from packages.vcs.vcs import VCSFactory
+from telegram import Bot
+from telegram.error import BadRequest, InvalidToken, Unauthorized
+
+from apis.base import admin, app, check_configs, user
 
 
 @app.route("/api/telegram_config", method=["GET", "POST"])
 @admin
 def validate_telegam():
-    """Validate telegram token and chat ID
-    """
+    """Validate telegram token and chat ID"""
     configs = InitialConfig()
     confs = ["chat_id", "bot_token"]
     conf_dict = {}
@@ -51,8 +50,7 @@ def validate_telegam():
 @app.route("/api/vcs_config", method=["GET", "POST"])
 @admin
 def vcs_config():
-    """Initial configuration for the ci before start working.
-    """
+    """Initial configuration for the ci before start working."""
     configs = InitialConfig()
     confs = ["domain", "vcs_host", "vcs_token"]
     conf_dict = {}
@@ -115,7 +113,10 @@ def repos_config():
             for repo in added_repos:
                 created = vcs_obj.create_hook(repo)
                 if not created:
-                    return HTTPResponse(f"Make sure your token has full access for hooks on this repo {repo} and this repo is not archived", 401)
+                    return HTTPResponse(
+                        f"Make sure your token has full access for hooks on this repo {repo} and this repo is not archived",
+                        401,
+                    )
 
             removed_repos = set(configs.repos) - set(repos)
             for repo in removed_repos:
@@ -133,9 +134,10 @@ def repos_config():
 def users():
     configs = InitialConfig()
     if request.method == "GET":
-        all_users = {"admins": configs.admins, "users": configs.users}
-        all_json = json.dumps(all_users)
-        return all_json
+        admins = [{"name": x, "role": "admin"} for x in configs.admins]
+        users = [{"name": x, "role": "user"} for x in configs.users]
+        all_users = admins + users
+        return json.dumps(all_users)
     if not request.headers.get("Content-Type") == "application/json":
         return abort(400)
 
@@ -143,10 +145,18 @@ def users():
     admin = request.json.get("admin")
     if request.method == "POST":
         if user:
+            if user in configs.users:
+                return HTTPResponse(f"{user} is already user", 400)
+            if user in configs.admins:
+                return HTTPResponse(f"{user} is already admin", 400)
             configs.users.append(user)
             configs.save()
             return HTTPResponse("Added", 200)
         if admin:
+            if admin in configs.admins:
+                return HTTPResponse(f"{admin} is already admin", 400)
+            if admin in configs.users:
+                configs.users.remove(admin)
             configs.admins.append(admin)
             configs.save()
             return HTTPResponse("Added", 200)
@@ -201,3 +211,9 @@ def run_config(name):
         env = json.dumps(run_config.env)
         return env
     return abort(404)
+
+
+@app.route("/api/vcs_host", method=["GET"])
+def vcs_host():
+    configs = InitialConfig()
+    return json.dumps(configs.vcs_host)

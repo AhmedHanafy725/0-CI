@@ -6,3 +6,5 @@ class RunConfig(Document):
     env = fields.DictField(default={})
 
     meta = {"collection": "run_config", "indexes": ["name"]}
+
+

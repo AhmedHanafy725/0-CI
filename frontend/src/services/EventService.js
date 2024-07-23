@@ -4,7 +4,7 @@ const authClient = Axios.create({
     baseURL: '',
     withCredentials: true,
     headers: {
-        Accept: 'application/json',
+        "Accept": 'application/json',
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
         'Authorization': "Bearer " + localStorage.getItem('token')
@@ -102,5 +102,17 @@ export default {
     },
     applyConfig() {
         return apiClient.post('/apply_config')
+    },
+    getUsers() {
+        return apiClient.get('/users')
+    },
+    addUser(user) {
+        return apiClient.post('/users', user)
+    },
+    deleteUser(user) {
+        return apiClient.delete('/users', { data: user })
+    },
+    getVCSHOST() {
+        return apiClient.get('/vcs_host')
     }
 }

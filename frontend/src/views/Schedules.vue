@@ -13,7 +13,7 @@
         <div class="kt-header__topbar pr-0">
           <button
             type="button"
-            class="btn btn-primary btn-sm"
+            class="btn btn-primary btn-sm text-white"
             :disabled="disabled"
             @click="restart()"
           >
@@ -269,8 +269,8 @@ export default {
     },
     runConfig() {
       if (
-        this.$store.state.user == "admin" ||
-        this.$store.state.user == "user"
+        this.$store.state.permission == "admin" ||
+        this.$store.state.permission == "user"
       ) {
         this.fireInput = false;
         this.model = 4;
@@ -331,15 +331,17 @@ export default {
     this.$options.sockets.onmessage = msg => {
       var data = JSON.parse(msg.data);
 
-      this.schedules.find((o, i) => {
+      let updated = this.schedules.find((o, i) => {
         if (o.id == data.id) {
           this.schedules[i].id = data.id;
           this.schedules[i].status = data.status;
           this.schedules[i].timestamp = data.timestamp;
-
           return true;
         }
       });
+      if (updated == undefined) {
+        this.schedules.unshift(data);
+      }
     };
   },
   watch: {

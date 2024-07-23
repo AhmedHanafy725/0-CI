@@ -1,9 +1,9 @@
 import time
 from urllib.parse import urljoin
 
-from telegram import Bot, ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
-
 from models.initial_config import InitialConfig
+
+from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 
 RETRIES = 5
 
