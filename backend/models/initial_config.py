@@ -1,4 +1,4 @@
-from mongoengine import fields, Document, connect
+from mongoengine import fields, Document
 from .base import ModelFactory
 
 class InitialConfigModel(Document):

@@ -1,4 +1,4 @@
-from mongoengine import fields, Document, connect
+from mongoengine import fields, Document
 
 
 class RunConfig(Document):

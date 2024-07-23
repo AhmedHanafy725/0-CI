@@ -1,4 +1,4 @@
-from jumpscale.core.base import Base, fields, StoredFactory
+from jumpscale.core.base import Base
 
 
 class Document(Base):
