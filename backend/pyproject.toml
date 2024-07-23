@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "zeroci"
+version = "0.1.0"
+description = ""
+authors = ["ahmedhanafy725 <hanafya@incubaid.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+rq = "^1.16.2"
+rq-scheduler = "^0.13.1"
+xmltodict = "^0.13.0"
+paramiko = "^3.4.0"
+redis = "^5.0.7"
+python-telegram-bot = "^21.4"
+kubernetes = "^30.1.0"
+giteapy = "^1.0.8"
+gevent-websocket = "^0.10.1"
+pygithub = "^2.3.0"
+beaker = "^1.13.0"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
