@@ -1,5 +1,4 @@
 from mongoengine import fields, Document
-from .base import ModelFactory
 
 class InitialConfigModel(Document):
     name = fields.StringField(default="Initial_config")
@@ -27,13 +26,13 @@ class InitialConfigModel(Document):
 
     meta = {"collection": "initial_config"}
 
-class InitialConfig(ModelFactory):
+class InitialConfig():
     _model = InitialConfigModel
 
     def __new__(cls, **kwargs):
         name = "Initial_config"
-        objs = self._model.objects(name="Initial_config")
+        objs = cls._model.objects(name="Initial_config")
         if objs:
-            return objs.first()
+            return objs[0]
         else:
-            return self._model(name=name, **kwargs)
+            return cls._model(name=name, **kwargs)

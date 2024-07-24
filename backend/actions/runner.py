@@ -9,7 +9,7 @@ import yaml
 from deployment.container import Container
 from kubernetes.client import V1EnvVar
 from models.initial_config import InitialConfig
-from models.run import Run
+from models.run import TriggerModel
 from models.run_config import RunConfig
 from packages.vcs.vcs import VCSFactory
 from redis import Redis
@@ -228,7 +228,7 @@ class Runner:
         :param schedule_name: str
         """
         self.run_id = run_id
-        self.run_obj = Run.get(run_id=self.run_id)
+        self.run_obj = TriggerModel.get(run_id=self.run_id)
         clone_details = self._repo_clone_details()
         worked = deployed = installed = True
         for i, job in enumerate(repo_config["jobs"]):

@@ -3,7 +3,7 @@ import json
 from actions.trigger import Trigger
 from bottle import HTTPResponse, redirect, request
 from models.initial_config import InitialConfig
-from models.run import Run
+from models.run import TriggerModel
 from packages.vcs.vcs import VCSFactory
 from redis import Redis
 from rq import Queue
@@ -73,7 +73,7 @@ def run_trigger():
     if request.headers.get("Content-Type") == "application/json":
         run_id = request.json.get("id")
         if run_id:
-            run = Run.get(run_id=run_id)
+            run = TriggerModel.get(run_id=run_id)
             if run.status == PENDING:
                 return HTTPResponse(
                     f"There is a running job for this run_id {run_id}, please try again after this run finishes", 503
@@ -90,7 +90,7 @@ def run_trigger():
         last_commit = vcs_obj.get_last_commit(branch=branch)
         committer = vcs_obj.get_committer(commit=last_commit)
         where = {"repo": repo, "branch": branch, "commit": last_commit, "status": PENDING}
-        run = Run.get_objects(fields=["status"], **where)
+        run = TriggerModel.get_objects(fields=["status"], **where)
         if run:
             return HTTPResponse(
                 f"There is a running job from this commit {last_commit}, please try again after this run finishes", 503

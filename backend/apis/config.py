@@ -7,7 +7,7 @@ from models.initial_config import InitialConfig
 from models.run_config import RunConfig
 from packages.vcs.vcs import VCSFactory
 from telegram import Bot
-from telegram.error import BadRequest, InvalidToken, Unauthorized
+from telegram.error import BadRequest, InvalidToken, Forbidden
 
 from apis.base import admin, app, check_configs, user
 
@@ -38,7 +38,7 @@ def validate_telegam():
         try:
             bot = Bot(request.json["bot_token"])
             bot.sendMessage(request.json["chat_id"], "Configured")
-        except (InvalidToken, BadRequest, Unauthorized) as error:
+        except (InvalidToken, BadRequest, Forbidden) as error:
             if error.message == "Unauthorized":
                 error.message += ": Invalid Token"
             return HTTPResponse(error.message, 400)

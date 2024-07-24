@@ -6,7 +6,7 @@ from datetime import datetime
 import yaml
 from bottle import request
 from models.initial_config import InitialConfig
-from models.run import Run
+from models.run import TriggerModel
 from packages.vcs.vcs import VCSFactory
 from redis import Redis
 from rq import Queue
@@ -81,7 +81,7 @@ class Trigger:
         self, repo="", branch="", commit="", committer="", run_id=None, triggered=False, triggered_by=None
     ):
         if run_id:
-            run = Run.get(run_id=run_id)
+            run = TriggerModel.get(run_id=run_id)
             repo = run.repo
             commit = run.commit
         status, config, msg = self._load_config(repo, commit)
@@ -119,7 +119,7 @@ class Trigger:
         timestamp = int(datetime.now().timestamp())
         if run_id:
             # Triggered from id.
-            run = Run.get(run_id=run_id)
+            run = TriggerModel.get(run_id=run_id)
             triggered_by = triggered_by or request.environ.get("beaker.session").get("username").strip(".3bot")
             data = {
                 "timestamp": timestamp,
@@ -162,7 +162,7 @@ class Trigger:
                     "triggered_by": triggered_by,
                     "bin_release": None,
                 }
-                run = Run(**data)
+                run = TriggerModel(**data)
                 run.save()
                 run_id = str(run.run_id)
                 data["run_id"] = run_id
@@ -245,7 +245,7 @@ class Trigger:
         run, run_id = self._prepare_run_object(
             repo=repo, branch=branch, commit=last_commit, committer=committer, triggered_by=triggered_by
         )
-        exist_run = Run.get_objects(fields=["status"], **where)
+        exist_run = TriggerModel.get_objects(fields=["status"], **where)
         if exist_run:
             msg = f"There is a running job from this commit {last_commit}"
             return self._report(msg, run, run_id)

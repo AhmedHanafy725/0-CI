@@ -3,7 +3,7 @@ from urllib.parse import urljoin
 
 from models.initial_config import InitialConfig
 
-from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
 
 RETRIES = 5
 
