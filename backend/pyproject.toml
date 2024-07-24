@@ -18,6 +18,9 @@ giteapy = "^1.0.8"
 gevent-websocket = "^0.10.1"
 pygithub = "^2.3.0"
 beaker = "^1.13.0"
+bottle = "^0.12.25"
+mongoengine = "^0.28.2"
+croniter = "^3.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
