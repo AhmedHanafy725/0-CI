@@ -30,9 +30,9 @@ class InitialConfig():
     _model = InitialConfigModel
 
     def __new__(cls, **kwargs):
-        name = "Initial_config"
-        objs = cls._model.objects(name="Initial_config")
+        name = "initial_config"
+        objs = cls._model.objects(name="initial_config").first()
         if objs:
-            return objs[0]
+            return objs
         else:
             return cls._model(name=name, **kwargs)

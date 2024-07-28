@@ -14,7 +14,7 @@ from apis.base import admin, app, check_configs, user
 
 @app.route("/api/telegram_config", method=["GET", "POST"])
 @admin
-def validate_telegam():
+def validate_telegram():
     """Validate telegram token and chat ID"""
     configs = InitialConfig()
     confs = ["chat_id", "bot_token"]
@@ -210,7 +210,6 @@ def run_config(name):
     else:
         env = json.dumps(run_config.env)
         return env
-    return abort(404)
 
 
 @app.route("/api/vcs_host", method=["GET"])

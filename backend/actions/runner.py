@@ -163,12 +163,13 @@ class Runner:
     def _get_run_env(self):
         """Get run environment variables."""
         name = self.run_obj.repo
-        run_config = RunConfig(name=name)
-        run_env = run_config.env
         env = []
-        for key in run_env.keys():
-            env_var = V1EnvVar(name=key, value=run_env.get(key))
-            env.append(env_var)
+        run_config = RunConfig.objects(name=name).first()
+        if run_config:
+            run_env = run_config.env
+            for key in run_env.keys():
+                env_var = V1EnvVar(name=key, value=run_env.get(key))
+                env.append(env_var)
         return env
 
     def _repo_clone_details(self):
@@ -228,7 +229,7 @@ class Runner:
         :param schedule_name: str
         """
         self.run_id = run_id
-        self.run_obj = TriggerModel.get(run_id=self.run_id)
+        self.run_obj = TriggerModel.objects.get(run_id=self.run_id)
         clone_details = self._repo_clone_details()
         worked = deployed = installed = True
         for i, job in enumerate(repo_config["jobs"]):
